@@ -327,6 +327,7 @@ class FileListAdapter(
             }
         }
         holder.iconLayout.setOnClickListener { selectFile(file) }
+        val attributes = file.attributes
         val isSymlink = file.attributesNoFollowLinks.isSymbolicLink
         if (isSymlink) {
             holder.nameText.text = "${file.name} ->"
