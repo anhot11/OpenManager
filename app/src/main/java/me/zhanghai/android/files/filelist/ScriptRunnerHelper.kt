@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
+import me.zhanghai.android.files.util.extraPath
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import java.io.BufferedReader
 import java.io.File
@@ -74,7 +75,7 @@ object ScriptRunnerHelper {
     private fun openInEditor(activity: Activity, fileItem: FileItem) {
         val intent = Intent(activity, TextEditorActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            putExtra("me.zhanghai.android.files.util.extraPath", fileItem.path.toString())
+            extraPath = fileItem.path
         }
         activity.startActivity(intent)
     }
@@ -84,7 +85,6 @@ object ScriptRunnerHelper {
         val shguardPath = shguardBin?.absolutePath ?: "/data/local/tmp/shguard"
 
         val flag = if (isolateNetwork) "-n" else "-a"
-        val cmd = "su -c '$shguardPath $flag \"$scriptPath\"'"
 
         // Mostrar diálogo de salida de terminal
         val outputView = TextView(activity).apply {
@@ -103,7 +103,17 @@ object ScriptRunnerHelper {
 
         Thread {
             try {
-                val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "$shguardPath $flag \"$scriptPath\""))
+                val hasSu = File("/system/bin/su").exists() || File("/system/xbin/su").exists() || File("/sbin/su").exists()
+                val execArgs = if (hasSu) {
+                    arrayOf("su", "-c", "$shguardPath $flag \"$scriptPath\"")
+                } else {
+                    arrayOf("sh", "-c", "$shguardPath $flag \"$scriptPath\"")
+                }
+                val process = try {
+                    Runtime.getRuntime().exec(execArgs)
+                } catch (e: Exception) {
+                    Runtime.getRuntime().exec(arrayOf("sh", "-c", "$shguardPath $flag \"$scriptPath\""))
+                }
                 val reader = BufferedReader(InputStreamReader(process.inputStream))
                 val errReader = BufferedReader(InputStreamReader(process.errorStream))
 
