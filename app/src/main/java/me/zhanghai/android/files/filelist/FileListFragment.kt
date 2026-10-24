@@ -1539,10 +1539,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     val selectedFiles: FileItemSet
-        get() = viewModel.selectedFiles
+        get() = if (isAdded) viewModel.selectedFiles else fileItemSetOf()
 
     val canNavigateUp: Boolean
-        get() = viewModel.canNavigateUpBreadcrumb
+        get() = if (isAdded) viewModel.canNavigateUpBreadcrumb else false
 
     fun setDualPaneUiMode(enabled: Boolean) {
         if (!this::binding.isInitialized) return

@@ -133,11 +133,11 @@ class FileListActivity : AppActivity() {
         setupDualPaneControls()
         setupBottomBarControls()
         setupBackPressedHandler()
-        applyPaneVisibility()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
+        applyPaneVisibility()
         observePanelPathsAndStats()
     }
 
@@ -313,6 +313,8 @@ class FileListActivity : AppActivity() {
     }
 
     private fun updateTopBarInfo() {
+        if (!::fragmentA.isInitialized || !::fragmentB.isInitialized) return
+        if (!activeFragment.isAdded) return
         try {
             val path = activeFragment.currentPath
             tvPathTitle.text = path.toString()
@@ -324,6 +326,8 @@ class FileListActivity : AppActivity() {
     }
 
     private fun syncBottomBarSelectionState() {
+        if (!::fragmentA.isInitialized || !::fragmentB.isInitialized) return
+        if (!activeFragment.isAdded) return
         val selected = activeFragment.selectedFiles
         if (selected.isNotEmpty()) {
             bottomBarNormal.visibility = View.GONE
