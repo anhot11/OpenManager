@@ -236,7 +236,7 @@ class FileListActivity : AppActivity() {
     }
 
     private fun showMTMoreMenu(anchor: View) {
-        val popup = PopupMenu(this, anchor, Gravity.END)
+        val popup = PopupMenu(this, anchor, GravityCompat.END)
         popup.inflate(R.menu.mt_overflow_menu)
         try {
             val field = popup.javaClass.getDeclaredField("mPopup")
