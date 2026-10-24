@@ -13,20 +13,95 @@
     <item
         android:id="@+id/action_save"
         android:icon="@drawable/save_icon_control_normal_24dp"
-        android:orderInCategory="100"
+        android:orderInCategory="10"
         android:title="@string/save"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
 
     <item
-        android:id="@+id/action_reload"
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo_24dp"
+        android:orderInCategory="20"
+        android:title="@string/text_editor_undo"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo_24dp"
+        android:orderInCategory="30"
+        android:title="@string/text_editor_redo"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/search_icon_control_normal_24dp"
+        android:orderInCategory="40"
+        android:title="@string/text_editor_search"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
+
+    <item
+        android:id="@+id/action_syntax"
+        android:icon="@drawable/ic_code_24dp"
+        android:orderInCategory="50"
+        android:title="@string/text_editor_syntax"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_goto_line"
         android:orderInCategory="100"
+        android:title="@string/text_editor_goto_line"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_word_wrap"
+        android:orderInCategory="101"
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/text_editor_word_wrap"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_read_only"
+        android:orderInCategory="102"
+        android:checkable="true"
+        android:checked="false"
+        android:title="@string/text_editor_read_only"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_font_size"
+        android:orderInCategory="103"
+        android:title="@string/text_editor_font_size"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_font_size_increase"
+                android:title="@string/text_editor_font_size_increase" />
+            <item
+                android:id="@+id/action_font_size_decrease"
+                android:title="@string/text_editor_font_size_decrease" />
+            <item
+                android:id="@+id/action_font_size_reset"
+                android:title="@string/text_editor_font_size_reset" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_file_stats"
+        android:orderInCategory="104"
+        android:title="@string/text_editor_file_stats"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_reload"
+        android:orderInCategory="105"
         android:title="@string/reload"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_encoding"
-        android:orderInCategory="100"
+        android:orderInCategory="106"
         android:title="@string/text_editor_encoding"
         app:showAsAction="never">
         <menu />

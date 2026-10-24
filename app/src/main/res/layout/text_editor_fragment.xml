@@ -8,11 +8,13 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
     <me.zhanghai.android.files.ui.CoordinatorAppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorAppBarSurface"
@@ -25,52 +27,219 @@
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             app:popupTheme="?actionBarPopupTheme" />
+
+        <!-- Search & Replace Panel -->
+        <LinearLayout
+            android:id="@+id/searchPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <!-- Search row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <EditText
+                    android:id="@+id/searchEdit"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:hint="@string/text_editor_search_hint"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:imeOptions="actionNext"
+                    android:inputType="textNoSuggestions"
+                    android:background="@drawable/search_input_background"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/searchCountText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:textSize="12sp"
+                    android:textColor="?android:textColorSecondary"
+                    android:text="@string/text_editor_no_matches" />
+
+                <ImageButton
+                    android:id="@+id/searchPrevBtn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_upward_24dp"
+                    android:contentDescription="@string/previous"
+                    app:tint="?colorControlNormal" />
+
+                <ImageButton
+                    android:id="@+id/searchNextBtn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_downward_24dp"
+                    android:contentDescription="@string/next"
+                    app:tint="?colorControlNormal" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/searchCaseBtn"
+                    style="?borderlessButtonStyle"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:minWidth="0dp"
+                    android:padding="0dp"
+                    android:text="Aa"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="?android:textColorSecondary" />
+
+                <ImageButton
+                    android:id="@+id/searchCloseBtn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/close_icon_control_normal_24dp"
+                    android:contentDescription="@string/close"
+                    app:tint="?colorControlNormal" />
+            </LinearLayout>
+
+            <!-- Replace row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <EditText
+                    android:id="@+id/replaceEdit"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:hint="@string/text_editor_replace_hint"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:inputType="textNoSuggestions"
+                    android:background="@drawable/search_input_background"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/replaceBtn"
+                    style="?borderlessButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/text_editor_replace"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/replaceAllBtn"
+                    style="?borderlessButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/text_editor_replace_all"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
     </me.zhanghai.android.files.ui.CoordinatorAppBarLayout>
 
     <me.zhanghai.android.files.ui.CoordinatorScrollingFrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ProgressBar
-            android:id="@+id/progress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/errorText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:paddingTop="12dp"
-            android:paddingBottom="32dp"
-            android:drawablePadding="8dp"
-            android:gravity="center_horizontal"
-            android:textAppearance="?textAppearanceListItem"
-            android:visibility="gone"
-            app:drawableTopCompat="@drawable/error_icon_240dp" />
-
-        <!-- TODO: Use a WebView for large amount of text. -->
-        <me.zhanghai.android.fastscroll.FastScrollNestedScrollView
-            android:id="@+id/scrollView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:fillViewport="true">
+            android:orientation="vertical">
 
-            <me.zhanghai.android.files.ui.ScrollingChildEditText
-                android:id="@+id/textEdit"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/screen_edge_margin"
-                android:background="@null"
-                android:gravity="top"
-                android:importantForAutofill="no"
-                android:inputType="textMultiLine"
-                android:textAppearance="?textAppearanceListItemSecondary">
-                <requestFocus />
-            </me.zhanghai.android.files.ui.ScrollingChildEditText>
-        </me.zhanghai.android.fastscroll.FastScrollNestedScrollView>
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <ProgressBar
+                    android:id="@+id/progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/errorText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="32dp"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="?textAppearanceListItem"
+                    android:visibility="gone"
+                    app:drawableTopCompat="@drawable/error_icon_240dp" />
+
+                <me.zhanghai.android.fastscroll.FastScrollNestedScrollView
+                    android:id="@+id/scrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:fillViewport="true">
+
+                    <HorizontalScrollView
+                        android:id="@+id/horizontalScrollView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fillViewport="true"
+                        android:scrollbars="none">
+
+                        <me.zhanghai.android.files.ui.ScrollingChildEditText
+                            android:id="@+id/textEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/screen_edge_margin"
+                            android:background="@null"
+                            android:gravity="top"
+                            android:importantForAutofill="no"
+                            android:inputType="textMultiLine"
+                            android:textAppearance="?textAppearanceListItemSecondary">
+                            <requestFocus />
+                        </me.zhanghai.android.files.ui.ScrollingChildEditText>
+                    </HorizontalScrollView>
+                </me.zhanghai.android.fastscroll.FastScrollNestedScrollView>
+            </FrameLayout>
+
+            <!-- Bottom Symbol Bar -->
+            <HorizontalScrollView
+                android:id="@+id/symbolBar"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="?colorAppBarSurface"
+                android:elevation="4dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/symbolContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </HorizontalScrollView>
+        </LinearLayout>
     </me.zhanghai.android.files.ui.CoordinatorScrollingFrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

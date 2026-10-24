@@ -73,13 +73,16 @@ class TextEditorViewModel(file: Path) : ViewModel() {
         }
     }
 
+    val fileSize = MutableStateFlow(0L)
+
     private suspend fun mapFileToBytesState(file: Path) {
         _bytesState.value = _bytesState.value.toLoading()
         try {
             val bytes = runInterruptible(Dispatchers.IO) {
                 val size = file.size()
+                fileSize.value = size
                 if (size > MAX_FILE_SIZE) {
-                    throw IOException("File size $size is too large")
+                    throw IOException("File size $size is too large (max 10MB)")
                 }
                 file.readAllBytes()
             }
@@ -184,6 +187,6 @@ class TextEditorViewModel(file: Path) : ViewModel() {
     }
 
     companion object {
-        private const val MAX_FILE_SIZE = 1024 * 1024.toLong()
+        private const val MAX_FILE_SIZE = 10 * 1024 * 1024L
     }
 }

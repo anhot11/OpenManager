@@ -323,6 +323,7 @@
             android:name="me.zhanghai.android.files.viewer.text.TextEditorActivity"
             android:exported="true"
             android:label="@string/text_editor_title"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.MaterialFiles">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
