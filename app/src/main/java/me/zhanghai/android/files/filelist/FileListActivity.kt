@@ -316,7 +316,7 @@ class FileListActivity : AppActivity() {
 
                 itemView.setOnClickListener {
                     drawerLayout.closeDrawer(GravityCompat.START)
-                    activeFragment.navigateTo(storage.path)
+                    storage.path?.let { path -> activeFragment.navigateTo(path) }
                 }
                 itemView.setOnLongClickListener {
                     showCustomStorageOptions(storage)
