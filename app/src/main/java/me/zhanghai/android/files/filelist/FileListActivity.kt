@@ -46,6 +46,9 @@ import me.zhanghai.android.files.ftpserver.FtpServerActivity
 import me.zhanghai.android.files.settings.Settings
 import me.zhanghai.android.files.settings.SettingsActivity
 import me.zhanghai.android.files.storage.AddDocumentTreeActivity
+import me.zhanghai.android.files.storage.AddStorageDialogActivity
+import me.zhanghai.android.files.storage.FileSystemRoot
+import me.zhanghai.android.files.storage.PrimaryStorageVolume
 import me.zhanghai.android.files.storage.Storage
 import me.zhanghai.android.files.storage.Storages
 import me.zhanghai.android.files.util.createIntent
@@ -271,7 +274,7 @@ class FileListActivity : AppActivity() {
         layoutCustomStorages = findViewById(R.id.layoutCustomStorages)
         findViewById<View>(R.id.drawerItemAddStorage).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            startActivity(Intent(this, AddDocumentTreeActivity::class.java))
+            startActivity(AddStorageDialogActivity::class.createIntent())
         }
         observeCustomStorages()
 
@@ -283,6 +286,11 @@ class FileListActivity : AppActivity() {
         findViewById<View>(R.id.drawerItemFtp).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             startActivity(Intent(this, FtpServerActivity::class.java))
+        }
+
+        findViewById<View>(R.id.drawerItemTerminal)?.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            activeFragment.openTerminal()
         }
 
         findViewById<View>(R.id.drawerItemSettings).setOnClickListener {
@@ -305,6 +313,9 @@ class FileListActivity : AppActivity() {
         Settings.STORAGES.observe(this) { storages ->
             layoutCustomStorages.removeAllViews()
             for (storage in storages) {
+                if (storage is FileSystemRoot || storage is PrimaryStorageVolume) {
+                    continue
+                }
                 val itemView = layoutInflater.inflate(R.layout.drawer_custom_storage_item, layoutCustomStorages, false)
                 val iconView = itemView.findViewById<ImageView>(R.id.ivStorageIcon)
                 val titleView = itemView.findViewById<TextView>(R.id.tvStorageTitle)

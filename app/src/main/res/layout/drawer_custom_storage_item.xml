@@ -14,14 +14,14 @@
     <FrameLayout
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:background="@drawable/selectable_item_background_oval">
+        android:background="@drawable/drawer_icon_circle">
         <ImageView
             android:id="@+id/ivStorageIcon"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_gravity="center"
             android:src="@drawable/directory_icon_white_24dp"
-            app:tint="#B0B0B0" />
+            app:tint="#DCDCDC" />
     </FrameLayout>
 
     <LinearLayout

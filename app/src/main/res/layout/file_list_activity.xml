@@ -369,13 +369,13 @@
                     <FrameLayout
                         android:layout_width="36dp"
                         android:layout_height="36dp"
-                        android:background="@drawable/selectable_item_background_oval">
+                        android:background="@drawable/drawer_icon_circle">
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
                             android:src="@drawable/device_icon_white_24dp"
-                            app:tint="#B0B0B0" />
+                            app:tint="#DCDCDC" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -428,13 +428,13 @@
                     <FrameLayout
                         android:layout_width="36dp"
                         android:layout_height="36dp"
-                        android:background="@drawable/selectable_item_background_oval">
+                        android:background="@drawable/drawer_icon_circle">
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
                             android:src="@drawable/sd_card_icon_white_24dp"
-                            app:tint="#B0B0B0" />
+                            app:tint="#DCDCDC" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -492,7 +492,7 @@
                     <FrameLayout
                         android:layout_width="36dp"
                         android:layout_height="36dp"
-                        android:background="@drawable/selectable_item_background_oval">
+                        android:background="@drawable/drawer_icon_circle">
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
@@ -527,23 +527,29 @@
                 <LinearLayout
                     android:id="@+id/drawerItemTextEditor"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:background="?selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/file_text_icon"
-                        app:tint="#FFFFFF" />
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/file_text_icon"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Editor de Texto"
                         android:textColor="#FFFFFF"
                         android:textSize="13.5sp" />
@@ -553,24 +559,62 @@
                 <LinearLayout
                     android:id="@+id/drawerItemFtp"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:background="?selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/computer_icon_white_24dp"
-                        app:tint="#FFFFFF" />
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/computer_icon_white_24dp"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Administrador Remoto (FTP)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13.5sp" />
+                </LinearLayout>
+
+                <!-- Terminal -->
+                <LinearLayout
+                    android:id="@+id/drawerItemTerminal"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/terminal_icon_white_24dp"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="Terminal"
                         android:textColor="#FFFFFF"
                         android:textSize="13.5sp" />
                 </LinearLayout>
@@ -579,23 +623,29 @@
                 <LinearLayout
                     android:id="@+id/drawerItemSettings"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:background="?selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/settings_icon_white_24dp"
-                        app:tint="#FFFFFF" />
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/settings_icon_white_24dp"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Ajustes"
                         android:textColor="#FFFFFF"
                         android:textSize="13.5sp" />
@@ -605,23 +655,29 @@
                 <LinearLayout
                     android:id="@+id/drawerItemAbout"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="48dp"
                     android:background="?selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/about_icon_white_24dp"
-                        app:tint="#FFFFFF" />
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/about_icon_white_24dp"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Acerca de OpenManager"
                         android:textColor="#FFFFFF"
                         android:textSize="13.5sp" />
