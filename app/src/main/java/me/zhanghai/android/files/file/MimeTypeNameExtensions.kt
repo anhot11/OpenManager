@@ -56,6 +56,9 @@ private fun MimeTypeIcon.getNameRes(mimeType: MimeType, hasExtension: Boolean): 
         MimeTypeIcon.WORD -> R.string.file_type_name_word
         MimeTypeIcon.EXCEL -> R.string.file_type_name_excel
         MimeTypeIcon.POWERPOINT -> R.string.file_type_name_powerpoint
+        MimeTypeIcon.DEX, MimeTypeIcon.ARSC, MimeTypeIcon.XML, MimeTypeIcon.SO, MimeTypeIcon.SHELL ->
+            R.string.file_type_name_code
+        else -> R.string.file_type_name_generic
     }
 
 fun MimeType.Companion.getBrokenSymbolicLinkName(context: Context): String =
