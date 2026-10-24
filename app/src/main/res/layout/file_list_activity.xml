@@ -291,9 +291,9 @@
             android:paddingEnd="8dp">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/file_apk_icon" />
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_openmanager_logo" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -471,9 +471,16 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Termux Home Item -->
+                <!-- Dynamic User-Added Storages Container -->
                 <LinearLayout
-                    android:id="@+id/drawerItemTermux"
+                    android:id="@+id/layoutCustomStorages"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <!-- Add Storage Item (SAF / Document Tree) -->
+                <LinearLayout
+                    android:id="@+id/drawerItemAddStorage"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:background="?selectableItemBackground"
@@ -490,16 +497,16 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/directory_icon_white_24dp"
-                            app:tint="#B0B0B0" />
+                            android:src="@drawable/add_icon_white_24dp"
+                            app:tint="#42A5F5" />
                     </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="14dp"
-                        android:text="Termux Home"
-                        android:textColor="#FFFFFF"
+                        android:text="Añadir almacenamiento"
+                        android:textColor="#42A5F5"
                         android:textSize="13.5sp" />
                 </LinearLayout>
 

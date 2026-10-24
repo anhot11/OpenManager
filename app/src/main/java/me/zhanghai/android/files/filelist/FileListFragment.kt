@@ -1637,6 +1637,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     private fun ensureStorageAccess() {
+        if (activity is FileListActivity) {
+            return
+        }
         if (viewModel.isStorageAccessRequested) {
             return
         }

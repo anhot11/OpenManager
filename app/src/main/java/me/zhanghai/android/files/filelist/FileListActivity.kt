@@ -7,15 +7,22 @@
 package me.zhanghai.android.files.filelist
 
 import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.StatFs
+import android.provider.Settings as AndroidSettings
 import android.text.format.Formatter
 import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -38,6 +45,9 @@ import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.ftpserver.FtpServerActivity
 import me.zhanghai.android.files.settings.Settings
 import me.zhanghai.android.files.settings.SettingsActivity
+import me.zhanghai.android.files.storage.AddDocumentTreeActivity
+import me.zhanghai.android.files.storage.Storage
+import me.zhanghai.android.files.storage.Storages
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.extraPath
 import me.zhanghai.android.files.util.putArgs
@@ -79,6 +89,8 @@ class FileListActivity : AppActivity() {
     private lateinit var tvRootStorageStats: TextView
     private lateinit var progressInternalStorage: ProgressBar
     private lateinit var tvInternalStorageStats: TextView
+    private lateinit var layoutCustomStorages: LinearLayout
+    private var hasRequestedPermissionThisSession = false
 
     private var activePanelIndex = 0 // 0 = Panel A, 1 = Panel B
 
@@ -158,6 +170,88 @@ class FileListActivity : AppActivity() {
         updateDrawerStats()
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkAndRequestStoragePermissions()
+        updateDrawerStats()
+    }
+
+    private fun checkAndRequestStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                if (!hasRequestedPermissionThisSession) {
+                    hasRequestedPermissionThisSession = true
+                    showAllFilesPermissionDialog()
+                }
+            } else {
+                if (::fragmentA.isInitialized && ::fragmentB.isInitialized) {
+                    fragmentA.reload()
+                    fragmentB.reload()
+                }
+            }
+        } else {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+            ) {
+                if (!hasRequestedPermissionThisSession) {
+                    hasRequestedPermissionThisSession = true
+                    requestPermissions(
+                        arrayOf(
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        ),
+                        1001
+                    )
+                }
+            } else {
+                if (::fragmentA.isInitialized && ::fragmentB.isInitialized) {
+                    fragmentA.reload()
+                    fragmentB.reload()
+                }
+            }
+        }
+    }
+
+    private fun showAllFilesPermissionDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Permiso de almacenamiento")
+            .setMessage("OpenManager necesita acceso total a todos los archivos para poder gestionar, copiar, mover, crear y editar archivos en tu dispositivo.")
+            .setPositiveButton("Conceder permiso") { _, _ ->
+                try {
+                    val intent = Intent(AndroidSettings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                        data = Uri.fromParts("package", packageName, null)
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        val intent = Intent(AndroidSettings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                        startActivity(intent)
+                    } catch (e2: Exception) {
+                        showToast("No se pudo abrir la pantalla de ajustes de archivos")
+                    }
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .setCancelable(false)
+            .show()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                if (::fragmentA.isInitialized && ::fragmentB.isInitialized) {
+                    fragmentA.reload()
+                    fragmentB.reload()
+                }
+            }
+        }
+    }
+
     private fun setupDrawerControls() {
         findViewById<View>(R.id.btnDrawerSettings).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -174,10 +268,12 @@ class FileListActivity : AppActivity() {
             activeFragment.navigateTo(Paths.get("/storage/emulated/0"))
         }
 
-        findViewById<View>(R.id.drawerItemTermux).setOnClickListener {
+        layoutCustomStorages = findViewById(R.id.layoutCustomStorages)
+        findViewById<View>(R.id.drawerItemAddStorage).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            activeFragment.navigateTo(Paths.get("/data/data/com.termux/files/home"))
+            startActivity(Intent(this, AddDocumentTreeActivity::class.java))
         }
+        observeCustomStorages()
 
         findViewById<View>(R.id.drawerItemTextEditor).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -203,6 +299,45 @@ class FileListActivity : AppActivity() {
         tvRootStorageStats = findViewById(R.id.tvRootStorageStats)
         progressInternalStorage = findViewById(R.id.progressInternalStorage)
         tvInternalStorageStats = findViewById(R.id.tvInternalStorageStats)
+    }
+
+    private fun observeCustomStorages() {
+        Settings.STORAGES.observe(this) { storages ->
+            layoutCustomStorages.removeAllViews()
+            for (storage in storages) {
+                val itemView = layoutInflater.inflate(R.layout.drawer_custom_storage_item, layoutCustomStorages, false)
+                val iconView = itemView.findViewById<ImageView>(R.id.ivStorageIcon)
+                val titleView = itemView.findViewById<TextView>(R.id.tvStorageTitle)
+                val subtitleView = itemView.findViewById<TextView>(R.id.tvStorageSubtitle)
+
+                iconView.setImageResource(storage.iconRes)
+                titleView.text = storage.getName(this)
+                subtitleView.text = storage.description
+
+                itemView.setOnClickListener {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    activeFragment.navigateTo(storage.path)
+                }
+                itemView.setOnLongClickListener {
+                    showCustomStorageOptions(storage)
+                    true
+                }
+                layoutCustomStorages.addView(itemView)
+            }
+        }
+    }
+
+    private fun showCustomStorageOptions(storage: Storage) {
+        val options = arrayOf("Editar", "Eliminar")
+        MaterialAlertDialogBuilder(this)
+            .setTitle(storage.getName(this))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> startActivity(storage.createEditIntent())
+                    1 -> Storages.remove(storage)
+                }
+            }
+            .show()
     }
 
     private fun updateDrawerStats() {
