@@ -856,6 +856,7 @@
 
     <!-- MT Manager Other Preferences -->
     <string name="settings_check_update_title">Buscar actualizaciones</string>
+    <string name="settings_check_update_summary" translatable="false">GitHub: github.com/anhot11/OpenManager</string>
     <string name="settings_acknowledgement_title">Agradecimientos</string>
     <string name="settings_acknowledgement_summary">Personas y proyectos de código abierto que ayudaron al desarrollo de OpenManager.</string>
     <string name="settings_user_agreement_title">Acuerdo de usuario y Política de privacidad</string>

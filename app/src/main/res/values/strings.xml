@@ -959,6 +959,7 @@
 
     <!-- MT Manager Other Preferences -->
     <string name="settings_check_update_title">Check for update</string>
+    <string name="settings_check_update_summary" translatable="false">GitHub: github.com/anhot11/OpenManager</string>
     <string name="settings_acknowledgement_title">Acknowledgement</string>
     <string name="settings_acknowledgement_summary">People and open source projects that helped the development of OpenManager.</string>
     <string name="settings_user_agreement_title">User Agreement and Privacy Policy</string>
