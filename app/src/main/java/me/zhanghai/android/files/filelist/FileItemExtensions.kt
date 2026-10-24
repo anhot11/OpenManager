@@ -29,6 +29,11 @@ import me.zhanghai.android.files.util.isGetPackageArchiveInfoCompatible
 import me.zhanghai.android.files.util.isMediaMetadataRetrieverCompatible
 import me.zhanghai.android.files.util.valueCompat
 import java.text.CollationKey
+import java.text.Collator
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import me.zhanghai.android.files.provider.common.AbstractBasicFileAttributes
+import me.zhanghai.android.files.provider.common.BasicFileType
 
 val FileItem.name: String
     get() = path.name
@@ -148,3 +153,33 @@ private class DummyArchiveRootBasicFileAttributes : BasicFileAttributes {
         throw UnsupportedOperationException()
     }
 }
+
+@Parcelize
+class DummyParentDirectoryBasicFileAttributes : AbstractBasicFileAttributes() {
+    override val lastModifiedTime: FileTime
+        get() = FileTime.fromMillis(0)
+    override val lastAccessTime: FileTime
+        get() = FileTime.fromMillis(0)
+    override val creationTime: FileTime
+        get() = FileTime.fromMillis(0)
+    override val type: BasicFileType
+        get() = BasicFileType.DIRECTORY
+    override val size: Long
+        get() = 0
+    override val fileKey: Parcelable
+        get() = ".."
+}
+
+val FileItem.isParentDirectoryItem: Boolean
+    get() = attributesNoFollowLinks is DummyParentDirectoryBasicFileAttributes
+
+fun createParentDirectoryItem(currentPath: Path): FileItem =
+    FileItem(
+        currentPath.resolve(".."),
+        Collator.getInstance().getCollationKeyForFileName(".."),
+        DummyParentDirectoryBasicFileAttributes(),
+        null,
+        null,
+        false,
+        MimeType.DIRECTORY
+    )

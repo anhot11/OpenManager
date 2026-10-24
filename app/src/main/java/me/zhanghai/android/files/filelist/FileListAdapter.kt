@@ -28,6 +28,7 @@ import me.zhanghai.android.files.databinding.FileItemGridBinding
 import me.zhanghai.android.files.databinding.FileItemListBinding
 import me.zhanghai.android.files.file.FileItem
 import me.zhanghai.android.files.file.fileSize
+import me.zhanghai.android.files.file.formatMtDate
 import me.zhanghai.android.files.file.formatShort
 import me.zhanghai.android.files.file.iconRes
 import me.zhanghai.android.files.file.isApk
@@ -63,7 +64,14 @@ class FileListAdapter(
         set(value) {
             _sortOptions = value
             if (!isSearching) {
-                val sortedList = list.sortedWith(value.createComparator())
+                val parentItem = list.firstOrNull { it.isParentDirectoryItem }
+                val otherFiles = if (parentItem != null) list.filterNot { it.isParentDirectoryItem } else list
+                val sortedOthers = otherFiles.sortedWith(value.createComparator())
+                val sortedList = if (parentItem != null) {
+                    listOf(parentItem) + sortedOthers
+                } else {
+                    sortedOthers
+                }
                 super.replace(sortedList, true)
                 rebuildFilePositionMap()
             }
@@ -110,7 +118,7 @@ class FileListAdapter(
     }
 
     private fun selectFile(file: FileItem) {
-        if (!isFileSelectable(file)) {
+        if (file.isParentDirectoryItem || !isFileSelectable(file)) {
             return
         }
         val selected = file in selectedFiles
@@ -125,7 +133,7 @@ class FileListAdapter(
         val files = fileItemSetOf()
         for (index in 0..<itemCount) {
             val file = getItem(index)
-            if (isFileSelectable(file)) {
+            if (!file.isParentDirectoryItem && isFileSelectable(file)) {
                 files.add(file)
             }
         }
@@ -133,6 +141,9 @@ class FileListAdapter(
     }
 
     private fun isFileSelectable(file: FileItem): Boolean {
+        if (file.isParentDirectoryItem) {
+            return false
+        }
         val pickOptions = pickOptions ?: return true
         return when (pickOptions.mode) {
             PickOptions.Mode.OPEN_FILE, PickOptions.Mode.CREATE_FILE ->
@@ -156,7 +167,18 @@ class FileListAdapter(
     fun replaceListAndIsSearching(list: List<FileItem>, isSearching: Boolean) {
         val clear = this.isSearching != isSearching
         this.isSearching = isSearching
-        val sortedList = if (!isSearching) list.sortedWith(sortOptions.createComparator()) else list
+        val sortedList = if (!isSearching) {
+            val parentItem = list.firstOrNull { it.isParentDirectoryItem }
+            val otherFiles = if (parentItem != null) list.filterNot { it.isParentDirectoryItem } else list
+            val sortedOthers = otherFiles.sortedWith(sortOptions.createComparator())
+            if (parentItem != null) {
+                listOf(parentItem) + sortedOthers
+            } else {
+                sortedOthers
+            }
+        } else {
+            list
+        }
         super.replace(sortedList, clear)
         rebuildFilePositionMap()
     }
@@ -230,6 +252,27 @@ class FileListAdapter(
                 ellipsize = nameEllipsize
                 isSelected = nameEllipsize == TextUtils.TruncateAt.MARQUEE
             }
+        }
+        if (file.isParentDirectoryItem) {
+            holder.itemLayout.isEnabled = true
+            holder.itemLayout.isChecked = false
+            holder.menuButton.isVisible = false
+            holder.nameText.text = ".."
+            holder.descriptionText?.isVisible = false
+            holder.itemLayout.setOnClickListener { listener.navigateUp() }
+            holder.iconLayout.setOnClickListener { listener.navigateUp() }
+            holder.itemLayout.setOnLongClickListener { false }
+            holder.iconImage.apply {
+                isVisible = true
+                setImageResource(R.drawable.directory_icon_white_24dp)
+            }
+            holder.directoryThumbnailImage?.isVisible = false
+            holder.thumbnailOutlineView?.isVisible = false
+            holder.thumbnailIconImage?.isVisible = false
+            holder.thumbnailImage.isVisible = false
+            holder.appIconBadgeImage.isVisible = false
+            holder.badgeImage.isVisible = false
+            return
         }
         if (payloads.isNotEmpty()) {
             return
@@ -317,16 +360,13 @@ class FileListAdapter(
             }
         }
         holder.nameText.text = file.name
+        holder.descriptionText?.isVisible = true
         holder.descriptionText?.text = if (isDirectory) {
-            val context = holder.descriptionText!!.context
-            attributes.lastModifiedTime().toInstant().formatShort(context)
+            attributes.lastModifiedTime().toInstant().formatMtDate()
         } else {
-            val context = holder.descriptionText!!.context
-            val lastModificationTime = attributes.lastModifiedTime().toInstant()
-                .formatShort(context)
-            val size = attributes.fileSize.formatHumanReadable(context)
-            val descriptionSeparator = context.getString(R.string.file_item_description_separator)
-            listOf(lastModificationTime, size).joinToString(descriptionSeparator)
+            val lastModificationTime = attributes.lastModifiedTime().toInstant().formatMtDate()
+            val size = attributes.fileSize.formatHumanReadable(holder.itemView.context)
+            "$lastModificationTime  $size"
         }
         val isArchivePath = path.isArchivePath
         menu.findItem(R.id.action_copy)
@@ -403,12 +443,15 @@ class FileListAdapter(
 
     override fun getPopupText(view: View, position: Int): CharSequence {
         val file = getItem(position)
+        if (file.isParentDirectoryItem) {
+            return ".."
+        }
         return when (sortOptions.by) {
             FileSortOptions.By.NAME -> file.name.take(1).uppercase(Locale.getDefault())
             FileSortOptions.By.TYPE -> file.extension.uppercase(Locale.getDefault())
             FileSortOptions.By.SIZE -> file.attributes.fileSize.formatHumanReadable(view.context)
             FileSortOptions.By.LAST_MODIFIED ->
-                file.attributes.lastModifiedTime().toInstant().formatShort(view.context)
+                file.attributes.lastModifiedTime().toInstant().formatMtDate()
         }
     }
 
@@ -478,6 +521,7 @@ class FileListAdapter(
     }
 
     interface Listener {
+        fun navigateUp()
         fun clearSelectedFiles()
         fun selectFile(file: FileItem, selected: Boolean)
         fun selectFiles(files: FileItemSet, selected: Boolean)

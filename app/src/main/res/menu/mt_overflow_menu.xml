@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mt_menu_refresh"
+        android:icon="@drawable/reset_icon_white_24dp"
+        android:title="Actualizar" />
+
+    <item
+        android:id="@+id/mt_menu_search"
+        android:icon="@drawable/search_icon_control_normal_24dp"
+        android:title="Buscar" />
+
+    <item
+        android:id="@+id/mt_menu_select_all"
+        android:icon="@drawable/select_all_icon_white_24dp"
+        android:title="Seleccionar todo" />
+
+    <item
+        android:id="@+id/mt_menu_filter"
+        android:icon="@drawable/filter_icon_control_normal_24dp"
+        android:title="Filtrar" />
+
+    <item
+        android:id="@+id/mt_menu_sort"
+        android:icon="@drawable/sort_icon_control_normal_24dp"
+        android:title="Ordenar" />
+
+    <item
+        android:id="@+id/mt_menu_terminal"
+        android:icon="@drawable/terminal_icon_white_24dp"
+        android:title="Abrir terminal" />
+
+    <item
+        android:id="@+id/mt_menu_hidden_files"
+        android:icon="@drawable/visibility_icon_white_24dp"
+        android:title="Archivos ocultos" />
+
+    <item
+        android:id="@+id/mt_menu_add_bookmark"
+        android:icon="@drawable/bookmark_icon_white_24dp"
+        android:title="Añadir marcador" />
+
+    <item
+        android:id="@+id/mt_menu_set_as_home"
+        android:icon="@drawable/home_icon_white_24dp"
+        android:title="Fijar como inicio" />
+
+    <item
+        android:id="@+id/mt_menu_swap_windows"
+        android:icon="@drawable/ic_mt_swap"
+        android:title="Intercambiar paneles" />
+
+    <item
+        android:id="@+id/mt_menu_preferences"
+        android:icon="@drawable/settings_icon_white_24dp"
+        android:title="Ajustes" />
+
+    <item
+        android:id="@+id/mt_menu_exit"
+        android:icon="@drawable/exit_to_app_icon_white_24dp"
+        android:title="Salir" />
+
+</menu>

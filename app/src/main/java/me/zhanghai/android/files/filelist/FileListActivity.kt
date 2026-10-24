@@ -1,7 +1,7 @@
 /*
  * OpenManager - Dual-Pane File Explorer (MT Manager Style)
  * Supports side-by-side Panel A & Panel B navigation with instant synchronization,
- * unified top toolbar, MT-style bottom action bar, and cross-panel 1-tap operations.
+ * unified top toolbar, MT-style bottom action bar, MT-style navigation drawer, and 3-dots overflow popup.
  */
 
 package me.zhanghai.android.files.filelist
@@ -9,36 +9,52 @@ package me.zhanghai.android.files.filelist
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.StatFs
+import android.text.format.Formatter
 import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.commit
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java8.nio.file.Path
+import java8.nio.file.Paths
 import me.zhanghai.android.files.R
+import me.zhanghai.android.files.about.AboutActivity
 import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.file.MimeType
+import me.zhanghai.android.files.ftpserver.FtpServerActivity
+import me.zhanghai.android.files.settings.Settings
+import me.zhanghai.android.files.settings.SettingsActivity
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.extraPath
 import me.zhanghai.android.files.util.putArgs
+import me.zhanghai.android.files.util.showToast
+import me.zhanghai.android.files.util.valueCompat
+import me.zhanghai.android.files.viewer.text.TextEditorActivity
 
 class FileListActivity : AppActivity() {
 
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var fragmentA: FileListFragment
     private lateinit var fragmentB: FileListFragment
 
     private lateinit var mainToolbar: Toolbar
     private lateinit var tvPathTitle: TextView
     private lateinit var tvStatsSubtitle: TextView
+    private lateinit var btnMainMore: ImageButton
 
     private lateinit var containerA: FrameLayout
     private lateinit var containerB: FrameLayout
@@ -59,6 +75,11 @@ class FileListActivity : AppActivity() {
     private lateinit var btnDeleteSelection: MaterialButton
     private lateinit var btnMoreSelection: MaterialButton
 
+    private lateinit var progressRootStorage: ProgressBar
+    private lateinit var tvRootStorageStats: TextView
+    private lateinit var progressInternalStorage: ProgressBar
+    private lateinit var tvInternalStorageStats: TextView
+
     private var activePanelIndex = 0 // 0 = Panel A, 1 = Panel B
 
     val activeFragment: FileListFragment
@@ -72,10 +93,16 @@ class FileListActivity : AppActivity() {
 
         setContentView(R.layout.file_list_activity)
 
+        drawerLayout = findViewById(R.id.drawerLayout)
         mainToolbar = findViewById(R.id.mainToolbar)
         setSupportActionBar(mainToolbar)
         mainToolbar.setNavigationOnClickListener {
-            activeFragment.openDrawer()
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        btnMainMore = findViewById(R.id.btnMainMore)
+        btnMainMore.setOnClickListener {
+            showMTMoreMenu(it)
         }
 
         tvPathTitle = findViewById(R.id.tvPathTitle)
@@ -118,6 +145,7 @@ class FileListActivity : AppActivity() {
             activePanelIndex = savedInstanceState.getInt(KEY_ACTIVE_PANEL, 0)
         }
 
+        setupDrawerControls()
         setupBottomBarControls()
         setupBackPressedHandler()
     }
@@ -128,6 +156,152 @@ class FileListActivity : AppActivity() {
         updateTopBarInfo()
         syncBottomBarSelectionState()
         observePanelPathsAndStats()
+        updateDrawerStats()
+    }
+
+    private fun setupDrawerControls() {
+        findViewById<View>(R.id.btnDrawerSettings).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        findViewById<View>(R.id.drawerItemRoot).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            activeFragment.navigateTo(Paths.get("/"))
+        }
+
+        findViewById<View>(R.id.drawerItemInternal).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            activeFragment.navigateTo(Paths.get("/storage/emulated/0"))
+        }
+
+        findViewById<View>(R.id.drawerItemTermux).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            activeFragment.navigateTo(Paths.get("/data/data/com.termux/files/home"))
+        }
+
+        findViewById<View>(R.id.drawerItemTextEditor).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, TextEditorActivity::class.java))
+        }
+
+        findViewById<View>(R.id.drawerItemFtp).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, FtpServerActivity::class.java))
+        }
+
+        findViewById<View>(R.id.drawerItemSettings).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        findViewById<View>(R.id.drawerItemAbout).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, AboutActivity::class.java))
+        }
+
+        progressRootStorage = findViewById(R.id.progressRootStorage)
+        tvRootStorageStats = findViewById(R.id.tvRootStorageStats)
+        progressInternalStorage = findViewById(R.id.progressInternalStorage)
+        tvInternalStorageStats = findViewById(R.id.tvInternalStorageStats)
+    }
+
+    private fun updateDrawerStats() {
+        try {
+            val rootStat = StatFs("/")
+            val rootTotal = rootStat.totalBytes
+            val rootAvail = rootStat.availableBytes
+            val rootUsed = rootTotal - rootAvail
+            val rootPercent = if (rootTotal > 0) ((rootUsed * 100) / rootTotal).toInt() else 100
+            progressRootStorage.progress = rootPercent
+            val rootUsedStr = Formatter.formatFileSize(this, rootUsed)
+            val rootAvailStr = Formatter.formatFileSize(this, rootAvail)
+            tvRootStorageStats.text = "$rootUsedStr usado, $rootAvailStr disponible ($rootPercent%)"
+        } catch (e: Exception) {
+            tvRootStorageStats.text = "/ (Raíz del sistema)"
+        }
+
+        try {
+            val emulatedStat = StatFs("/storage/emulated/0")
+            val emulatedTotal = emulatedStat.totalBytes
+            val emulatedAvail = emulatedStat.availableBytes
+            val emulatedUsed = emulatedTotal - emulatedAvail
+            val emulatedPercent = if (emulatedTotal > 0) ((emulatedUsed * 100) / emulatedTotal).toInt() else 80
+            progressInternalStorage.progress = emulatedPercent
+            val emulatedUsedStr = Formatter.formatFileSize(this, emulatedUsed)
+            val emulatedAvailStr = Formatter.formatFileSize(this, emulatedAvail)
+            tvInternalStorageStats.text = "$emulatedUsedStr usado, $emulatedAvailStr disponible ($emulatedPercent%)"
+        } catch (e: Exception) {
+            tvInternalStorageStats.text = "/storage/emulated/0"
+        }
+    }
+
+    private fun showMTMoreMenu(anchor: View) {
+        val popup = PopupMenu(this, anchor)
+        popup.inflate(R.menu.mt_overflow_menu)
+        try {
+            val field = popup.javaClass.getDeclaredField("mPopup")
+            field.isAccessible = true
+            val menuPopupHelper = field.get(popup) as MenuPopupHelper
+            menuPopupHelper.setForceShowIcon(true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.mt_menu_refresh -> {
+                    activeFragment.reload()
+                    true
+                }
+                R.id.mt_menu_search -> {
+                    showSearchDialog()
+                    true
+                }
+                R.id.mt_menu_select_all -> {
+                    activeFragment.selectAllFiles()
+                    true
+                }
+                R.id.mt_menu_filter -> {
+                    showSearchDialog()
+                    true
+                }
+                R.id.mt_menu_sort -> {
+                    activeFragment.showSortOptionsDialog()
+                    true
+                }
+                R.id.mt_menu_terminal -> {
+                    activeFragment.openTerminal()
+                    true
+                }
+                R.id.mt_menu_hidden_files -> {
+                    val current = Settings.FILE_LIST_SHOW_HIDDEN_FILES.valueCompat
+                    Settings.FILE_LIST_SHOW_HIDDEN_FILES.putValue(!current, this)
+                    true
+                }
+                R.id.mt_menu_add_bookmark -> {
+                    activeFragment.addBookmarkCurrentPath()
+                    true
+                }
+                R.id.mt_menu_set_as_home -> {
+                    showToast("Ruta fijada como inicio")
+                    true
+                }
+                R.id.mt_menu_swap_windows -> {
+                    btnBottomSwap.performClick()
+                    true
+                }
+                R.id.mt_menu_preferences -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                R.id.mt_menu_exit -> {
+                    finishAffinity()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     private fun setupBottomBarControls() {
@@ -196,8 +370,8 @@ class FileListActivity : AppActivity() {
     private fun setupBackPressedHandler() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (activeFragment.isDrawerOpen()) {
-                    activeFragment.closeDrawer()
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
                     return
                 }
                 if (activeFragment.selectedFiles.isNotEmpty()) {
@@ -241,9 +415,9 @@ class FileListActivity : AppActivity() {
 
     private fun getDiskStats(): String {
         return try {
-            val stat = android.os.StatFs(android.os.Environment.getExternalStorageDirectory().path)
-            val available = android.text.format.Formatter.formatFileSize(this, stat.availableBytes)
-            val total = android.text.format.Formatter.formatFileSize(this, stat.totalBytes)
+            val stat = StatFs(android.os.Environment.getExternalStorageDirectory().path)
+            val available = Formatter.formatFileSize(this, stat.availableBytes)
+            val total = Formatter.formatFileSize(this, stat.totalBytes)
             "Disk: $available/$total"
         } catch (e: Exception) {
             ""

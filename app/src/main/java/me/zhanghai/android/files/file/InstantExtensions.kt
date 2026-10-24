@@ -32,3 +32,8 @@ fun Instant.formatLong(): String =
     DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
         .withZone(ZoneId.systemDefault())
         .format(this)
+
+private val MT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm")
+    .withZone(ZoneId.systemDefault())
+
+fun Instant.formatMtDate(): String = MT_DATE_FORMATTER.format(this)

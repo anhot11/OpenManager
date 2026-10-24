@@ -656,8 +656,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     private fun getSubtitle(files: List<FileItem>): String {
-        val directoryCount = files.count { it.attributes.isDirectory }
-        val fileCount = files.size - directoryCount
+        val regularFiles = files.filterNot { it.isParentDirectoryItem }
+        val directoryCount = regularFiles.count { it.attributes.isDirectory }
+        val fileCount = regularFiles.size - directoryCount
         return "Carpetas: $directoryCount  Archivos: $fileCount"
     }
 
@@ -719,13 +720,56 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         menuBinding.viewSortPathSpecificItem.isChecked = viewModel.isViewSortPathSpecific
     }
 
-    fun navigateUp() {
+    override fun navigateUp() {
         collapseSearchView()
         val pathStr = currentPath.toString()
         if (pathStr == "/storage/emulated/0" || pathStr == "/storage/emulated/0/") {
             return
         }
         viewModel.navigateUp()
+    }
+
+    fun reload() {
+        viewModel.reload()
+    }
+
+    fun openTerminal() {
+        openInTerminal()
+    }
+
+    fun addBookmarkCurrentPath() {
+        addBookmark(currentPath)
+    }
+
+    fun showSortOptionsDialog() {
+        val options = arrayOf(
+            "Nombre",
+            "Tipo",
+            "Tamaño",
+            "Fecha de modificación",
+            "Invertir orden (Asc/Desc)",
+            "Carpetas primero"
+        )
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Ordenar")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> viewModel.setSortBy(By.NAME)
+                    1 -> viewModel.setSortBy(By.TYPE)
+                    2 -> viewModel.setSortBy(By.SIZE)
+                    3 -> viewModel.setSortBy(By.LAST_MODIFIED)
+                    4 -> {
+                        val newOrder = if (viewModel.sortOptions.order == Order.ASCENDING) {
+                            Order.DESCENDING
+                        } else {
+                            Order.ASCENDING
+                        }
+                        viewModel.setSortOrder(newOrder)
+                    }
+                    5 -> viewModel.setSortDirectoriesFirst(!viewModel.sortOptions.isDirectoriesFirst)
+                }
+            }
+            .show()
     }
 
     private fun showNavigateToPathDialog() {
@@ -754,7 +798,13 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         if (!Settings.FILE_LIST_SHOW_HIDDEN_FILES.valueCompat) {
             files = files.filterNot { it.isHidden }
         }
-        adapter.replaceListAndIsSearching(files, viewModel.searchState.isSearching)
+        val isSearching = viewModel.searchState.isSearching
+        val displayFiles = if (!isSearching && currentPath.parent != null) {
+            listOf(createParentDirectoryItem(currentPath)) + files
+        } else {
+            files
+        }
+        adapter.replaceListAndIsSearching(displayFiles, isSearching)
     }
 
     private fun updateShowHiddenFilesMenuItem() {
