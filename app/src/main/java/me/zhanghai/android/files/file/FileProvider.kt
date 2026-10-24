@@ -400,9 +400,18 @@ val Path.fileProviderUri: Uri
 
 private val Uri.fileProviderPath: Path
     get() {
-        // Strip the prepended slash. A slash is always prepended because our Uri path starts with
-        // our URI scheme, which can never start with a slash; but our Uri has an authority so its
-        // path must start with a slash.
-        val uriPath = Uri.decode(path).substring(1)
-        return Paths.get(URI.create(uriPath))
+        val decoded = Uri.decode(path).removePrefix("/")
+        return try {
+            if (decoded.startsWith("file/")) {
+                Paths.get("/" + decoded.removePrefix("file/"))
+            } else if (decoded.startsWith("file://")) {
+                Paths.get(URI.create(decoded))
+            } else if (!decoded.contains("://")) {
+                Paths.get(if (decoded.startsWith("/")) decoded else "/$decoded")
+            } else {
+                Paths.get(URI.create(decoded))
+            }
+        } catch (e: Exception) {
+            Paths.get(decoded)
+        }
     }

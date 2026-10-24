@@ -879,6 +879,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     private fun updateOverlayToolbar() {
+        if (activity is FileListActivity) {
+            binding.overlayToolbar.isVisible = false
+            return
+        }
         val files = viewModel.selectedFiles
         if (files.isEmpty()) {
             if (overlayActionMode.isActive) {
@@ -1548,6 +1552,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         if (!this::binding.isInitialized) return
         binding.toolbar.isVisible = !enabled
         binding.speedDialView.isVisible = !enabled
+        binding.overlayToolbar.isVisible = false
     }
 
     override val currentPath: Path
