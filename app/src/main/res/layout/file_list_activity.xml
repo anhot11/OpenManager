@@ -88,7 +88,7 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <FrameLayout
+        <me.zhanghai.android.files.ui.ExactFrameLayout
             android:id="@+id/containerPanelA"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -101,7 +101,7 @@
             android:background="?android:textColorSecondary"
             android:alpha="0.2" />
 
-        <FrameLayout
+        <me.zhanghai.android.files.ui.ExactFrameLayout
             android:id="@+id/containerPanelB"
             android:layout_width="0dp"
             android:layout_height="match_parent"
