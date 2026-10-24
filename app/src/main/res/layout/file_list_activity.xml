@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ OpenManager - MT-Style Dual Pane Activity Layout
-  ~ Unified Top Toolbar, Pill Navigation Tabs, Split Panels, and MT-Style Bottom Bar.
+  ~ Unified Top Toolbar, Split Panels, and MT-Style Bottom Bar.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,15 +9,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#151515"
     android:fitsSystemWindows="true">
 
     <!-- 1. Top Unified MT-Style Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/mainToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:background="?colorAppBarSurface"
+        android:layout_height="56dp"
+        android:background="#151515"
         app:navigationIcon="@drawable/menu_icon_control_normal_24dp"
+        app:navigationIconTint="@android:color/white"
         app:navigationContentDescription="@string/open_navigation_drawer"
         app:popupTheme="?actionBarPopupTheme">
 
@@ -34,10 +36,10 @@
                 android:layout_height="wrap_content"
                 android:singleLine="true"
                 android:ellipsize="middle"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="?android:textColorPrimary"
-                android:text="/storage/emulated/0" />
+                android:textColor="#FFFFFF"
+                android:text="/storage/emulated/0/" />
 
             <TextView
                 android:id="@+id/tvStatsSubtitle"
@@ -46,83 +48,12 @@
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:textSize="11sp"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="#909090"
                 android:text="Cargando..." />
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- 2. MT-Style Panel Tab Control Bar -->
-    <LinearLayout
-        android:id="@+id/dualPaneHeader"
-        android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="?colorAppBarSurface"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp">
-
-        <!-- Panel A Button / Tab -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPanelA"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="30dp"
-            android:layout_weight="1"
-            android:text="Panel A"
-            android:textSize="11sp"
-            android:singleLine="true"
-            android:ellipsize="middle"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:cornerRadius="15dp"
-            app:icon="@drawable/file_directory_icon"
-            app:iconSize="13dp" />
-
-        <!-- Swap / Synchronize Button (⇄) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSwap"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="36dp"
-            android:layout_height="30dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:contentDescription="Intercambiar Paneles"
-            app:icon="@drawable/reset_icon_white_24dp"
-            app:iconSize="15dp" />
-
-        <!-- Dual Pane Toggle Button (◫ Dual A|B) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDual"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:text="◫ Dual"
-            android:textSize="11sp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:cornerRadius="15dp" />
-
-        <!-- Panel B Button / Tab -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPanelB"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="30dp"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:text="Panel B"
-            android:textSize="11sp"
-            android:singleLine="true"
-            android:ellipsize="middle"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:cornerRadius="15dp"
-            app:icon="@drawable/file_directory_icon"
-            app:iconSize="13dp" />
-    </LinearLayout>
-
-    <!-- 3. Panels Container (Horizontal Split for Dual Pane) -->
+    <!-- 2. Panels Container (Horizontal Split for Dual Pane) -->
     <LinearLayout
         android:id="@+id/panelsContainer"
         android:layout_width="match_parent"
@@ -134,32 +65,33 @@
             android:id="@+id/containerPanelA"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:background="#363636" />
 
         <View
             android:id="@+id/paneDivider"
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:background="?android:textColorSecondary"
-            android:alpha="0.2" />
+            android:background="#1D1D1D" />
 
         <me.zhanghai.android.files.ui.ExactFrameLayout
             android:id="@+id/containerPanelB"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:background="#242424" />
     </LinearLayout>
 
-    <!-- 4. MT-Style Bottom Bar -->
+    <!-- 3. MT-Style Bottom Bar -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="?colorAppBarSurface">
+        android:background="#202020">
 
-        <!-- Normal Mode: [<] [⇄] [+] [🔍] [↑] -->
+        <!-- Normal Mode: [<] [>] [+] [⇆] [↑] -->
         <LinearLayout
             android:id="@+id/bottomBarNormal"
             android:layout_width="match_parent"
@@ -173,19 +105,19 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/arrow_back_icon_white_24dp"
+                android:src="@drawable/arrow_back_chevron_white_24dp"
                 android:contentDescription="Atrás"
-                app:tint="?android:textColorPrimary" />
+                app:tint="@android:color/white" />
 
             <ImageButton
-                android:id="@+id/btnBottomSwap"
+                android:id="@+id/btnBottomForward"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/reset_icon_white_24dp"
-                android:contentDescription="Intercambiar Paneles"
-                app:tint="?android:textColorPrimary" />
+                android:src="@drawable/arrow_forward_chevron_white_24dp"
+                android:contentDescription="Adelante"
+                app:tint="@android:color/white" />
 
             <ImageButton
                 android:id="@+id/btnBottomAdd"
@@ -195,17 +127,17 @@
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/add_icon_white_24dp"
                 android:contentDescription="Nuevo"
-                app:tint="?colorPrimary" />
+                app:tint="@android:color/white" />
 
             <ImageButton
-                android:id="@+id/btnBottomSearch"
+                android:id="@+id/btnBottomSwap"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/search_icon_control_normal_24dp"
-                android:contentDescription="Buscar"
-                app:tint="?android:textColorPrimary" />
+                android:src="@drawable/ic_mt_swap"
+                android:contentDescription="Intercambiar Paneles"
+                app:tint="@android:color/white" />
 
             <ImageButton
                 android:id="@+id/btnBottomUp"
@@ -215,10 +147,10 @@
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/arrow_up_icon_white_24dp"
                 android:contentDescription="Subir Carpeta"
-                app:tint="?android:textColorPrimary" />
+                app:tint="@android:color/white" />
         </LinearLayout>
 
-        <!-- Selection Mode: [Todo] [Copiar ->] [Mover ->] [Eliminar] [Más] -->
+        <!-- Selection Mode: [Todo] [Copiar ->] [Mover ->] [Borrar] [Más...] -->
         <LinearLayout
             android:id="@+id/bottomBarSelection"
             android:layout_width="match_parent"
@@ -240,6 +172,7 @@
                 android:insetRight="0dp"
                 android:singleLine="true"
                 android:text="Todo"
+                android:textColor="#FFFFFF"
                 android:textSize="11sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -255,7 +188,7 @@
                 android:insetRight="0dp"
                 android:singleLine="true"
                 android:text="Copiar ➔"
-                android:textColor="?colorPrimary"
+                android:textColor="#42A5F5"
                 android:textSize="11sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -271,7 +204,7 @@
                 android:insetRight="0dp"
                 android:singleLine="true"
                 android:text="Mover ➔"
-                android:textColor="?colorPrimary"
+                android:textColor="#42A5F5"
                 android:textSize="11sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -287,7 +220,7 @@
                 android:insetRight="0dp"
                 android:singleLine="true"
                 android:text="Borrar"
-                android:textColor="@color/material_red_500"
+                android:textColor="#EF5350"
                 android:textSize="11sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -303,6 +236,7 @@
                 android:insetRight="0dp"
                 android:singleLine="true"
                 android:text="Más..."
+                android:textColor="#FFFFFF"
                 android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>

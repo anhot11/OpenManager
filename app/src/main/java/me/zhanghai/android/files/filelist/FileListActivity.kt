@@ -8,8 +8,6 @@ package me.zhanghai.android.files.filelist
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -31,7 +29,6 @@ import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.extraPath
-import me.zhanghai.android.files.util.getColorByAttr
 import me.zhanghai.android.files.util.putArgs
 
 class FileListActivity : AppActivity() {
@@ -43,11 +40,6 @@ class FileListActivity : AppActivity() {
     private lateinit var tvPathTitle: TextView
     private lateinit var tvStatsSubtitle: TextView
 
-    private lateinit var btnPanelA: MaterialButton
-    private lateinit var btnPanelB: MaterialButton
-    private lateinit var btnDual: MaterialButton
-    private lateinit var btnSwap: MaterialButton
-
     private lateinit var containerA: FrameLayout
     private lateinit var containerB: FrameLayout
     private lateinit var paneDivider: View
@@ -56,9 +48,9 @@ class FileListActivity : AppActivity() {
     private lateinit var bottomBarSelection: LinearLayout
 
     private lateinit var btnBottomBack: ImageButton
-    private lateinit var btnBottomSwap: ImageButton
+    private lateinit var btnBottomForward: ImageButton
     private lateinit var btnBottomAdd: ImageButton
-    private lateinit var btnBottomSearch: ImageButton
+    private lateinit var btnBottomSwap: ImageButton
     private lateinit var btnBottomUp: ImageButton
 
     private lateinit var btnSelectAll: MaterialButton
@@ -67,7 +59,6 @@ class FileListActivity : AppActivity() {
     private lateinit var btnDeleteSelection: MaterialButton
     private lateinit var btnMoreSelection: MaterialButton
 
-    private var isDualPane = true
     private var activePanelIndex = 0 // 0 = Panel A, 1 = Panel B
 
     val activeFragment: FileListFragment
@@ -90,22 +81,20 @@ class FileListActivity : AppActivity() {
         tvPathTitle = findViewById(R.id.tvPathTitle)
         tvStatsSubtitle = findViewById(R.id.tvStatsSubtitle)
 
-        btnPanelA = findViewById(R.id.btnPanelA)
-        btnPanelB = findViewById(R.id.btnPanelB)
-        btnDual = findViewById(R.id.btnDual)
-        btnSwap = findViewById(R.id.btnSwap)
-
         containerA = findViewById(R.id.containerPanelA)
         containerB = findViewById(R.id.containerPanelB)
         paneDivider = findViewById(R.id.paneDivider)
+
+        containerA.setOnClickListener { onPanelFocused(fragmentA) }
+        containerB.setOnClickListener { onPanelFocused(fragmentB) }
 
         bottomBarNormal = findViewById(R.id.bottomBarNormal)
         bottomBarSelection = findViewById(R.id.bottomBarSelection)
 
         btnBottomBack = findViewById(R.id.btnBottomBack)
-        btnBottomSwap = findViewById(R.id.btnBottomSwap)
+        btnBottomForward = findViewById(R.id.btnBottomForward)
         btnBottomAdd = findViewById(R.id.btnBottomAdd)
-        btnBottomSearch = findViewById(R.id.btnBottomSearch)
+        btnBottomSwap = findViewById(R.id.btnBottomSwap)
         btnBottomUp = findViewById(R.id.btnBottomUp)
 
         btnSelectAll = findViewById(R.id.btnSelectAll)
@@ -126,51 +115,23 @@ class FileListActivity : AppActivity() {
         } else {
             fragmentA = supportFragmentManager.findFragmentByTag(TAG_PANEL_A) as FileListFragment
             fragmentB = supportFragmentManager.findFragmentByTag(TAG_PANEL_B) as FileListFragment
-            isDualPane = savedInstanceState.getBoolean(KEY_IS_DUAL_PANE, true)
             activePanelIndex = savedInstanceState.getInt(KEY_ACTIVE_PANEL, 0)
         }
 
-        setupDualPaneControls()
         setupBottomBarControls()
         setupBackPressedHandler()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        applyPaneVisibility()
+        syncPanelColors()
+        updateTopBarInfo()
+        syncBottomBarSelectionState()
         observePanelPathsAndStats()
     }
 
-    private fun setupDualPaneControls() {
-        btnPanelA.setOnClickListener {
-            onPanelFocused(fragmentA)
-            applyPaneVisibility()
-        }
-
-        btnPanelB.setOnClickListener {
-            onPanelFocused(fragmentB)
-            applyPaneVisibility()
-        }
-
-        btnDual.setOnClickListener {
-            isDualPane = !isDualPane
-            applyPaneVisibility()
-        }
-
-        btnSwap.setOnClickListener {
-            try {
-                val pathA = fragmentA.currentPath
-                val pathB = fragmentB.currentPath
-                fragmentA.navigateTo(pathB)
-                fragmentB.navigateTo(pathA)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
     private fun setupBottomBarControls() {
-        // Normal Mode Buttons
+        // Normal Mode Buttons: [<] [>] [+] [⇆] [↑]
         btnBottomBack.setOnClickListener {
             if (activeFragment.canNavigateUp) {
                 activeFragment.navigateUp()
@@ -179,16 +140,23 @@ class FileListActivity : AppActivity() {
             }
         }
 
-        btnBottomSwap.setOnClickListener {
-            btnSwap.performClick()
+        btnBottomForward.setOnClickListener {
+            // Forward navigation placeholder / no-op
         }
 
         btnBottomAdd.setOnClickListener {
             showCreateDialog()
         }
 
-        btnBottomSearch.setOnClickListener {
-            showSearchDialog()
+        btnBottomSwap.setOnClickListener {
+            try {
+                val pathA = fragmentA.currentPath
+                val pathB = fragmentB.currentPath
+                fragmentA.navigateTo(pathB)
+                fragmentB.navigateTo(pathA)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         btnBottomUp.setOnClickListener {
@@ -251,7 +219,7 @@ class FileListActivity : AppActivity() {
         val newIndex = if (fragment == fragmentA) 0 else 1
         if (activePanelIndex != newIndex) {
             activePanelIndex = newIndex
-            updateTabStyles()
+            syncPanelColors()
             updateTopBarInfo()
             syncBottomBarSelectionState()
             fragmentA.updateBackCallbackState()
@@ -260,55 +228,14 @@ class FileListActivity : AppActivity() {
         }
     }
 
-    private fun applyPaneVisibility() {
-        if (isDualPane) {
-            containerA.visibility = View.VISIBLE
-            containerB.visibility = View.VISIBLE
-            paneDivider.visibility = View.VISIBLE
-            btnDual.text = "◫ Dual (A|B)"
-            btnDual.alpha = 1.0f
-        } else {
-            paneDivider.visibility = View.GONE
-            btnDual.text = "◫ Dividir"
-            btnDual.alpha = 0.7f
-            if (activePanelIndex == 0) {
-                containerA.visibility = View.VISIBLE
-                containerB.visibility = View.GONE
-            } else {
-                containerA.visibility = View.GONE
-                containerB.visibility = View.VISIBLE
-            }
-        }
-        updateTabStyles()
-        updateTopBarInfo()
-        syncBottomBarSelectionState()
-    }
-
-    private fun updateTabStyles() {
-        val primaryColor = getColorByAttr(androidx.appcompat.R.attr.colorPrimary)
-        val onPrimaryColor = getColorByAttr(com.google.android.material.R.attr.colorOnPrimary)
-        val textSecondaryColor = getColorByAttr(android.R.attr.textColorSecondary)
-
+    private fun syncPanelColors() {
+        // Sampled from MT Manager: Active focused panel = #363636, Inactive panel = #242424
         if (activePanelIndex == 0) {
-            btnPanelA.backgroundTintList = ColorStateList.valueOf(primaryColor)
-            btnPanelA.setTextColor(onPrimaryColor)
-            btnPanelA.iconTint = ColorStateList.valueOf(onPrimaryColor)
-            btnPanelA.alpha = 1.0f
-
-            btnPanelB.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
-            btnPanelB.setTextColor(textSecondaryColor)
-            btnPanelB.iconTint = ColorStateList.valueOf(textSecondaryColor)
-            btnPanelB.alpha = 0.7f
+            containerA.setBackgroundColor(0xFF363636.toInt())
+            containerB.setBackgroundColor(0xFF242424.toInt())
         } else {
-            btnPanelA.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
-            btnPanelA.setTextColor(textSecondaryColor)
-            btnPanelA.iconTint = ColorStateList.valueOf(textSecondaryColor)
-            btnPanelA.alpha = 0.7f
-
-            btnPanelB.backgroundTintList = ColorStateList.valueOf(primaryColor)
-            btnPanelB.setTextColor(onPrimaryColor)
-            btnPanelB.iconTint = ColorStateList.valueOf(onPrimaryColor)
-            btnPanelB.alpha = 1.0f
+            containerA.setBackgroundColor(0xFF242424.toInt())
+            containerB.setBackgroundColor(0xFF363636.toInt())
         }
     }
 
@@ -317,7 +244,8 @@ class FileListActivity : AppActivity() {
         if (!activeFragment.isAdded) return
         try {
             val path = activeFragment.currentPath
-            tvPathTitle.text = path.toString()
+            val pathStr = path.toString()
+            tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
             val stats = activeFragment.currentStatsSubtitle
             tvStatsSubtitle.text = if (stats.isNotEmpty()) stats else "Listo"
         } catch (e: Exception) {
@@ -341,15 +269,11 @@ class FileListActivity : AppActivity() {
 
     private fun observePanelPathsAndStats() {
         fragmentA.observeCurrentPath(this) { path ->
-            val name = path.fileName?.toString() ?: "Raíz"
-            btnPanelA.text = "A: $name"
             if (activePanelIndex == 0) {
                 updateTopBarInfo()
             }
         }
         fragmentB.observeCurrentPath(this) { path ->
-            val name = path.fileName?.toString() ?: "Raíz"
-            btnPanelB.text = "B: $name"
             if (activePanelIndex == 1) {
                 updateTopBarInfo()
             }
@@ -357,13 +281,15 @@ class FileListActivity : AppActivity() {
 
         fragmentA.onPathOrStatsChanged = { path, stats ->
             if (activePanelIndex == 0) {
-                tvPathTitle.text = path.toString()
+                val pathStr = path.toString()
+                tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
                 tvStatsSubtitle.text = stats
             }
         }
         fragmentB.onPathOrStatsChanged = { path, stats ->
             if (activePanelIndex == 1) {
-                tvPathTitle.text = path.toString()
+                val pathStr = path.toString()
+                tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
                 tvStatsSubtitle.text = stats
             }
         }
@@ -385,9 +311,9 @@ class FileListActivity : AppActivity() {
     }
 
     private fun showCreateDialog() {
-        val items = arrayOf("Crear nueva carpeta", "Crear nuevo archivo")
+        val items = arrayOf("Nueva carpeta", "Nuevo archivo")
         MaterialAlertDialogBuilder(this)
-            .setTitle("Nuevo elemento")
+            .setTitle("Nuevo")
             .setItems(items) { _, which ->
                 if (which == 0) {
                     activeFragment.showCreateDirectoryDialog()
@@ -398,7 +324,7 @@ class FileListActivity : AppActivity() {
             .show()
     }
 
-    private fun showSearchDialog() {
+    fun showSearchDialog() {
         val input = EditText(this).apply {
             hint = "Nombre del archivo o extensión"
             setSingleLine()
@@ -439,7 +365,6 @@ class FileListActivity : AppActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(KEY_IS_DUAL_PANE, isDualPane)
         outState.putInt(KEY_ACTIVE_PANEL, activePanelIndex)
     }
 
@@ -453,7 +378,6 @@ class FileListActivity : AppActivity() {
     companion object {
         private const val TAG_PANEL_A = "panel_a"
         private const val TAG_PANEL_B = "panel_b"
-        private const val KEY_IS_DUAL_PANE = "is_dual_pane"
         private const val KEY_ACTIVE_PANEL = "active_panel"
 
         fun createViewIntent(path: Path): Intent =

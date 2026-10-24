@@ -470,6 +470,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val flActivity = activity as? FileListActivity
+        if (flActivity != null && flActivity.activeFragment != this) {
+            return false
+        }
         return when (item.itemId) {
             android.R.id.home -> {
                 binding.drawerLayout?.openDrawer(GravityCompat.START)
@@ -653,28 +657,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private fun getSubtitle(files: List<FileItem>): String {
         val directoryCount = files.count { it.attributes.isDirectory }
         val fileCount = files.size - directoryCount
-        val directoryCountText = if (directoryCount > 0) {
-            getQuantityString(
-                R.plurals.file_list_subtitle_directory_count_format, directoryCount, directoryCount
-            )
-        } else {
-            null
-        }
-        val fileCountText = if (fileCount > 0) {
-            getQuantityString(
-                R.plurals.file_list_subtitle_file_count_format, fileCount, fileCount
-            )
-        } else {
-            null
-        }
-        return when {
-            !directoryCountText.isNullOrEmpty() && !fileCountText.isNullOrEmpty() ->
-                (directoryCountText + getString(R.string.file_list_subtitle_separator)
-                    + fileCountText)
-            !directoryCountText.isNullOrEmpty() -> directoryCountText
-            !fileCountText.isNullOrEmpty() -> fileCountText
-            else -> getString(R.string.empty)
-        }
+        return "Carpetas: $directoryCount  Archivos: $fileCount"
     }
 
     private fun onViewTypeChanged(viewType: FileViewType) {
@@ -1553,6 +1536,11 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         binding.toolbar.isVisible = !enabled
         binding.speedDialView.isVisible = !enabled
         binding.overlayToolbar.isVisible = false
+        binding.breadcrumbLayout.isVisible = !enabled
+        binding.appBarLayout.isVisible = !enabled
+        if (enabled) {
+            binding.recyclerView.setPadding(0, 0, 0, 0)
+        }
     }
 
     override val currentPath: Path

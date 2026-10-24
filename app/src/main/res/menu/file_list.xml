@@ -14,17 +14,17 @@
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/search_icon_control_normal_24dp"
-        android:orderInCategory="100"
+        android:orderInCategory="10"
         android:title="@string/search"
         app:actionViewClass="me.zhanghai.android.files.ui.FixQueryChangeSearchView"
-        app:showAsAction="always|collapseActionView" />
+        app:showAsAction="collapseActionView" />
 
     <item
         android:id="@+id/action_view_sort"
         android:icon="@drawable/sort_icon_control_normal_24dp"
-        android:orderInCategory="100"
+        android:orderInCategory="20"
         android:title="@string/file_list_action_view_sort"
-        app:showAsAction="always">
+        app:showAsAction="never">
         <menu>
             <group
                 android:id="@+id/group_view"

@@ -10,33 +10,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/itemLayout"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/two_line_list_item_height"
+    android:layout_height="44dp"
     android:foreground="?selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <FrameLayout
         android:id="@+id/iconLayout"
-        android:layout_width="@dimen/touch_target_size"
-        android:layout_height="@dimen/touch_target_size"
-        android:layout_marginStart="@dimen/screen_edge_margin_minus_4dp"
-        android:layout_marginEnd="@dimen/content_start_from_screen_edge_margin_minus_44dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:clipToPadding="false"
         android:duplicateParentState="true"
-        android:padding="@dimen/touch_target_large_icon_padding">
+        android:padding="2dp">
 
         <me.zhanghai.android.files.ui.DisabledAlphaImageView
             android:id="@+id/iconImage"
-            android:layout_width="@dimen/icon_size"
-            android:layout_height="@dimen/icon_size"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_gravity="center"
             android:duplicateParentState="true"
-            android:scaleType="centerCrop" />
+            android:scaleType="fitCenter" />
 
         <me.zhanghai.android.files.ui.DisabledAlphaImageView
             android:id="@+id/thumbnailImage"
-            android:layout_width="@dimen/large_icon_size"
-            android:layout_height="@dimen/large_icon_size"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:duplicateParentState="true"
             android:scaleType="centerCrop" />
 
@@ -82,7 +82,8 @@
             android:duplicateParentState="true"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
-            android:textAppearance="?textAppearanceListItem" />
+            android:textColor="#EAEAEA"
+            android:textSize="13sp" />
 
         <me.zhanghai.android.files.ui.AutoGoneTextView
             android:id="@+id/descriptionText"
@@ -91,8 +92,8 @@
             android:duplicateParentState="true"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textAppearance="?textAppearanceListItemSecondary"
-            android:textColor="?android:textColorSecondary" />
+            android:textColor="#888888"
+            android:textSize="11sp" />
     </LinearLayout>
 
     <!--

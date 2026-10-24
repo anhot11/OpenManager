@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--
-  ~ Copyright (c) 2018 Hai Zhang <dreaming.in.code.zh@gmail.com>
-  ~ All Rights Reserved.
-  -->
-
-<vector
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
 
+    <!-- Dark rounded badge background matching MT Manager -->
     <path
-        android:fillColor="@color/file_icon_grey"
-        android:pathData="M9.17,6l2,2H20v10L4,18V6H9.17M10,4H4C2.9,4 2.01,4.9 2.01,6L2,18c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2V8c0,-1.1 -0.9,-2 -2,-2h-8L10,4L10,4z" />
+        android:fillColor="#151515"
+        android:pathData="M3,1.5 h18 c1.1,0 2,0.9 2,2 v17 c0,1.1 -0.9,2 -2,2 H3 c-1.1,0 -2,-0.9 -2,-2 V3.5 c0,-1.1 0.9,-2 2,-2 z" />
+
+    <!-- Solid folder silhouette matching MT Manager -->
+    <path
+        android:fillColor="#D8D8D8"
+        android:pathData="M5,6.5 h4.5 l1.8,1.8 H19 c0.6,0 1,0.4 1,1 v7.2 c0,0.6 -0.4,1 -1,1 H5 c-0.6,0 -1,-0.4 -1,-1 V7.5 c0,-0.6 0.4,-1 1,-1 z" />
 </vector>
