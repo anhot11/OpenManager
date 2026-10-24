@@ -625,6 +625,8 @@
     <string name="text_editor_syntax_title">Seleccionar sintaxis</string>
     <string name="text_editor_syntax_changed">Sintaxis: %1$s</string>
     <string name="text_editor_search">Buscar</string>
+    <string name="text_editor_search_previous">Anterior</string>
+    <string name="text_editor_search_next">Siguiente</string>
     <string name="text_editor_replace">Reemplazar</string>
     <string name="text_editor_replace_all">Reemplazar todo</string>
     <string name="text_editor_search_hint">Buscar…</string>

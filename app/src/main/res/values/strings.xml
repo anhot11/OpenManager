@@ -717,6 +717,8 @@
     <string name="text_editor_syntax_title">Select syntax</string>
     <string name="text_editor_syntax_changed">Syntax: %1$s</string>
     <string name="text_editor_search">Search</string>
+    <string name="text_editor_search_previous">Previous</string>
+    <string name="text_editor_search_next">Next</string>
     <string name="text_editor_replace">Replace</string>
     <string name="text_editor_replace_all">Replace all</string>
     <string name="text_editor_search_hint">Search…</string>
