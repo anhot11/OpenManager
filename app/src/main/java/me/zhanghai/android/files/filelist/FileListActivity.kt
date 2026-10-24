@@ -7,6 +7,8 @@ package me.zhanghai.android.files.filelist
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -21,6 +23,7 @@ import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.extraPath
+import me.zhanghai.android.files.util.getColorByAttr
 import me.zhanghai.android.files.util.putArgs
 
 class FileListActivity : AppActivity() {
@@ -87,22 +90,14 @@ class FileListActivity : AppActivity() {
             activePanelIndex = 0
             fragmentA.updateBackCallbackState()
             fragmentB.updateBackCallbackState()
-            if (!isDualPane) {
-                applyPaneVisibility()
-            } else {
-                updateTabStyles()
-            }
+            applyPaneVisibility()
         }
 
         btnPanelB.setOnClickListener {
             activePanelIndex = 1
             fragmentA.updateBackCallbackState()
             fragmentB.updateBackCallbackState()
-            if (!isDualPane) {
-                applyPaneVisibility()
-            } else {
-                updateTabStyles()
-            }
+            applyPaneVisibility()
         }
 
         btnDual.setOnClickListener {
@@ -155,11 +150,29 @@ class FileListActivity : AppActivity() {
     }
 
     private fun updateTabStyles() {
+        val primaryColor = getColorByAttr(androidx.appcompat.R.attr.colorPrimary)
+        val onPrimaryColor = getColorByAttr(com.google.android.material.R.attr.colorOnPrimary)
+        val textSecondaryColor = getColorByAttr(android.R.attr.textColorSecondary)
+
         if (activePanelIndex == 0) {
+            btnPanelA.backgroundTintList = ColorStateList.valueOf(primaryColor)
+            btnPanelA.setTextColor(onPrimaryColor)
+            btnPanelA.iconTint = ColorStateList.valueOf(onPrimaryColor)
             btnPanelA.alpha = 1.0f
-            btnPanelB.alpha = 0.6f
+
+            btnPanelB.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            btnPanelB.setTextColor(textSecondaryColor)
+            btnPanelB.iconTint = ColorStateList.valueOf(textSecondaryColor)
+            btnPanelB.alpha = 0.7f
         } else {
-            btnPanelA.alpha = 0.6f
+            btnPanelA.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            btnPanelA.setTextColor(textSecondaryColor)
+            btnPanelA.iconTint = ColorStateList.valueOf(textSecondaryColor)
+            btnPanelA.alpha = 0.7f
+
+            btnPanelB.backgroundTintList = ColorStateList.valueOf(primaryColor)
+            btnPanelB.setTextColor(onPrimaryColor)
+            btnPanelB.iconTint = ColorStateList.valueOf(onPrimaryColor)
             btnPanelB.alpha = 1.0f
         }
     }

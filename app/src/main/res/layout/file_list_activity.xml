@@ -35,6 +35,7 @@
             android:ellipsize="middle"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            app:cornerRadius="17dp"
             app:icon="@drawable/file_directory_icon"
             app:iconSize="14dp" />
 
@@ -59,12 +60,13 @@
             android:text="◫ Dual"
             android:textSize="11sp"
             android:insetTop="0dp"
-            android:insetBottom="0dp" />
+            android:insetBottom="0dp"
+            app:cornerRadius="17dp" />
 
         <!-- Panel B Button / Tab -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPanelB"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="0dp"
             android:layout_height="34dp"
             android:layout_weight="1"
@@ -75,6 +77,7 @@
             android:ellipsize="middle"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            app:cornerRadius="17dp"
             app:icon="@drawable/file_directory_icon"
             app:iconSize="14dp" />
 
