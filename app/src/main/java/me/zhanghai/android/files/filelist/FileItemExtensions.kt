@@ -155,6 +155,9 @@ private class DummyArchiveRootBasicFileAttributes : BasicFileAttributes {
 }
 
 @Parcelize
+class DummyParentFileKey : Parcelable
+
+@Parcelize
 class DummyParentDirectoryBasicFileAttributes : AbstractBasicFileAttributes() {
     override val lastModifiedTime: FileTime
         get() = FileTime.fromMillis(0)
@@ -167,7 +170,7 @@ class DummyParentDirectoryBasicFileAttributes : AbstractBasicFileAttributes() {
     override val size: Long
         get() = 0
     override val fileKey: Parcelable
-        get() = ".."
+        get() = DummyParentFileKey()
 }
 
 val FileItem.isParentDirectoryItem: Boolean
