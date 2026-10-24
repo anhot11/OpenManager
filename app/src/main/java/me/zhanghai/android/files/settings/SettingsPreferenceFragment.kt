@@ -13,6 +13,8 @@ import me.zhanghai.android.files.theme.custom.ThemeColor
 import me.zhanghai.android.files.theme.night.NightMode
 import me.zhanghai.android.files.theme.night.NightModeHelper
 import me.zhanghai.android.files.ui.PreferenceFragmentCompat
+import me.zhanghai.android.files.util.createIntent
+import me.zhanghai.android.files.util.startActivitySafe
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
     private lateinit var localePreference: LocalePreference
@@ -26,6 +28,53 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
                 val activity = requireActivity() as SettingsActivity
                 activity.setApplicationLocalesPre33(locales)
             }
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_install_shizuku))?.setOnPreferenceClickListener {
+            requireContext().startActivitySafe(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://shizuku.rikka.app/")))
+            true
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_check_for_update))?.setOnPreferenceClickListener {
+            requireContext().startActivitySafe(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/anhot11/OpenManager")))
+            true
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_about_settings))?.setOnPreferenceClickListener {
+            requireContext().startActivitySafe(me.zhanghai.android.files.about.AboutActivity::class.createIntent())
+            true
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_acknowledgement))?.setOnPreferenceClickListener {
+            requireContext().startActivitySafe(me.zhanghai.android.files.about.AboutActivity::class.createIntent())
+            true
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_user_agreement))?.setOnPreferenceClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_user_agreement_title)
+                .setMessage("OpenManager\n\n100% Free & Open Source Software (GPLv3).\n\nOpenManager does not collect, transmit, or share any personal data, analytics, or telemetry. All file operations remain entirely local to your device.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            true
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_cloud_backup))?.setOnPreferenceClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_cloud_backup_title)
+                .setMessage(R.string.settings_cloud_backup_summary)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            true
+        }
+
+        findPreference<androidx.preference.Preference>(getString(R.string.pref_key_cloud_restore))?.setOnPreferenceClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_cloud_restore_title)
+                .setMessage(R.string.settings_cloud_restore_summary)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            true
         }
     }
 

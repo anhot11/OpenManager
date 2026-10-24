@@ -9,70 +9,58 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory android:title="@string/settings_interface_title">
-
-        <me.zhanghai.android.files.settings.LocalePreference
-            android:key="@string/pref_key_locale"
-            android:title="@string/settings_locale_title" />
-
-        <me.zhanghai.android.files.theme.custom.ThemeColorPreference
-            android:key="@string/pref_key_theme_color"
-            android:title="@string/settings_theme_color_title"
-            android:defaultValue="@string/pref_default_value_theme_color"
-            android:dependency="@string/pref_key_material_design_3"
-            android:summary="@string/settings_theme_color_summary" />
+    <!-- 1. STARTUP / INICIO -->
+    <PreferenceCategory
+        android:title="@string/settings_category_startup_title"
+        app:iconSpaceReserved="false">
 
         <SwitchPreferenceCompat
-            android:key="@string/pref_key_material_design_3"
-            android:title="@string/settings_material_design_3_title"
-            android:defaultValue="@bool/pref_default_value_material_design_3"
-            android:disableDependentsState="true" />
-
-        <rikka.preference.SimpleMenuPreference
-            android:key="@string/pref_key_night_mode"
-            android:title="@string/settings_night_mode_title"
-            android:defaultValue="@string/pref_default_value_night_mode"
-            android:entries="@array/settings_night_mode_entries"
-            android:entryValues="@array/pref_entry_values_night_mode"
-            app:useSimpleSummaryProvider="true" />
+            android:key="@string/pref_key_request_root_permission"
+            android:title="@string/settings_request_root_permission_title"
+            android:summary="@string/settings_request_root_permission_summary"
+            android:defaultValue="@bool/pref_default_value_request_root_permission"
+            app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
-            android:key="@string/pref_key_black_night_mode"
-            android:title="@string/settings_black_night_mode"
-            android:defaultValue="@bool/pref_default_value_black_night_mode" />
+            android:key="@string/pref_key_request_shell_permission"
+            android:title="@string/settings_request_shell_permission_title"
+            android:summary="@string/settings_request_shell_permission_summary"
+            android:defaultValue="@bool/pref_default_value_request_shell_permission"
+            app:iconSpaceReserved="false" />
 
-        <SwitchPreferenceCompat
-            android:key="@string/pref_key_file_list_animation"
-            android:title="@string/settings_file_list_animation_title"
-            android:defaultValue="@bool/pref_default_value_file_list_animation" />
+        <EditTextPreference
+            android:key="@string/pref_key_customize_su_command"
+            android:title="@string/settings_customize_su_command_title"
+            android:summary="@string/settings_customize_su_command_summary"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
 
-        <rikka.preference.SimpleMenuPreference
-            android:key="@string/pref_key_file_name_ellipsize"
-            android:title="@string/settings_file_name_ellipsize_title"
-            android:defaultValue="@string/pref_default_value_file_name_ellipsize"
-            android:entries="@array/settings_file_name_ellipsize_entries"
-            android:entryValues="@array/pref_entry_values_file_name_ellipsize"
-            app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/settings_behavior_title">
+        <Preference
+            android:key="@string/pref_key_install_shizuku"
+            android:title="@string/settings_install_shizuku_title"
+            android:summary="@string/settings_install_shizuku_summary"
+            app:iconSpaceReserved="false" />
 
         <me.zhanghai.android.files.settings.DefaultDirectoryPreference
             android:key="@string/pref_key_file_list_default_directory"
-            android:title="@string/settings_default_directory_title"
-            app:useSimpleSummaryProvider="true" />
+            android:title="@string/settings_startup_path_left_title"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
 
-        <me.zhanghai.android.files.settings.StoragesPreference
-            android:title="@string/settings_storages_title"
-            android:summary="@string/settings_storages_summary_empty" />
+        <me.zhanghai.android.files.settings.RightWindowDefaultDirectoryPreference
+            android:key="@string/pref_key_file_list_default_directory_right"
+            android:title="@string/settings_startup_path_right_title"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
 
-        <me.zhanghai.android.files.settings.StandardDirectoriesPreference
-            android:title="@string/settings_standard_directories_title"
-            android:summary="@string/settings_standard_directories_summary_empty" />
-
-        <me.zhanghai.android.files.settings.BookmarkDirectoriesPreference
-            android:title="@string/settings_bookmark_directories_title"
-            android:summary="@string/settings_bookmark_directories_summary_empty" />
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_auto_start_services"
+            android:title="@string/settings_auto_start_services_title"
+            android:defaultValue="@string/pref_default_value_auto_start_services"
+            android:entries="@array/settings_auto_start_services_entries"
+            android:entryValues="@array/pref_entry_values_auto_start_services"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
 
         <me.zhanghai.android.files.settings.RootStrategyPreference
             android:key="@string/pref_key_root_strategy"
@@ -80,13 +68,245 @@
             android:defaultValue="@string/pref_default_value_root_strategy"
             android:entries="@array/settings_root_strategy_entries"
             android:entryValues="@array/pref_entry_values_root_strategy"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 2. APPEARANCE / APARIENCIA -->
+    <PreferenceCategory
+        android:title="@string/settings_category_appearance_title"
+        app:iconSpaceReserved="false">
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_launcher_icon"
+            android:title="@string/settings_launcher_icon_title"
+            android:defaultValue="@string/pref_default_value_launcher_icon"
+            android:entries="@array/settings_launcher_icon_entries"
+            android:entryValues="@array/pref_entry_values_launcher_icon"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <me.zhanghai.android.files.theme.custom.ThemeColorPreference
+            android:key="@string/pref_key_theme_color"
+            android:title="@string/settings_theme_color_title"
+            android:defaultValue="@string/pref_default_value_theme_color"
+            android:summary="@string/settings_theme_color_summary"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_material_design_3"
+            android:title="@string/settings_material_design_3_title"
+            android:defaultValue="@bool/pref_default_value_material_design_3"
+            android:disableDependentsState="true"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_night_mode"
+            android:title="@string/settings_night_mode_title"
+            android:defaultValue="@string/pref_default_value_night_mode"
+            android:entries="@array/settings_night_mode_entries"
+            android:entryValues="@array/pref_entry_values_night_mode"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_black_night_mode"
+            android:title="@string/settings_black_night_mode"
+            android:defaultValue="@bool/pref_default_value_black_night_mode"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_file_list_size"
+            android:title="@string/settings_file_list_size_title"
+            android:defaultValue="@string/pref_default_value_file_list_size"
+            android:entries="@array/settings_file_list_size_entries"
+            android:entryValues="@array/pref_entry_values_file_list_size"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_max_lines_file_name"
+            android:title="@string/settings_max_lines_file_name_title"
+            android:defaultValue="@string/pref_default_value_max_lines_file_name"
+            android:entries="@array/settings_max_lines_file_name_entries"
+            android:entryValues="@array/pref_entry_values_max_lines_file_name"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_file_list_time_preference"
+            android:title="@string/settings_file_list_time_preference_title"
+            android:defaultValue="@string/pref_default_value_file_list_time_preference"
+            android:entries="@array/settings_file_list_time_preference_entries"
+            android:entryValues="@array/pref_entry_values_file_list_time_preference"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_disable_permission_in_file_list"
+            android:title="@string/settings_disable_permission_in_file_list_title"
+            android:summary="@string/settings_disable_permission_in_file_list_summary"
+            android:defaultValue="@bool/pref_default_value_disable_permission_in_file_list"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_date_time_format"
+            android:title="@string/settings_date_time_format_title"
+            android:defaultValue="@string/pref_default_value_date_time_format"
+            android:entries="@array/settings_date_time_format_entries"
+            android:entryValues="@array/pref_entry_values_date_time_format"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_file_list_animation"
+            android:title="@string/settings_file_list_animation_title"
+            android:defaultValue="@bool/pref_default_value_file_list_animation"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_file_name_ellipsize"
+            android:title="@string/settings_file_name_ellipsize_title"
+            android:defaultValue="@string/pref_default_value_file_name_ellipsize"
+            android:entries="@array/settings_file_name_ellipsize_entries"
+            android:entryValues="@array/pref_entry_values_file_name_ellipsize"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 3. GENERAL -->
+    <PreferenceCategory
+        android:title="@string/settings_category_general_title"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_generate_backup_file"
+            android:title="@string/settings_generate_backup_file_title"
+            android:summary="@string/settings_generate_backup_file_summary"
+            android:defaultValue="@bool/pref_default_value_generate_backup_file"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_preserve_file_time"
+            android:title="@string/settings_preserve_file_time_title"
+            android:summary="@string/settings_preserve_file_time_summary"
+            android:defaultValue="@bool/pref_default_value_preserve_file_time"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_enable_input_box_favorites"
+            android:title="@string/settings_enable_input_box_favorites_title"
+            android:summary="@string/settings_enable_input_box_favorites_summary"
+            android:defaultValue="@bool/pref_default_value_enable_input_box_favorites"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_sort_file_menu"
+            android:title="@string/settings_sort_file_menu_title"
+            android:summary="@string/settings_sort_file_menu_summary"
+            app:iconSpaceReserved="false" />
+
+        <me.zhanghai.android.files.settings.StoragesPreference
+            android:title="@string/settings_storages_title"
+            android:summary="@string/settings_storages_summary_empty"
+            app:iconSpaceReserved="false" />
+
+        <me.zhanghai.android.files.settings.StandardDirectoriesPreference
+            android:title="@string/settings_standard_directories_title"
+            android:summary="@string/settings_standard_directories_summary_empty"
+            app:iconSpaceReserved="false" />
 
         <me.zhanghai.android.files.settings.CharsetPreference
             android:key="@string/pref_key_archive_file_name_encoding"
             android:title="@string/settings_archive_file_name_encoding_title"
             android:defaultValue="@string/pref_default_value_archive_file_name_encoding"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <EditTextPreference
+            android:key="@string/pref_key_custom_openmanager_dir"
+            android:title="@string/settings_custom_openmanager_dir_title"
+            android:summary="@string/settings_custom_openmanager_dir_summary"
+            android:defaultValue="@string/pref_default_value_custom_openmanager_dir"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 4. RECYCLE BIN / PAPELERA DE RECICLAJE -->
+    <PreferenceCategory
+        android:title="@string/settings_category_recycle_bin_title"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_enable_recycle_bin"
+            android:title="@string/settings_enable_recycle_bin_title"
+            android:summary="@string/settings_enable_recycle_bin_summary"
+            android:defaultValue="@bool/pref_default_value_enable_recycle_bin"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_move_to_recycle_bin_default"
+            android:title="@string/settings_move_to_recycle_bin_default_title"
+            android:summary="@string/settings_move_to_recycle_bin_default_summary"
+            android:defaultValue="@bool/pref_default_value_move_to_recycle_bin_default"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_auto_clean_recycle_bin"
+            android:title="@string/settings_auto_clean_recycle_bin_title"
+            android:defaultValue="@string/pref_default_value_auto_clean_recycle_bin"
+            android:entries="@array/settings_auto_clean_recycle_bin_entries"
+            android:entryValues="@array/pref_entry_values_auto_clean_recycle_bin"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_show_deletion_warning"
+            android:title="@string/settings_show_deletion_warning_title"
+            android:summary="@string/settings_show_deletion_warning_summary"
+            android:defaultValue="@bool/pref_default_value_show_deletion_warning"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 5. INSTALLATION / INSTALACIÓN -->
+    <PreferenceCategory
+        android:title="@string/settings_category_installation_title"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_apk_installation_verification"
+            android:title="@string/settings_apk_installation_verification_title"
+            android:summary="@string/settings_apk_installation_verification_summary"
+            android:defaultValue="@bool/pref_default_value_apk_installation_verification"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_apk_prevents_deletion"
+            android:title="@string/settings_apk_prevents_deletion_title"
+            android:summary="@string/settings_apk_prevents_deletion_summary"
+            android:defaultValue="@bool/pref_default_value_apk_prevents_deletion"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_double_confirmation_apk"
+            android:title="@string/settings_double_confirmation_apk_title"
+            android:summary="@string/settings_double_confirmation_apk_summary"
+            android:defaultValue="@bool/pref_default_value_double_confirmation_apk"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_use_shizuku_install"
+            android:title="@string/settings_use_shizuku_install_title"
+            android:summary="@string/settings_use_shizuku_install_summary"
+            android:defaultValue="@bool/pref_default_value_use_shizuku_install"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_use_root_install"
+            android:title="@string/settings_use_root_install_title"
+            android:summary="@string/settings_use_root_install_summary"
+            android:defaultValue="@bool/pref_default_value_use_root_install"
+            app:iconSpaceReserved="false" />
 
         <rikka.preference.SimpleMenuPreference
             android:key="@string/pref_key_open_apk_default_action"
@@ -94,18 +314,181 @@
             android:defaultValue="@string/pref_default_value_open_apk_default_action"
             android:entries="@array/settings_open_apk_default_action_entries"
             android:entryValues="@array/pref_entry_values_open_apk_default_action"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_installation_priority_description"
+            android:title="@string/settings_installation_priority_title"
+            android:summary="@string/settings_installation_priority_summary"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 6. BOOKMARKS & BOTTOM BAR / MARCADORES Y BARRA INFERIOR -->
+    <PreferenceCategory
+        android:title="@string/settings_category_bookmarks_title"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_show_bookmarks_sidebar"
+            android:title="@string/settings_show_bookmarks_sidebar_title"
+            android:summary="@string/settings_show_bookmarks_sidebar_summary"
+            android:defaultValue="@bool/pref_default_value_show_bookmarks_sidebar"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_add_bookmarks_top"
+            android:title="@string/settings_add_bookmarks_top_title"
+            android:summary="@string/settings_add_bookmarks_top_summary"
+            android:defaultValue="@bool/pref_default_value_add_bookmarks_top"
+            app:iconSpaceReserved="false" />
+
+        <me.zhanghai.android.files.settings.BookmarkDirectoriesPreference
+            android:title="@string/settings_bookmark_directories_title"
+            android:summary="@string/settings_bookmark_directories_summary_empty"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_bookmark_swipe_aware"
+            android:title="@string/settings_bookmark_swipe_aware_title"
+            android:summary="@string/settings_bookmark_swipe_aware_summary"
+            android:defaultValue="@bool/pref_default_value_bookmark_swipe_aware"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_add_bottom_margin"
+            android:title="@string/settings_add_bottom_margin_title"
+            android:summary="@string/settings_add_bottom_margin_summary"
+            android:defaultValue="@bool/pref_default_value_add_bottom_margin"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_bottom_margin_size"
+            android:title="@string/settings_bottom_margin_size_title"
+            android:defaultValue="@string/pref_default_value_bottom_margin_size"
+            android:entries="@array/settings_bottom_margin_size_entries"
+            android:entryValues="@array/pref_entry_values_bottom_margin_size"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 7. EXTERNAL STORAGE / ALMACENAMIENTO EXTERNO -->
+    <PreferenceCategory
+        android:title="@string/settings_category_external_storage_title"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_load_thumbnails_external"
+            android:title="@string/settings_load_thumbnails_external_title"
+            android:summary="@string/settings_load_thumbnails_external_summary"
+            android:defaultValue="@bool/pref_default_value_load_thumbnails_external"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_optimize_external_transfer"
+            android:title="@string/settings_optimize_external_transfer_title"
+            android:summary="@string/settings_optimize_external_transfer_summary"
+            android:defaultValue="@bool/pref_default_value_optimize_external_transfer"
+            app:iconSpaceReserved="false" />
 
         <SwitchPreferenceCompat
             android:key="@string/pref_key_show_pdf_thumbnail_pre_28"
             android:title="@string/settings_show_pdf_thumbnail_pre_28_title"
             android:defaultValue="@bool/pref_default_value_show_pdf_thumbnail_pre_28"
             android:summary="@string/settings_show_pdf_thumbnail_pre_28_summary"
-            app:isPreferenceVisible="@bool/pref_visible_show_pdf_thumbnail_pre_28" />
+            app:isPreferenceVisible="@bool/pref_visible_show_pdf_thumbnail_pre_28"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 8. NETWORK STORAGE / ALMACENAMIENTO EN RED -->
+    <PreferenceCategory
+        android:title="@string/settings_category_network_storage_title"
+        app:iconSpaceReserved="false">
 
         <SwitchPreferenceCompat
             android:key="@string/pref_key_read_remote_files_for_thumbnail"
             android:title="@string/settings_read_remote_files_for_thumbnail_title"
-            android:defaultValue="@bool/pref_default_value_read_remote_files_for_thumbnail" />
+            android:summary="@string/settings_load_thumbnails_network_summary"
+            android:defaultValue="@bool/pref_default_value_read_remote_files_for_thumbnail"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_network_wifi_only"
+            android:title="@string/settings_network_wifi_only_title"
+            android:summary="@string/settings_network_wifi_only_summary"
+            android:defaultValue="@bool/pref_default_value_network_wifi_only"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_network_image_size_limit"
+            android:title="@string/settings_network_image_size_limit_title"
+            android:defaultValue="@string/pref_default_value_network_image_size_limit"
+            android:entries="@array/settings_network_image_size_limit_entries"
+            android:entryValues="@array/pref_entry_values_network_image_size_limit"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <rikka.preference.SimpleMenuPreference
+            android:key="@string/pref_key_network_loading_time_limit"
+            android:title="@string/settings_network_loading_time_limit_title"
+            android:defaultValue="@string/pref_default_value_network_loading_time_limit"
+            android:entries="@array/settings_network_loading_time_limit_entries"
+            android:entryValues="@array/pref_entry_values_network_loading_time_limit"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
+
+    <!-- 9. CLOUD BACKUP / COPIA DE SEGURIDAD EN LA NUBE -->
+    <PreferenceCategory
+        android:title="@string/settings_category_cloud_backup_title"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            android:key="@string/pref_key_cloud_backup"
+            android:title="@string/settings_cloud_backup_title"
+            android:summary="@string/settings_cloud_backup_summary"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_cloud_restore"
+            android:title="@string/settings_cloud_restore_title"
+            android:summary="@string/settings_cloud_restore_summary"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <!-- 10. OTHER / OTROS -->
+    <PreferenceCategory
+        android:title="@string/settings_category_other_title"
+        app:iconSpaceReserved="false">
+
+        <me.zhanghai.android.files.settings.LocalePreference
+            android:key="@string/pref_key_locale"
+            android:title="@string/settings_locale_title"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_check_for_update"
+            android:title="@string/settings_check_update_title"
+            android:summary="@string/settings_check_update_summary"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_acknowledgement"
+            android:title="@string/settings_acknowledgement_title"
+            android:summary="@string/settings_acknowledgement_summary"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_about_settings"
+            android:title="@string/about_title"
+            android:summary="OpenManager v1.0.0"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:key="@string/pref_key_user_agreement"
+            android:title="@string/settings_user_agreement_title"
+            android:summary="@string/settings_user_agreement_summary"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

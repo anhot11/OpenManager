@@ -806,4 +806,161 @@
 
     <string name="shortcut_downloads_title" translatable="false">@string/navigation_standard_directory_downloads</string>
     <string name="shortcut_ftp_server_title" translatable="false">@string/ftp_server_title</string>
+
+    <!-- MT Manager Settings Categories -->
+    <string name="settings_category_startup_title">Startup</string>
+    <string name="settings_category_appearance_title">Appearance</string>
+    <string name="settings_category_general_title">General</string>
+    <string name="settings_category_recycle_bin_title">Recycle Bin</string>
+    <string name="settings_category_installation_title">Installation</string>
+    <string name="settings_category_bookmarks_title">Bookmarks &amp; bottom bar</string>
+    <string name="settings_category_external_storage_title">External storage</string>
+    <string name="settings_category_network_storage_title">Network storage</string>
+    <string name="settings_category_cloud_backup_title">Cloud backup</string>
+    <string name="settings_category_other_title">Other</string>
+
+    <!-- MT Manager Startup Preferences -->
+    <string name="settings_request_root_permission_title">Request root permission</string>
+    <string name="settings_request_root_permission_summary">Request root permissions at startup. After modifying this setting, you need to restart to take effect.</string>
+    <string name="settings_request_shell_permission_title">Request shell permission</string>
+    <string name="settings_request_shell_permission_summary">If root permission is not obtained at startup, OpenManager will try to call Shizuku to obtain shell permission. After modifying this setting, you need to restart to take effect.</string>
+    <string name="settings_customize_su_command_title">Customize su command</string>
+    <string name="settings_customize_su_command_summary">Command used to request root permission, leave blank for automatic identification.</string>
+    <string name="settings_install_shizuku_title">Install Shizuku</string>
+    <string name="settings_install_shizuku_summary" translatable="false">https://shizuku.rikka.app/</string>
+    <string name="settings_startup_path_left_title">Startup path - left window</string>
+    <string name="settings_startup_path_right_title">Startup path - right window</string>
+    <string name="settings_auto_start_services_title">Auto-start services</string>
+    <string-array name="settings_auto_start_services_entries">
+        <item>Disabled</item>
+        <item>FTP Service</item>
+    </string-array>
+
+    <!-- MT Manager Appearance Preferences -->
+    <string name="settings_launcher_icon_title">Launcher icon</string>
+    <string-array name="settings_launcher_icon_entries">
+        <item>Light background (adaptive)</item>
+        <item>Rustic</item>
+        <item>Classic</item>
+    </string-array>
+    <string name="settings_file_list_size_title">File list size</string>
+    <string-array name="settings_file_list_size_entries">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+    </string-array>
+    <string name="settings_max_lines_file_name_title">Max lines of file name</string>
+    <string-array name="settings_max_lines_file_name_entries">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string name="settings_file_list_time_preference_title">File list time preference</string>
+    <string-array name="settings_file_list_time_preference_entries">
+        <item>Default</item>
+        <item>Hide seconds, simplified year</item>
+    </string-array>
+    <string name="settings_disable_permission_in_file_list_title">Disable permission in file list</string>
+    <string name="settings_disable_permission_in_file_list_summary">Show \"permission + size\" for file in non-storage path.</string>
+    <string name="settings_date_time_format_title">Date time format</string>
+    <string-array name="settings_date_time_format_entries">
+        <item>yyyy-MM-dd HH:mm:ss</item>
+        <item>dd/MM/yyyy HH:mm:ss</item>
+        <item>MM/dd/yyyy HH:mm:ss</item>
+    </string-array>
+
+    <!-- MT Manager General Preferences -->
+    <string name="settings_generate_backup_file_title">Generate backup file</string>
+    <string name="settings_generate_backup_file_summary">Automatically rename the original file to a .bak backup file when saving the file.</string>
+    <string name="settings_preserve_file_time_title">Preserve file time</string>
+    <string name="settings_preserve_file_time_summary">Preserve the original modification time of the files when copying/extracting/downloading.</string>
+    <string name="settings_enable_input_box_favorites_title">Enable input box favorites feature</string>
+    <string name="settings_enable_input_box_favorites_summary">Enable my favorites feature in input boxes with history.</string>
+    <string name="settings_sort_file_menu_title">Sort file menu</string>
+    <string name="settings_sort_file_menu_summary">Drag to sort after long press.</string>
+    <string name="settings_custom_openmanager_dir_title">Custom OpenManager directory</string>
+    <string name="settings_custom_openmanager_dir_summary">After modifying the directory path, the files in the original folder will not be automatically transferred, and you need to move them manually.</string>
+
+    <!-- MT Manager Recycle Bin Preferences -->
+    <string name="settings_enable_recycle_bin_title">Enable recycle bin feature</string>
+    <string name="settings_enable_recycle_bin_summary">After disabling the recycle bin feature, the \"Move to recycle bin\" option will not be displayed when deleting files, and the \"Recycle Bin\" tool will not be displayed in the sidebar.</string>
+    <string name="settings_move_to_recycle_bin_default_title">Move to recycle bin by default</string>
+    <string name="settings_move_to_recycle_bin_default_summary">Move to recycle bin is checked by default before deleting files.</string>
+    <string name="settings_auto_clean_recycle_bin_title">Automatically clean recycle bin files</string>
+    <string-array name="settings_auto_clean_recycle_bin_entries">
+        <item>Disable</item>
+        <item>7 days</item>
+        <item>30 days</item>
+    </string-array>
+    <string name="settings_show_deletion_warning_title">Show deletion warning</string>
+    <string name="settings_show_deletion_warning_summary">A red warning will appear when deleting a file if you did not choose to move it to recycle bin.</string>
+
+    <!-- MT Manager Installation Preferences -->
+    <string name="settings_apk_installation_verification_title">APK installation verification</string>
+    <string name="settings_apk_installation_verification_summary">Verify the signature and version code before installing apk.</string>
+    <string name="settings_apk_prevents_deletion_title">APK installation prevents deletion</string>
+    <string name="settings_apk_prevents_deletion_summary">Prevent the apk file from being deleted by the system after installation. It may cause the installer to be abnormal on a few systems, please turn off this function in this case.</string>
+    <string name="settings_double_confirmation_apk_title">Double confirmation before installing apk</string>
+    <string name="settings_double_confirmation_apk_summary">Double confirmation is required before using Shizuku/Dhizuku/Root to install an apk.</string>
+    <string name="settings_use_shizuku_install_title">Use Shizuku to install apk/apks/xapk</string>
+    <string name="settings_use_shizuku_install_summary">Need to install and activate Shizuku.</string>
+    <string name="settings_use_root_install_title">Use root to install apk/apks/xapk</string>
+    <string name="settings_use_root_install_summary">Only takes effect with root privileges.</string>
+    <string name="settings_installation_priority_title">Installation priority description</string>
+    <string name="settings_installation_priority_summary">Install with Shizuku > Install with Root > Invoke System Installer</string>
+
+    <!-- MT Manager Bookmarks & Bottom Bar Preferences -->
+    <string name="settings_show_bookmarks_sidebar_title">Show bookmarks in the sidebar</string>
+    <string name="settings_show_bookmarks_sidebar_summary">Only show bookmarks in the default group, to view all bookmarks, swipe up from the bottom toolbar.</string>
+    <string name="settings_add_bookmarks_top_title">Add new bookmarks to top</string>
+    <string name="settings_add_bookmarks_top_summary">New bookmarks are added to the top of the selected group.</string>
+    <string name="settings_bookmark_swipe_aware_title">Bookmark swipe gesture position-aware</string>
+    <string name="settings_bookmark_swipe_aware_summary">When clicking a bookmark to jump, jump from the currently active window.</string>
+    <string name="settings_add_bottom_margin_title">Add bottom margin to bottom-toolbar</string>
+    <string name="settings_add_bottom_margin_summary">You can pull out the bookmarks by sliding up from the bottom-toolbar. If you often conflict with the full screen gestures when sliding up, you can increase the bottom margin appropriately.</string>
+    <string name="settings_bottom_margin_size_title">Bottom margin size of bottom-toolbar</string>
+    <string-array name="settings_bottom_margin_size_entries">
+        <item>0 dp</item>
+        <item>6 dp</item>
+        <item>12 dp</item>
+        <item>18 dp</item>
+        <item>24 dp</item>
+    </string-array>
+
+    <!-- MT Manager External Storage Preferences -->
+    <string name="settings_load_thumbnails_external_title">Load thumbnails from external storage</string>
+    <string name="settings_load_thumbnails_external_summary">Loading thumbnails will affect the transmission performance of external storage devices. You can decide whether to turn it on depending on the situation.</string>
+    <string name="settings_optimize_external_transfer_title">Optimize external storage data transfer</string>
+    <string name="settings_optimize_external_transfer_summary">Optimize the speed of copying or moving files on external storage and USB devices. A few devices will have negative effects when turned on.</string>
+
+    <!-- MT Manager Network Storage Preferences -->
+    <string name="settings_load_thumbnails_network_summary">Displays thumbnails for image and video files.</string>
+    <string name="settings_network_wifi_only_title">Only load on WiFi networks</string>
+    <string name="settings_network_wifi_only_summary">Save your data traffic when turned on.</string>
+    <string name="settings_network_image_size_limit_title">Image file size limit</string>
+    <string-array name="settings_network_image_size_limit_entries">
+        <item>5 MB</item>
+        <item>10 MB</item>
+        <item>20 MB</item>
+        <item>Unlimited</item>
+    </string-array>
+    <string name="settings_network_loading_time_limit_title">Loading time limit</string>
+    <string-array name="settings_network_loading_time_limit_entries">
+        <item>5 seconds</item>
+        <item>10 seconds</item>
+        <item>30 seconds</item>
+        <item>Unlimited</item>
+    </string-array>
+
+    <!-- MT Manager Cloud Backup Preferences -->
+    <string name="settings_cloud_backup_title">Backup to the cloud</string>
+    <string name="settings_cloud_backup_summary">Back up your local data to the cloud.</string>
+    <string name="settings_cloud_restore_title">Recover from the cloud</string>
+    <string name="settings_cloud_restore_summary">Restore your cloud data to your local device.</string>
+
+    <!-- MT Manager Other Preferences -->
+    <string name="settings_check_update_title">Check for update</string>
+    <string name="settings_acknowledgement_title">Acknowledgement</string>
+    <string name="settings_acknowledgement_summary">People and open source projects that helped the development of OpenManager.</string>
+    <string name="settings_user_agreement_title">User Agreement and Privacy Policy</string>
+    <string name="settings_user_agreement_summary">Already read and agree. 100% Free &amp; Open Source (GPLv3).</string>
 </resources>

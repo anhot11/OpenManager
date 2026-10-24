@@ -704,4 +704,160 @@
     <string name="about_author_name_title">Hai Zhang</string>
     <string name="about_author_github_title">Seguir en GitHub</string>
     <string name="about_author_twitter_title">Seguir en Twitter</string>
+
+    <!-- MT Manager Settings Categories -->
+    <string name="settings_category_startup_title">Inicio</string>
+    <string name="settings_category_appearance_title">Apariencia</string>
+    <string name="settings_category_general_title">General</string>
+    <string name="settings_category_recycle_bin_title">Papelera de reciclaje</string>
+    <string name="settings_category_installation_title">Instalación de aplicaciones</string>
+    <string name="settings_category_bookmarks_title">Marcadores y barra inferior</string>
+    <string name="settings_category_external_storage_title">Almacenamiento externo</string>
+    <string name="settings_category_network_storage_title">Almacenamiento en red</string>
+    <string name="settings_category_cloud_backup_title">Copia de seguridad en la nube</string>
+    <string name="settings_category_other_title">Otros</string>
+
+    <!-- MT Manager Startup Preferences -->
+    <string name="settings_request_root_permission_title">Solicitar permiso de root</string>
+    <string name="settings_request_root_permission_summary">Solicitar permisos de root al iniciar. Después de modificar este ajuste, debe reiniciar para que surta efecto.</string>
+    <string name="settings_request_shell_permission_title">Solicitar permiso de shell</string>
+    <string name="settings_request_shell_permission_summary">Si no se obtiene permiso de root al iniciar, OpenManager intentará llamar a Shizuku para obtener permiso de shell. Después de modificar este ajuste, debe reiniciar para que surta efecto.</string>
+    <string name="settings_customize_su_command_title">Personalizar comando su</string>
+    <string name="settings_customize_su_command_summary">Comando utilizado para solicitar permiso de root, dejar en blanco para identificación automática.</string>
+    <string name="settings_install_shizuku_title">Instalar Shizuku</string>
+    <string name="settings_startup_path_left_title">Ruta de inicio - ventana izquierda</string>
+    <string name="settings_startup_path_right_title">Ruta de inicio - ventana derecha</string>
+    <string name="settings_auto_start_services_title">Iniciar servicios automáticamente</string>
+    <string-array name="settings_auto_start_services_entries">
+        <item>Desactivado</item>
+        <item>Servicio FTP</item>
+    </string-array>
+
+    <!-- MT Manager Appearance Preferences -->
+    <string name="settings_launcher_icon_title">Icono del lanzador</string>
+    <string-array name="settings_launcher_icon_entries">
+        <item>Fondo claro (adaptativo)</item>
+        <item>Rústico</item>
+        <item>Clásico</item>
+    </string-array>
+    <string name="settings_file_list_size_title">Tamaño de la lista de archivos</string>
+    <string-array name="settings_file_list_size_entries">
+        <item>Pequeño</item>
+        <item>Mediano</item>
+        <item>Grande</item>
+    </string-array>
+    <string name="settings_max_lines_file_name_title">Líneas máx. de nombre de archivo</string>
+    <string-array name="settings_max_lines_file_name_entries">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string name="settings_file_list_time_preference_title">Preferencia de hora en lista</string>
+    <string-array name="settings_file_list_time_preference_entries">
+        <item>Predeterminado</item>
+        <item>Ocultar segundos, año simplificado</item>
+    </string-array>
+    <string name="settings_disable_permission_in_file_list_title">Desactivar permisos en lista</string>
+    <string name="settings_disable_permission_in_file_list_summary">Mostrar \"permiso + tamaño\" para archivo en ruta que no sea de almacenamiento.</string>
+    <string name="settings_date_time_format_title">Formato de fecha y hora</string>
+    <string-array name="settings_date_time_format_entries">
+        <item>yyyy-MM-dd HH:mm:ss</item>
+        <item>dd/MM/yyyy HH:mm:ss</item>
+        <item>MM/dd/yyyy HH:mm:ss</item>
+    </string-array>
+
+    <!-- MT Manager General Preferences -->
+    <string name="settings_generate_backup_file_title">Generar archivo de copia de seguridad</string>
+    <string name="settings_generate_backup_file_summary">Cambiar automáticamente el nombre del archivo original a un archivo de copia de seguridad .bak al guardarlo.</string>
+    <string name="settings_preserve_file_time_title">Conservar la fecha del archivo</string>
+    <string name="settings_preserve_file_time_summary">Conservar la hora de modificación original de los archivos al copiar/extraer/descargar.</string>
+    <string name="settings_enable_input_box_favorites_title">Activar función de favoritos en cuadros de entrada</string>
+    <string name="settings_enable_input_box_favorites_summary">Activar la función de mis favoritos en los cuadros de entrada con historial.</string>
+    <string name="settings_sort_file_menu_title">Ordenar menú de archivos</string>
+    <string name="settings_sort_file_menu_summary">Arrastrar para ordenar después de presionar prolongadamente.</string>
+    <string name="settings_custom_openmanager_dir_title">Directorio OpenManager personalizado</string>
+    <string name="settings_custom_openmanager_dir_summary">Después de modificar la ruta del directorio, los archivos de la carpeta original no se transferirán automáticamente, y deberá moverlos manualmente.</string>
+
+    <!-- MT Manager Recycle Bin Preferences -->
+    <string name="settings_enable_recycle_bin_title">Activar función de papelera de reciclaje</string>
+    <string name="settings_enable_recycle_bin_summary">Al desactivar la función de papelera, la opción \"Mover a la papelera\" no se mostrará al eliminar archivos, y la herramienta \"Papelera de reciclaje\" no aparecerá en la barra lateral.</string>
+    <string name="settings_move_to_recycle_bin_default_title">Mover a la papelera por defecto</string>
+    <string name="settings_move_to_recycle_bin_default_summary">Mover a la papelera está marcado de forma predeterminada antes de eliminar archivos.</string>
+    <string name="settings_auto_clean_recycle_bin_title">Limpiar automáticamente archivos de la papelera</string>
+    <string-array name="settings_auto_clean_recycle_bin_entries">
+        <item>Desactivar</item>
+        <item>7 días</item>
+        <item>30 días</item>
+    </string-array>
+    <string name="settings_show_deletion_warning_title">Mostrar advertencia de eliminación</string>
+    <string name="settings_show_deletion_warning_summary">Aparecerá una advertencia roja al eliminar un archivo si no eligió moverlo a la papelera de reciclaje.</string>
+
+    <!-- MT Manager Installation Preferences -->
+    <string name="settings_apk_installation_verification_title">Verificación de instalación de APK</string>
+    <string name="settings_apk_installation_verification_summary">Verificar la firma y el código de versión antes de instalar el apk.</string>
+    <string name="settings_apk_prevents_deletion_title">Instalación de APK evita eliminación</string>
+    <string name="settings_apk_prevents_deletion_summary">Evitar que el sistema elimine el archivo apk después de la instalación. Puede causar que el instalador funcione de forma anormal en algunos sistemas.</string>
+    <string name="settings_double_confirmation_apk_title">Doble confirmación antes de instalar apk</string>
+    <string name="settings_double_confirmation_apk_summary">Se requiere confirmación doble antes de usar Shizuku/Root para instalar un apk.</string>
+    <string name="settings_use_shizuku_install_title">Usar Shizuku para instalar apk/apks/xapk</string>
+    <string name="settings_use_shizuku_install_summary">Es necesario instalar y activar Shizuku.</string>
+    <string name="settings_use_root_install_title">Usar root para instalar apk/apks/xapk</string>
+    <string name="settings_use_root_install_summary">Solo surte efecto con privilegios de root.</string>
+    <string name="settings_installation_priority_title">Descripción de prioridad de instalación</string>
+    <string name="settings_installation_priority_summary">Instalar con Shizuku > Instalar con Root > Invocar instalador del sistema</string>
+
+    <!-- MT Manager Bookmarks & Bottom Bar Preferences -->
+    <string name="settings_show_bookmarks_sidebar_title">Mostrar marcadores en la barra lateral</string>
+    <string name="settings_show_bookmarks_sidebar_summary">Solo mostrar marcadores en el grupo predeterminado; para ver todos los marcadores, deslice hacia arriba desde la barra de herramientas inferior.</string>
+    <string name="settings_add_bookmarks_top_title">Agregar nuevos marcadores arriba</string>
+    <string name="settings_add_bookmarks_top_summary">Los nuevos marcadores se agregan en la parte superior del grupo seleccionado.</string>
+    <string name="settings_bookmark_swipe_aware_title">Gesto de deslizamiento consciente de la posición</string>
+    <string name="settings_bookmark_swipe_aware_summary">Al hacer clic en un marcador para saltar, saltar desde la ventana activa actual.</string>
+    <string name="settings_add_bottom_margin_title">Agregar margen inferior a la barra de herramientas</string>
+    <string name="settings_add_bottom_margin_summary">Puede desplegar los marcadores deslizando hacia arriba desde la barra de herramientas inferior. Si entra en conflicto con gestos a pantalla completa, aumente el margen.</string>
+    <string name="settings_bottom_margin_size_title">Tamaño del margen inferior de la barra de herramientas</string>
+    <string-array name="settings_bottom_margin_size_entries">
+        <item>0 dp</item>
+        <item>6 dp</item>
+        <item>12 dp</item>
+        <item>18 dp</item>
+        <item>24 dp</item>
+    </string-array>
+
+    <!-- MT Manager External Storage Preferences -->
+    <string name="settings_load_thumbnails_external_title">Cargar miniaturas de almacenamiento externo</string>
+    <string name="settings_load_thumbnails_external_summary">Cargar miniaturas afectará el rendimiento de transmisión de los dispositivos de almacenamiento externo. Puede decidir activarlo según su caso.</string>
+    <string name="settings_optimize_external_transfer_title">Optimizar transferencia de datos de almacenamiento externo</string>
+    <string name="settings_optimize_external_transfer_summary">Optimiza la velocidad al copiar o mover archivos en almacenamiento externo y dispositivos USB.</string>
+
+    <!-- MT Manager Network Storage Preferences -->
+    <string name="settings_load_thumbnails_network_summary">Muestra miniaturas de archivos de imagen y vídeo.</string>
+    <string name="settings_network_wifi_only_title">Solo cargar en redes WiFi</string>
+    <string name="settings_network_wifi_only_summary">Ahorre tráfico de datos cuando esté activado.</string>
+    <string name="settings_network_image_size_limit_title">Límite de tamaño de archivo de imagen</string>
+    <string-array name="settings_network_image_size_limit_entries">
+        <item>5 MB</item>
+        <item>10 MB</item>
+        <item>20 MB</item>
+        <item>Ilimitado</item>
+    </string-array>
+    <string name="settings_network_loading_time_limit_title">Límite de tiempo de carga</string>
+    <string-array name="settings_network_loading_time_limit_entries">
+        <item>5 segundos</item>
+        <item>10 segundos</item>
+        <item>30 segundos</item>
+        <item>Ilimitado</item>
+    </string-array>
+
+    <!-- MT Manager Cloud Backup Preferences -->
+    <string name="settings_cloud_backup_title">Copia de seguridad en la nube</string>
+    <string name="settings_cloud_backup_summary">Haga una copia de seguridad de sus datos locales en la nube.</string>
+    <string name="settings_cloud_restore_title">Recuperar desde la nube</string>
+    <string name="settings_cloud_restore_summary">Restaure sus datos en la nube en su dispositivo local.</string>
+
+    <!-- MT Manager Other Preferences -->
+    <string name="settings_check_update_title">Buscar actualizaciones</string>
+    <string name="settings_acknowledgement_title">Agradecimientos</string>
+    <string name="settings_acknowledgement_summary">Personas y proyectos de código abierto que ayudaron al desarrollo de OpenManager.</string>
+    <string name="settings_user_agreement_title">Acuerdo de usuario y Política de privacidad</string>
+    <string name="settings_user_agreement_summary">Ya leído y aceptado. 100% Libre y Código Abierto (GPLv3).</string>
 </resources>

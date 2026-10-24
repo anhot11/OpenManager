@@ -39,6 +39,13 @@ object Settings {
             Paths.get(Environment.getExternalStorageDirectory().absolutePath)
         )
 
+    val FILE_LIST_DEFAULT_DIRECTORY_RIGHT: SettingLiveData<Path> =
+        ParcelValueSettingLiveData(
+            R.string.pref_key_file_list_default_directory_right,
+            @Suppress("DEPRECATION")
+            Paths.get(Environment.getExternalStorageDirectory().absolutePath)
+        )
+
     val FILE_LIST_PERSISTENT_DRAWER_OPEN: SettingLiveData<Boolean> =
         BooleanSettingLiveData(
             R.string.pref_key_file_list_persistent_drawer_open,
