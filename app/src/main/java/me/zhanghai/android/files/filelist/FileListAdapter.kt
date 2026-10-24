@@ -95,6 +95,22 @@ class FileListAdapter(
             notifyItemRangeChanged(0, itemCount, PAYLOAD_STATE_CHANGED)
         }
 
+    var maxLines: Int = 2
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyItemRangeChanged(0, itemCount, PAYLOAD_STATE_CHANGED)
+            }
+        }
+
+    var fileListSize: Int = 0
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyItemRangeChanged(0, itemCount, PAYLOAD_STATE_CHANGED)
+            }
+        }
+
     fun replaceSelectedFiles(files: FileItemSet) {
         val changedFiles = fileItemSetOf()
         val iterator = selectedFiles.iterator()
@@ -247,11 +263,26 @@ class FileListAdapter(
         val checked = file in selectedFiles
         holder.itemLayout.isChecked = checked
         holder.nameText.apply {
-            if (isSingleLineCompat) {
+            maxLines = this@FileListAdapter.maxLines
+            if (this@FileListAdapter.maxLines == 1) {
                 val nameEllipsize = nameEllipsize
                 ellipsize = nameEllipsize
                 isSelected = nameEllipsize == TextUtils.TruncateAt.MARQUEE
+            } else {
+                ellipsize = TextUtils.TruncateAt.END
+                isSelected = false
             }
+        }
+        val density = holder.itemView.resources.displayMetrics.density
+        val targetHeightPx = when (fileListSize) {
+            1 -> (52 * density).toInt()
+            2 -> (62 * density).toInt()
+            else -> (44 * density).toInt()
+        }
+        val lp = holder.itemLayout.layoutParams
+        if (lp != null && lp.height != targetHeightPx) {
+            lp.height = targetHeightPx
+            holder.itemLayout.layoutParams = lp
         }
         if (file.isParentDirectoryItem) {
             holder.itemLayout.isEnabled = true

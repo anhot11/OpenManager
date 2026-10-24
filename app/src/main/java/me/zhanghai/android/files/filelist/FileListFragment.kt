@@ -389,6 +389,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         viewModel.selectedFilesLiveData.observe(viewLifecycleOwner) { onSelectedFilesChanged(it) }
         viewModel.pasteStateLiveData.observe(viewLifecycleOwner) { onPasteStateChanged(it) }
         Settings.FILE_NAME_ELLIPSIZE.observe(viewLifecycleOwner) { onFileNameEllipsizeChanged(it) }
+        Settings.MAX_LINES_FILE_NAME.observe(viewLifecycleOwner) { adapter.maxLines = it.toIntOrNull() ?: 2 }
+        Settings.FILE_LIST_SIZE.observe(viewLifecycleOwner) { adapter.fileListSize = it.toIntOrNull() ?: 0 }
         viewModel.fileListLiveData.observe(viewLifecycleOwner) { onFileListChanged(it) }
         Settings.FILE_LIST_SHOW_HIDDEN_FILES.observe(viewLifecycleOwner) {
             onShowHiddenFilesChanged(it)
@@ -1073,11 +1075,32 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     private fun confirmDeleteFiles(files: FileItemSet) {
-        ConfirmDeleteFilesDialogFragment.show(files, this)
+        if (!Settings.SHOW_DELETION_WARNING.valueCompat) {
+            deleteFiles(files)
+        } else {
+            ConfirmDeleteFilesDialogFragment.show(files, this)
+        }
     }
 
     override fun deleteFiles(files: FileItemSet) {
-        FileJobService.delete(makePathListForJob(files), requireContext())
+        if (Settings.ENABLE_RECYCLE_BIN.valueCompat && Settings.MOVE_TO_RECYCLE_BIN_DEFAULT.valueCompat) {
+            val baseDir = Settings.CUSTOM_OPENMANAGER_DIR.valueCompat.ifEmpty {
+                @Suppress("DEPRECATION")
+                Environment.getExternalStorageDirectory().absolutePath + "/OpenManager"
+            }
+            val recyclePath = Paths.get(baseDir, ".recycle")
+            try {
+                val dirFile = java.io.File(recyclePath.toString())
+                if (!dirFile.exists()) {
+                    dirFile.mkdirs()
+                }
+                FileJobService.move(makePathListForJob(files), recyclePath, requireContext())
+            } catch (e: Exception) {
+                FileJobService.delete(makePathListForJob(files), requireContext())
+            }
+        } else {
+            FileJobService.delete(makePathListForJob(files), requireContext())
+        }
         viewModel.selectFiles(files, false)
     }
 

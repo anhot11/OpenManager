@@ -188,4 +188,70 @@ object Settings {
             R.string.pref_key_read_remote_files_for_thumbnail,
             R.bool.pref_default_value_read_remote_files_for_thumbnail
         )
+
+    val AUTO_START_SERVICES: SettingLiveData<String> =
+        StringSettingLiveData(
+            R.string.pref_key_auto_start_services,
+            R.string.pref_default_value_auto_start_services
+        )
+
+    val REQUEST_ROOT_PERMISSION: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_request_root_permission,
+            R.bool.pref_default_value_request_root_permission
+        )
+
+    val MAX_LINES_FILE_NAME: SettingLiveData<String> =
+        StringSettingLiveData(
+            R.string.pref_key_max_lines_file_name,
+            R.string.pref_default_value_max_lines_file_name
+        )
+
+    val FILE_LIST_SIZE: SettingLiveData<String> =
+        StringSettingLiveData(
+            R.string.pref_key_file_list_size,
+            R.string.pref_default_value_file_list_size
+        )
+
+    val ENABLE_RECYCLE_BIN: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_enable_recycle_bin,
+            R.bool.pref_default_value_enable_recycle_bin
+        )
+
+    val MOVE_TO_RECYCLE_BIN_DEFAULT: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_move_to_recycle_bin_default,
+            R.bool.pref_default_value_move_to_recycle_bin_default
+        )
+
+    val SHOW_DELETION_WARNING: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_show_deletion_warning,
+            R.bool.pref_default_value_show_deletion_warning
+        )
+
+    val SHOW_BOOKMARKS_SIDEBAR: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_show_bookmarks_sidebar,
+            R.bool.pref_default_value_show_bookmarks_sidebar
+        )
+
+    val ADD_BOTTOM_MARGIN: SettingLiveData<Boolean> =
+        BooleanSettingLiveData(
+            R.string.pref_key_add_bottom_margin,
+            R.bool.pref_default_value_add_bottom_margin
+        )
+
+    val BOTTOM_MARGIN_SIZE: SettingLiveData<String> =
+        StringSettingLiveData(
+            R.string.pref_key_bottom_margin_size,
+            R.string.pref_default_value_bottom_margin_size
+        )
+
+    val CUSTOM_OPENMANAGER_DIR: SettingLiveData<String> =
+        StringSettingLiveData(
+            R.string.pref_key_custom_openmanager_dir,
+            R.string.pref_default_value_custom_openmanager_dir
+        )
 }

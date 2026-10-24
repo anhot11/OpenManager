@@ -32,6 +32,7 @@ import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.commit
 import com.google.android.material.button.MaterialButton
@@ -43,6 +44,7 @@ import me.zhanghai.android.files.about.AboutActivity
 import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.ftpserver.FtpServerActivity
+import me.zhanghai.android.files.ftpserver.FtpServerService
 import me.zhanghai.android.files.settings.Settings
 import me.zhanghai.android.files.settings.SettingsActivity
 import me.zhanghai.android.files.storage.AddDocumentTreeActivity
@@ -145,8 +147,16 @@ class FileListActivity : AppActivity() {
         btnMoreSelection = findViewById(R.id.btnMoreSelection)
 
         if (savedInstanceState == null) {
-            fragmentA = FileListFragment().putArgs(FileListFragment.Args(intent))
+            val intentA = Intent(intent)
+            if (intentA.extraPath == null) {
+                intentA.extraPath = Settings.FILE_LIST_DEFAULT_DIRECTORY.valueCompat
+            }
+            fragmentA = FileListFragment().putArgs(FileListFragment.Args(intentA))
+
             val intentB = Intent(intent)
+            if (intentB.extraPath == null) {
+                intentB.extraPath = Settings.FILE_LIST_DEFAULT_DIRECTORY_RIGHT.valueCompat
+            }
             fragmentB = FileListFragment().putArgs(FileListFragment.Args(intentB))
 
             supportFragmentManager.commit {
@@ -157,6 +167,24 @@ class FileListActivity : AppActivity() {
             fragmentA = supportFragmentManager.findFragmentByTag(TAG_PANEL_A) as FileListFragment
             fragmentB = supportFragmentManager.findFragmentByTag(TAG_PANEL_B) as FileListFragment
             activePanelIndex = savedInstanceState.getInt(KEY_ACTIVE_PANEL, 0)
+        }
+
+        if (Settings.AUTO_START_SERVICES.valueCompat == "1") {
+            try {
+                FtpServerService.start(this)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        if (Settings.REQUEST_ROOT_PERMISSION.valueCompat) {
+            kotlin.concurrent.thread {
+                try {
+                    com.topjohnwu.superuser.Shell.getShell()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
 
         setupDrawerControls()
@@ -291,6 +319,24 @@ class FileListActivity : AppActivity() {
         findViewById<View>(R.id.drawerItemTerminal)?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             activeFragment.openTerminal()
+        }
+
+        val drawerItemRecycleBin = findViewById<View>(R.id.drawerItemRecycleBin)
+        drawerItemRecycleBin?.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val baseDir = Settings.CUSTOM_OPENMANAGER_DIR.valueCompat.ifEmpty {
+                @Suppress("DEPRECATION")
+                Environment.getExternalStorageDirectory().absolutePath + "/OpenManager"
+            }
+            val recyclePath = Paths.get(baseDir, ".recycle")
+            val recycleDir = java.io.File(recyclePath.toString())
+            if (!recycleDir.exists()) {
+                recycleDir.mkdirs()
+            }
+            activeFragment.navigateTo(recyclePath)
+        }
+        Settings.ENABLE_RECYCLE_BIN.observe(this) { enabled ->
+            drawerItemRecycleBin?.isVisible = enabled
         }
 
         findViewById<View>(R.id.drawerItemSettings).setOnClickListener {
@@ -455,6 +501,10 @@ class FileListActivity : AppActivity() {
     }
 
     private fun setupBottomBarControls() {
+        updateBottomBarMargin()
+        Settings.ADD_BOTTOM_MARGIN.observe(this) { updateBottomBarMargin() }
+        Settings.BOTTOM_MARGIN_SIZE.observe(this) { updateBottomBarMargin() }
+
         // Normal Mode Buttons: [<] [>] [+] [⇆] [↑]
         btnBottomBack.setOnClickListener {
             if (activeFragment.canNavigateUp) {
@@ -515,6 +565,24 @@ class FileListActivity : AppActivity() {
         btnMoreSelection.setOnClickListener { view ->
             showMoreSelectionMenu(view)
         }
+    }
+
+    private fun updateBottomBarMargin() {
+        val bottomBar = findViewById<View>(R.id.bottomBar) ?: return
+        val addMargin = Settings.ADD_BOTTOM_MARGIN.valueCompat
+        val marginDp = if (addMargin) {
+            Settings.BOTTOM_MARGIN_SIZE.valueCompat.toIntOrNull() ?: 12
+        } else {
+            0
+        }
+        val density = resources.displayMetrics.density
+        val marginPx = (marginDp * density).toInt()
+        val baseHeightPx = (48 * density).toInt()
+
+        val lp = bottomBar.layoutParams
+        lp.height = baseHeightPx + marginPx
+        bottomBar.layoutParams = lp
+        bottomBar.setPadding(0, 0, 0, marginPx)
     }
 
     private fun setupBackPressedHandler() {

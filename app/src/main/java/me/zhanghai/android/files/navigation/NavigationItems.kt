@@ -54,9 +54,18 @@ val navigationItems: List<NavigationItem?>
                 addAll(standardDirectoryItems)
             }
             val bookmarkDirectoryItems = bookmarkDirectoryItems
-            if (bookmarkDirectoryItems.isNotEmpty()) {
+            if (Settings.SHOW_BOOKMARKS_SIDEBAR.valueCompat && bookmarkDirectoryItems.isNotEmpty()) {
                 add(null)
                 addAll(bookmarkDirectoryItems)
+            }
+            if (Settings.ENABLE_RECYCLE_BIN.valueCompat) {
+                val baseDir = Settings.CUSTOM_OPENMANAGER_DIR.valueCompat.ifEmpty {
+                    @Suppress("DEPRECATION")
+                    Environment.getExternalStorageDirectory().absolutePath + "/OpenManager"
+                }
+                val recyclePath = Paths.get(baseDir, ".recycle")
+                add(null)
+                add(RecycleBinItem(recyclePath))
             }
             add(null)
             addAll(menuItems)
@@ -390,3 +399,15 @@ private class IntentMenuItem(
         listener.closeNavigationDrawer()
     }
 }
+
+private class RecycleBinItem(path: Path) : PathItem(path) {
+    override val id: Long
+        get() = R.string.settings_recycle_bin_category_title.toLong()
+
+    @DrawableRes
+    override val iconRes: Int = R.drawable.delete_icon_white_24dp
+
+    override fun getTitle(context: Context): String =
+        context.getString(R.string.settings_recycle_bin_category_title)
+}
+
