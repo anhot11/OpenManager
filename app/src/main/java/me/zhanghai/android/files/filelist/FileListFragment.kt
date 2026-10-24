@@ -256,6 +256,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             )
         }
         binding.swipeRefreshLayout.setOnRefreshListener { this.refresh() }
+        binding.errorText.setOnClickListener { navigateToDefaultRoot() }
         layoutManager = GridLayoutManager(activity, 1)
         binding.recyclerView.layoutManager = layoutManager
         adapter = FileListAdapter(this)
@@ -720,6 +721,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     fun navigateUp() {
         collapseSearchView()
+        val pathStr = currentPath.toString()
+        if (pathStr == "/storage/emulated/0" || pathStr == "/storage/emulated/0/") {
+            return
+        }
         viewModel.navigateUp()
     }
 
@@ -1529,7 +1534,14 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         get() = if (isAdded) viewModel.selectedFiles else fileItemSetOf()
 
     val canNavigateUp: Boolean
-        get() = if (isAdded) viewModel.canNavigateUpBreadcrumb else false
+        get() {
+            if (!isAdded) return false
+            val pathStr = viewModel.currentPath.toString()
+            if (pathStr == "/storage/emulated/0" || pathStr == "/storage/emulated/0/") {
+                return false
+            }
+            return viewModel.canNavigateUpBreadcrumb
+        }
 
     fun setDualPaneUiMode(enabled: Boolean) {
         if (!this::binding.isInitialized) return

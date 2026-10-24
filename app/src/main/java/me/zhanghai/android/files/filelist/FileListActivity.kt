@@ -239,6 +239,17 @@ class FileListActivity : AppActivity() {
         }
     }
 
+    private fun getDiskStats(): String {
+        return try {
+            val stat = android.os.StatFs(android.os.Environment.getExternalStorageDirectory().path)
+            val available = android.text.format.Formatter.formatFileSize(this, stat.availableBytes)
+            val total = android.text.format.Formatter.formatFileSize(this, stat.totalBytes)
+            "Disk: $available/$total"
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
     private fun updateTopBarInfo() {
         if (!::fragmentA.isInitialized || !::fragmentB.isInitialized) return
         if (!activeFragment.isAdded) return
@@ -247,7 +258,13 @@ class FileListActivity : AppActivity() {
             val pathStr = path.toString()
             tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
             val stats = activeFragment.currentStatsSubtitle
-            tvStatsSubtitle.text = if (stats.isNotEmpty()) stats else "Listo"
+            val disk = getDiskStats()
+            tvStatsSubtitle.text = when {
+                stats.isNotEmpty() && disk.isNotEmpty() -> "$stats  $disk"
+                stats.isNotEmpty() -> stats
+                disk.isNotEmpty() -> disk
+                else -> "Listo"
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -283,14 +300,16 @@ class FileListActivity : AppActivity() {
             if (activePanelIndex == 0) {
                 val pathStr = path.toString()
                 tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
-                tvStatsSubtitle.text = stats
+                val disk = getDiskStats()
+                tvStatsSubtitle.text = if (disk.isNotEmpty()) "$stats  $disk" else stats
             }
         }
         fragmentB.onPathOrStatsChanged = { path, stats ->
             if (activePanelIndex == 1) {
                 val pathStr = path.toString()
                 tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
-                tvStatsSubtitle.text = stats
+                val disk = getDiskStats()
+                tvStatsSubtitle.text = if (disk.isNotEmpty()) "$stats  $disk" else stats
             }
         }
 

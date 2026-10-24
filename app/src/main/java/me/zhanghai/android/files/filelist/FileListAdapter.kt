@@ -318,7 +318,8 @@ class FileListAdapter(
         }
         holder.nameText.text = file.name
         holder.descriptionText?.text = if (isDirectory) {
-            null
+            val context = holder.descriptionText!!.context
+            attributes.lastModifiedTime().toInstant().formatShort(context)
         } else {
             val context = holder.descriptionText!!.context
             val lastModificationTime = attributes.lastModifiedTime().toInstant()
