@@ -23,9 +23,12 @@ import me.zhanghai.android.files.util.ParcelableParceler
 import me.zhanghai.android.files.util.args
 import me.zhanghai.android.files.util.createViewIntent
 import me.zhanghai.android.files.util.extraPath
-import me.zhanghai.android.files.util.finish
 import me.zhanghai.android.files.util.startActivitySafe
 import me.zhanghai.android.files.util.withChooser
+import me.zhanghai.android.files.viewer.audio.AudioPlayerActivity
+import me.zhanghai.android.files.viewer.sqlite.SqliteViewerActivity
+import me.zhanghai.android.files.viewer.text.TextEditorActivity
+import me.zhanghai.android.files.viewer.video.VideoPlayerActivity
 
 class OpenFileAsDialogFragment : AppCompatDialogFragment() {
     private val args by args<Args>()
@@ -34,35 +37,72 @@ class OpenFileAsDialogFragment : AppCompatDialogFragment() {
         MaterialAlertDialogBuilder(requireContext(), theme)
             .setTitle(getString(R.string.file_open_as_title_format, args.path.name))
             .apply {
-                val items = FILE_TYPES.map { getString(it.first) }.toTypedArray<CharSequence>()
-                setItems(items) { _, which -> openAs(FILE_TYPES[which].second) }
+                val items = arrayOf(
+                    "Texto (Editor de texto)",
+                    "Audio (Reproductor de audio)",
+                    "Video (Reproductor de video)",
+                    "Imagen (Visor de imágenes)",
+                    "Base de datos (Visor SQLite)",
+                    "Otra aplicación (Elegir aplicación...)"
+                )
+                setItems(items) { _, which ->
+                    when (which) {
+                        0 -> {
+                            val intent = Intent(requireContext(), TextEditorActivity::class.java).apply {
+                                extraPath = args.path
+                            }
+                            requireContext().startActivity(intent)
+                            dismissOrFinishActivity()
+                        }
+                        1 -> {
+                            AudioPlayerActivity.start(requireContext(), args.path)
+                            dismissOrFinishActivity()
+                        }
+                        2 -> {
+                            VideoPlayerActivity.start(requireContext(), args.path)
+                            dismissOrFinishActivity()
+                        }
+                        3 -> {
+                            val intent = args.path.fileProviderUri.createViewIntent("image/*".asMimeType())
+                                .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                                .apply { extraPath = args.path }
+                            startActivitySafe(intent)
+                            dismissOrFinishActivity()
+                        }
+                        4 -> {
+                            SqliteViewerActivity.start(requireContext(), args.path)
+                            dismissOrFinishActivity()
+                        }
+                        5 -> {
+                            val intent = args.path.fileProviderUri.createViewIntent("*/*".asMimeType())
+                                .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                                .apply { extraPath = args.path }
+                                .withChooser()
+                            startActivitySafe(intent)
+                            dismissOrFinishActivity()
+                        }
+                    }
+                }
             }
             .create()
-
-    private fun openAs(mimeType: MimeType) {
-        val intent = args.path.fileProviderUri.createViewIntent(mimeType)
-            .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            .apply { extraPath = args.path }
-            .withChooser()
-        startActivitySafe(intent)
-        finish()
-    }
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
 
-        finish()
+        dismissOrFinishActivity()
+    }
+
+    private fun dismissOrFinishActivity() {
+        dismiss()
+        if (activity is OpenFileAsDialogActivity) {
+            activity?.finish()
+        }
     }
 
     companion object {
-        private val FILE_TYPES = listOf(
-            R.string.file_open_as_type_text to "text/plain",
-            R.string.file_open_as_type_image to "image/*",
-            R.string.file_open_as_type_audio to "audio/*",
-            R.string.file_open_as_type_video to "video/*",
-            R.string.file_open_as_type_directory to MimeType.DIRECTORY.value,
-            R.string.file_open_as_type_any to "*/*"
-        ).map { it.first to it.second.asMimeType() }
+        fun show(path: Path, fragmentManager: androidx.fragment.app.FragmentManager) {
+            OpenFileAsDialogFragment().putArgs(Args(path)).show(fragmentManager, null)
+        }
     }
 
     @Parcelize

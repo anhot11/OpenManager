@@ -69,9 +69,23 @@ import me.zhanghai.android.files.file.FileItem
 import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.file.asMimeTypeOrNull
 import me.zhanghai.android.files.file.extension
-import me.zhanghai.android.files.file.fileProviderUri
 import me.zhanghai.android.files.file.isApk
+import me.zhanghai.android.files.file.isAudio
+import me.zhanghai.android.files.file.isVideo
+import me.zhanghai.android.files.file.isText
+import me.zhanghai.android.files.file.isSqlite
+import me.zhanghai.android.files.file.isDex
+import me.zhanghai.android.files.file.isArsc
+import me.zhanghai.android.files.file.isSharedLibrary
 import me.zhanghai.android.files.file.isImage
+import me.zhanghai.android.files.provider.common.newInputStream
+import me.zhanghai.android.files.viewer.audio.AudioPlayerDialogFragment
+import me.zhanghai.android.files.viewer.binary.ArscInfoDialogFragment
+import me.zhanghai.android.files.viewer.binary.DexInfoDialogFragment
+import me.zhanghai.android.files.viewer.binary.ElfInfoDialogFragment
+import me.zhanghai.android.files.viewer.sqlite.SqliteViewerActivity
+import me.zhanghai.android.files.viewer.text.TextEditorActivity
+import me.zhanghai.android.files.viewer.video.VideoPlayerActivity
 import me.zhanghai.android.files.filejob.FileJobService
 import me.zhanghai.android.files.filelist.FileSortOptions.By
 import me.zhanghai.android.files.filelist.FileSortOptions.Order
@@ -1336,7 +1350,94 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             navigateTo(file.listablePath)
             return
         }
-        openFileWithIntent(file, false)
+        if (file.mimeType.isAudio) {
+            AudioPlayerDialogFragment.show(file.path, childFragmentManager)
+            return
+        }
+        if (file.mimeType.isVideo) {
+            VideoPlayerActivity.start(requireContext(), file.path)
+            return
+        }
+        if (file.mimeType.isSqlite || fileName.endsWith(".db", true) || fileName.endsWith(".sqlite", true) || fileName.endsWith(".sqlite3", true)) {
+            SqliteViewerActivity.start(requireContext(), file.path)
+            return
+        }
+        if (file.mimeType.isDex || fileName.endsWith(".dex", true)) {
+            DexInfoDialogFragment.show(file.path, childFragmentManager)
+            return
+        }
+        if (file.mimeType.isArsc || fileName.endsWith(".arsc", true)) {
+            ArscInfoDialogFragment.show(file.path, childFragmentManager)
+            return
+        }
+        if (file.mimeType.isSharedLibrary || fileName.endsWith(".so", true)) {
+            ElfInfoDialogFragment.show(file.path, childFragmentManager)
+            return
+        }
+        if (file.mimeType.isText || isTextFileOrProbableText(file.path)) {
+            val intent = Intent(requireContext(), TextEditorActivity::class.java).apply {
+                extraPath = file.path
+            }
+            startActivity(intent)
+            return
+        }
+        if (file.mimeType.isImage || file.mimeType.isPdf) {
+            openFileWithIntent(file, false)
+            return
+        }
+        // Archivos desconocidos o formatos no identificados -> diálogo "Abrir como" tipo MT Manager
+        OpenFileAsDialogFragment.show(file.path, childFragmentManager)
+    }
+
+    private fun isTextFileOrProbableText(path: Path): Boolean {
+        val name = path.fileName?.toString()?.lowercase() ?: ""
+        val textExtensions = setOf(
+            "txt", "log", "md", "markdown", "json", "xml", "html", "htm", "css",
+            "js", "ts", "jsx", "tsx", "py", "c", "cpp", "cc", "cxx", "h", "hpp",
+            "java", "kt", "kts", "rs", "go", "php", "sql", "gradle", "properties",
+            "conf", "ini", "env", "rc", "yaml", "yml", "toml", "csv", "tsv",
+            "smali", "bat", "cmd", "sh", "bash", "zsh", "svg", "vue", "dart",
+            "lua", "rb", "swift", "cmake", "proto", "diff", "patch", "info",
+            "cfg", "nfo", "prop", "list"
+        )
+        val ext = name.substringAfterLast('.', "")
+        if (ext.isNotEmpty() && ext in textExtensions) {
+            return true
+        }
+        val commonExtensionless = setOf(
+            "readme", "license", "licence", "copying", "authors", "contributors",
+            "changelog", "news", "install", "todo", "makefile", "dockerfile",
+            "gemfile", "rakefile", "vagrantfile", "procfile", "hosts", "resolv.conf"
+        )
+        if (name in commonExtensionless) {
+            return true
+        }
+        return try {
+            path.newInputStream().use { input ->
+                val buffer = ByteArray(1024)
+                val read = input.read(buffer)
+                if (read <= 0) {
+                    true
+                } else {
+                    var hasNull = false
+                    for (i in 0 until read) {
+                        if (buffer[i] == 0.toByte()) {
+                            hasNull = true
+                            break
+                        }
+                    }
+                    if (hasNull) {
+                        false
+                    } else {
+                        val str = String(buffer, 0, read, Charsets.UTF_8)
+                        val replacementCount = str.count { it == '\uFFFD' }
+                        replacementCount == 0 || (replacementCount.toDouble() / str.length) < 0.05
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun openApk(file: FileItem) {

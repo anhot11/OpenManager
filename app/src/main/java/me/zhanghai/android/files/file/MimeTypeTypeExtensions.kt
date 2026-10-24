@@ -44,13 +44,54 @@ val MimeType.isImage: Boolean
     get() = icon == MimeTypeIcon.IMAGE
 
 val MimeType.isAudio: Boolean
-    get() = icon == MimeTypeIcon.AUDIO
+    get() = icon == MimeTypeIcon.AUDIO || value.startsWith("audio/")
 
 val MimeType.isVideo: Boolean
-    get() = icon == MimeTypeIcon.VIDEO
+    get() = icon == MimeTypeIcon.VIDEO || value.startsWith("video/")
 
 val MimeType.isMedia: Boolean
     get() = isAudio || isVideo
 
 val MimeType.isPdf: Boolean
     get() = this == MimeType.PDF
+
+val MimeType.isText: Boolean
+    get() = icon == MimeTypeIcon.DOCUMENT
+        || value.startsWith("text/")
+        || value in textMimeTypes
+
+val MimeType.isSqlite: Boolean
+    get() = value in sqliteMimeTypes
+
+val MimeType.isDex: Boolean
+    get() = value == "application/vnd.android.dex"
+
+val MimeType.isArsc: Boolean
+    get() = value == "application/vnd.android.arsc"
+
+val MimeType.isSharedLibrary: Boolean
+    get() = value == "application/x-sharedlib" || value == "application/x-elf"
+
+private val textMimeTypes = setOf(
+    "application/json",
+    "application/xml",
+    "application/javascript",
+    "application/typescript",
+    "application/x-sh",
+    "application/x-shellscript",
+    "application/yaml",
+    "application/x-yaml",
+    "application/x-toml",
+    "application/x-smali",
+    "application/x-bat",
+    "application/x-cmd",
+    "application/sql",
+    "application/x-sql"
+).map { it.asMimeType() }.toSet()
+
+private val sqliteMimeTypes = setOf(
+    "application/x-sqlite3",
+    "application/vnd.sqlite3",
+    "application/sqlite3"
+).map { it.asMimeType() }.toSet()
+

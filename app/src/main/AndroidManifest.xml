@@ -351,6 +351,37 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="me.zhanghai.android.files.viewer.video.VideoPlayerActivity"
+            android:exported="true"
+            android:label="Reproductor de video"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.MaterialFiles.Immersive">
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="me.zhanghai.android.files.viewer.audio.AudioPlayerActivity"
+            android:exported="true"
+            android:label="Reproductor de audio"
+            android:theme="@style/Theme.MaterialFiles.Dialog">
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="me.zhanghai.android.files.viewer.sqlite.SqliteViewerActivity"
+            android:exported="false"
+            android:label="Visor SQLite"
+            android:theme="@style/Theme.MaterialFiles" />
+
         <service
             android:name="me.zhanghai.android.files.filejob.FileJobService"
             android:foregroundServiceType="specialUse">
