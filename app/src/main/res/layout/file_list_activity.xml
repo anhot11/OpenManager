@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ OpenManager - MT-Style Dual Pane Activity Layout
+  ~ Supports simultaneous side-by-side Panel A and Panel B or quick tab switching.
+  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activityRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <!-- MT-Style Panel Control Bar -->
+    <LinearLayout
+        android:id="@+id/dualPaneHeader"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="?colorAppBarSurface"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <!-- Panel A Button / Tab -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPanelA"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:text="Panel A"
+            android:textSize="11sp"
+            android:singleLine="true"
+            android:ellipsize="middle"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/file_directory_icon"
+            app:iconSize="14dp" />
+
+        <!-- Swap / Synchronize Button (⇄) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSwap"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="38dp"
+            android:layout_height="34dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="Intercambiar Paneles"
+            app:icon="@drawable/reset_icon_white_24dp"
+            app:iconSize="16dp" />
+
+        <!-- Dual Pane Toggle Button (◫ Dual A|B) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDual"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:text="◫ Dual"
+            android:textSize="11sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
+
+        <!-- Panel B Button / Tab -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPanelB"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="Panel B"
+            android:textSize="11sp"
+            android:singleLine="true"
+            android:ellipsize="middle"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/file_directory_icon"
+            app:iconSize="14dp" />
+
+    </LinearLayout>
+
+    <!-- Panels Container (Horizontal Split for Dual Pane) -->
+    <LinearLayout
+        android:id="@+id/panelsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/containerPanelA"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <View
+            android:id="@+id/paneDivider"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="?android:textColorSecondary"
+            android:alpha="0.2" />
+
+        <FrameLayout
+            android:id="@+id/containerPanelB"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</LinearLayout>

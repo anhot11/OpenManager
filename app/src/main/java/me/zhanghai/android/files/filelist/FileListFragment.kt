@@ -23,6 +23,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -181,6 +182,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     private lateinit var adapter: FileListAdapter
 
+    private var navigateUpCallback: OnBackPressedCallback? = null
+
     private val debouncedSearchRunnable = DebouncedRunnable(Handler(Looper.getMainLooper()), 1000) {
         if (!isResumed || !viewModel.isSearchViewExpanded) {
             return@DebouncedRunnable
@@ -220,7 +223,12 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         navigationFragment.listener = this
         val activity = requireActivity() as AppCompatActivity
         activity.setTitle(R.string.file_list_title)
-        activity.setSupportActionBar(binding.toolbar)
+        if (activity.supportActionBar == null) {
+            activity.setSupportActionBar(binding.toolbar)
+        }
+        binding.toolbar.setNavigationOnClickListener {
+            binding.drawerLayout?.openDrawer(GravityCompat.START)
+        }
         overlayActionMode = OverlayToolbarActionMode(binding.overlayToolbar, binding.toolbar)
         bottomActionMode = PersistentBarLayoutToolbarActionMode(
             binding.persistentBarLayout, binding.bottomBarLayout, binding.bottomToolbar
@@ -244,6 +252,12 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         binding.recyclerView.layoutManager = layoutManager
         adapter = FileListAdapter(this)
         binding.recyclerView.adapter = adapter
+        binding.recyclerView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                (activity as? FileListActivity)?.onPanelFocused(this@FileListFragment)
+                return false
+            }
+        })
         val fastScroller = ThemedFastScroller.create(binding.recyclerView)
         binding.recyclerView.setOnApplyWindowInsetsListener(
             ScrollingViewOnApplyWindowInsetsListener(binding.recyclerView, fastScroller)
@@ -261,18 +275,18 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
 
         val viewLifecycleOwner = viewLifecycleOwner
-        addOnBackPressedCallback(
-            object : OnBackPressedCallback(false) {
-                override fun handleOnBackPressed() {
-                    viewModel.navigateUp()
-                }
+        val callback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                viewModel.navigateUp()
             }
-                .also { callback ->
-                    viewModel.breadcrumbLiveData.observe(viewLifecycleOwner) {
-                        callback.isEnabled = viewModel.canNavigateUpBreadcrumb
-                    }
-                }
-        )
+        }.also { cb ->
+            viewModel.breadcrumbLiveData.observe(viewLifecycleOwner) {
+                val isPanelActive = (activity as? FileListActivity)?.activeFragment == this@FileListFragment
+                cb.isEnabled = isPanelActive && viewModel.canNavigateUpBreadcrumb
+            }
+            addOnBackPressedCallback(cb)
+        }
+        navigateUpCallback = callback
         addOnBackPressedCallback(overlayActionMode.onBackPressedCallback)
         addOnBackPressedCallback(SpeedDialViewOnBackPressedCallback(binding.speedDialView))
         binding.drawerLayout?.let {
@@ -1461,6 +1475,11 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     override fun observeCurrentPath(owner: LifecycleOwner, observer: (Path) -> Unit) {
         viewModel.currentPathLiveData.observe(owner, observer)
+    }
+
+    fun updateBackCallbackState() {
+        val isPanelActive = (activity as? FileListActivity)?.activeFragment == this
+        navigateUpCallback?.isEnabled = isPanelActive && viewModel.canNavigateUpBreadcrumb
     }
 
     override fun closeNavigationDrawer() {
