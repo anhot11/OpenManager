@@ -203,7 +203,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setHasOptionsMenu(true)
+        if (activity !is FileListActivity) {
+            setHasOptionsMenu(true)
+        }
     }
 
     override fun onCreateView(
@@ -405,8 +407,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        val flActivity = activity as? FileListActivity
-        if (flActivity != null && flActivity.activeFragment != this) {
+        if (activity is FileListActivity) {
             return
         }
         super.onCreateOptionsMenu(menu, inflater)
@@ -722,11 +723,12 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     override fun navigateUp() {
         collapseSearchView()
-        val pathStr = currentPath.toString()
-        if (pathStr == "/storage/emulated/0" || pathStr == "/storage/emulated/0/") {
-            return
+        if (!viewModel.navigateUp()) {
+            val parent = currentPath.parent
+            if (parent != null) {
+                navigateTo(parent)
+            }
         }
-        viewModel.navigateUp()
     }
 
     fun reload() {
@@ -1285,6 +1287,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     override fun openFile(file: FileItem) {
+        if (file.isParentDirectoryItem) {
+            navigateUp()
+            return
+        }
         val pickOptions = viewModel.pickOptions
         if (pickOptions != null) {
             if (file.attributes.isDirectory) {

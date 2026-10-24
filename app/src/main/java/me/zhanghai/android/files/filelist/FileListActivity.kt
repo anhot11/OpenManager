@@ -95,7 +95,6 @@ class FileListActivity : AppActivity() {
 
         drawerLayout = findViewById(R.id.drawerLayout)
         mainToolbar = findViewById(R.id.mainToolbar)
-        setSupportActionBar(mainToolbar)
         mainToolbar.setNavigationOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
@@ -237,13 +236,18 @@ class FileListActivity : AppActivity() {
     }
 
     private fun showMTMoreMenu(anchor: View) {
-        val popup = PopupMenu(this, anchor)
+        val popup = PopupMenu(this, anchor, Gravity.END)
         popup.inflate(R.menu.mt_overflow_menu)
         try {
             val field = popup.javaClass.getDeclaredField("mPopup")
             field.isAccessible = true
-            val menuPopupHelper = field.get(popup) as MenuPopupHelper
-            menuPopupHelper.setForceShowIcon(true)
+            val menuPopupHelper = field.get(popup) as? MenuPopupHelper
+            menuPopupHelper?.setForceShowIcon(true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        try {
+            (popup.menu as? androidx.appcompat.view.menu.MenuBuilder)?.setOptionalIconsVisible(true)
         } catch (e: Exception) {
             e.printStackTrace()
         }
