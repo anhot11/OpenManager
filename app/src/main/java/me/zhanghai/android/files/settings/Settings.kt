@@ -23,6 +23,7 @@ import me.zhanghai.android.files.storage.PrimaryStorageVolume
 import me.zhanghai.android.files.storage.Storage
 import me.zhanghai.android.files.theme.custom.ThemeColor
 import me.zhanghai.android.files.theme.night.NightMode
+import me.zhanghai.android.files.util.valueCompat
 import java.io.File
 
 object Settings {
