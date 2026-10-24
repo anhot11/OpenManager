@@ -1,0 +1,117 @@
+{
+    name: ["GLSL", ".glsl", ".glsles", ".vert", ".frag", ".geom", ".comp", ".tesc", ".tese"]
+    styles: [
+        "preprocessor", #A020F0, #BC3FBC
+        "builtin", #0000FF, #DFAE61
+        "typeQualifier", #2E8B57, #50B0C0
+        "storageQualifier", #A52A2A, #CC7832
+        "precisionQualifier", #8B4513, #D75F00
+        "layoutQualifier", #4169E1, #9876AA
+        "constant", #8B0000, #9876AA
+    ]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    defines: [
+        "identifier": /\b[a-zA-Z_]\w*\b/
+    ]
+    contains: [
+        {builtin: #C_QUOTED_STRING#}
+        {
+            number: "2|8|10|16|F|E|P|_"
+            iSuffixes: "u|U"
+        }
+        {match: /(?m)^[ \t]*(#[ \t]*include)(\s*<.*?>)/, 1: "preprocessor", 2: "string"}
+        {match: /(?m)^[ \t]*#[ \t]*\S+/, 0: "preprocessor"}
+        {match: keywordsToRegex(
+                "break case continue default do else for if return switch while struct discard sum noperspective _Pragma"
+                "centroid layout patch pointSize position subroutine catch operator try throw using"
+            ), 0: "keyword"
+        }
+        // Type qualifiers
+        {match: keywordsToRegex(
+                "const in out inout"
+                "asm __asm__ auto _Bool char _Complex enum _Imaginary long short signed"
+            ), 0: "typeQualifier"
+        }
+        // Storage qualifiers
+        {match: keywordsToRegex(
+                "attribute uniform varying buffer shared coherent volatile restrict readonly writeonly"
+                "typedef union unsigned class wchar_t"
+            ), 0: "storageQualifier"
+        }
+        // Precision qualifiers
+        {match: keywordsToRegex(
+                "highp mediump lowp precision"
+                "template char16_t char32_t extern register"
+            ), 0: "precisionQualifier"
+        }
+
+        // Layout qualifiers
+        {match: /\blayout\s*\(/, 0: "layoutQualifier"}
+        // Layout qualifiers2
+        {match: keywordsToRegex(
+                "static inline private protected public friend"
+            ), 0: "layoutQualifier"}
+        // Types
+        {match: keywordsToRegex(
+                "void bool int uint float double half"
+                "vec2 vec3 vec4 dvec2 dvec3 dvec4"
+                "bvec2 bvec3 bvec4 ivec2 ivec3 ivec4 uvec2 uvec3 uvec4"
+                "mat2 mat3 mat4 mat2x2 mat2x3 mat2x4"
+                "mat3x2 mat3x3 mat3x4 mat4x2 mat4x3 mat4x4"
+                "dmat2 dmat3 dmat4 dmat2x2 dmat2x3 dmat2x4"
+                "dmat3x2 dmat3x3 dmat3x4 dmat4x2 dmat4x3 dmat4x4"
+                "sampler1D sampler2D sampler3D samplerCube"
+                "sampler1DShadow sampler2DShadow samplerCubeShadow"
+                "sampler1DArray sampler2DArray samplerCubeArray"
+                "sampler1DArrayShadow sampler2DArrayShadow"
+                "isampler1D isampler2D isampler3D isamplerCube"
+                "isampler1DArray isampler2DArray isamplerCubeArray"
+                "usampler1D usampler2D usampler3D usamplerCube"
+                "usampler1DArray usampler2DArray usamplerCubeArray"
+                "sampler2DRect sampler2DRectShadow isampler2DRect usampler2DRect"
+                "samplerBuffer isamplerBuffer usamplerBuffer"
+                "sampler2DMS isampler2DMS usampler2DMS"
+                "sampler2DMSArray isampler2DMSArray usampler2DMSArray"
+                "image1D image2D image3D imageCube"
+                "image1DArray image2DArray"
+                "iimage1D iimage2D iimage3D iimageCube"
+                "iimage1DArray iimage2DArray"
+                "uimage1D uimage2D uimage3D uimageCube"
+                "uimage1DArray uimage2DArray"
+                "image2DRect iimage2DRect uimage2DRect"
+                "imageBuffer iimageBuffer uimageBuffer"
+                "explicit virtual export mutable typename constexpr"
+            ), 0: "type"
+        }
+        // Built-in constants
+        {match: /\b(gl_\w+)\b/, 0: "constant"}
+        // Built-in constants2
+        {match: keywordsToRegex(
+                "static inline private protected public friend"
+            ), 0: "constant"}
+        // Built-in functions
+        {match: keywordsToRegex(
+                "radians degrees sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh not_eq or or_eq typeid"
+                "pow exp log exp2 log2 sqrt inversesqrt xor xor_eq const_cast"
+                "abs sign floor trunc round roundEven ceil fract mod modf min max clamp mix step smoothstep isnan isinf dynamic_cast reinterpret_cast static_cast"
+                "length distance dot cross normalize faceforward reflect refract sizeof namespace null nullptr"
+                "matrixCompMult outerProduct transpose determinant inverse"
+                "lessThan lessThanEqual greaterThan greaterThanEqual equal notEqual any all not and and_eq bitand bitor compl"
+                "texture textureOffset texelFetch texelFetchOffset textureProjOffset textureLodOffset texture2D texture2DLod texture2DProj texture2DProjLod textureCube textureCubeLod textureSize"
+                "textureProjLod textureProjLodOffset textureGrad textureGradOffset"
+                "textureProjGrad textureProjGradOffset textureGather textureGatherOffset"
+                "textureSize textureQueryLod textureQueryLevels"
+                "atomicAdd atomicMin atomicMax atomicAnd atomicOr atomicXor atomicExchange atomicCompSwap"
+                "imageLoad imageStore imageAtomicAdd imageAtomicMin imageAtomicMax"
+                "imageAtomicAnd imageAtomicOr imageAtomicXor imageAtomicExchange imageAtomicCompSwap"
+                "dFdx dFdy dFdxFine dFdyFine dFdxCoarse dFdyCoarse fwidth fwidthFine fwidthCoarse"
+                "interpolateAtCentroid interpolateAtSample interpolateAtOffset"
+                "EmitVertex EndPrimitive"
+                "barrier memoryBarrier memoryBarrierAtomicCounter memoryBarrierBuffer memoryBarrierShared memoryBarrierImage groupMemoryBarrier invariant goto true false"
+            ), 0: "builtin"
+        }
+        // Function definitions
+        {match: include("identifier") + /(?=\s*\()/, 0: "funName"}
+    ]
+}

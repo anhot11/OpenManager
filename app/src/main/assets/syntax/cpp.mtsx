@@ -1,0 +1,139 @@
+{
+    name: ["C++", ".cpp", ".cxx", ".hpp", ".hxx", ".cc", ".h"]
+
+    // 自定义样式
+    styles: [
+        "preprocessor" > "meta"
+        "namespace" > "type"
+    ]
+
+    // 注释配置
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    // 括号配对
+    bracketPairs: ["{}", "[]", "()", "<>"]
+
+    // 可复用定义
+    defines: [
+        // 标识符
+        "identifier": /[a-zA-Z_]\w*/
+
+        // 类型名（大写开头或常见类型）
+        "typeName": [
+            {match: /\b[A-Z]\w*\b/, 0: "type"}
+            {match: keywordsToRegex(
+                "size_t ssize_t ptrdiff_t intptr_t uintptr_t"
+                "int8_t int16_t int32_t int64_t"
+                "uint8_t uint16_t uint32_t uint64_t"
+                "FILE DIR time_t clock_t"
+                "string wstring u8string u16string u32string"
+                "vector list map set deque queue stack"
+                "shared_ptr unique_ptr weak_ptr"
+                "iostream istream ostream fstream"
+                "nullptr_t"
+            ), 0: "type"}
+        ]
+    ]
+
+    contains: [
+        // 原始字符串字面量 R"delimiter(...)delimiter"
+        {match: /(?s)(R"(\w*)\()/ + /(.*?)/ + /(\)\2")/, 1: "keyword", 3: "string", 4: "keyword"}
+
+        // 字符串和字符（支持 L"" u8"" u"" U"" 前缀）
+        {builtin: #C_QUOTED_STRING#}
+
+        // 数字
+        {builtin: #C_NUMBER#}
+
+        // #include 带尖括号
+        {match: /(?m)^[ \t]*(#[ \t]*include)(\s*<[^>]+>)/, 1: "preprocessor", 2: "string"}
+
+        // #include 带引号
+        {match: /(?m)^[ \t]*(#[ \t]*include)\b/, 1: "preprocessor"}
+
+        // #define 宏定义
+        {
+            start: {match: /(?m)^[ \t]*(#[ \t]*define)\s+(/ + include("identifier") + /)/, 1: "preprocessor", 2: "constant"}
+            end: {match: /(?m)(?<!\\)$/}
+            style: "default"
+            contains: [
+                {match: /\/\/[^\r\n]*/, 0: "comment"}
+                {
+                    style: "comment"
+                    start: {match: /\/\*/}
+                    end: {match: /\*\//}
+                }
+                {builtin: #C_QUOTED_STRING#}
+                {builtin: #C_NUMBER#}
+                {match: /\\$/, 0: "preprocessor"}  // 行续接符
+            ]
+        }
+
+        // 其他预处理指令
+        {match: /(?m)^[ \t]*(#[ \t]*\w+)/, 1: "preprocessor"}
+
+        // C++ 关键字
+        {match: keywordsToRegex(
+            // 标准 C++ 关键字
+            "alignas alignof and and_eq asm auto bitand bitor bool break case catch"
+            "char char8_t char16_t char32_t class compl concept const const_cast consteval"
+            "constexpr constinit continue co_await co_return co_yield decltype default"
+            "delete do double dynamic_cast else enum explicit export extern false float"
+            "for friend goto if inline int long mutable namespace new noexcept not not_eq"
+            "nullptr operator or or_eq private protected public register reinterpret_cast"
+            "requires return short signed sizeof static static_assert static_cast struct"
+            "switch template this thread_local throw true try typedef typeid typename"
+            "union unsigned using virtual void volatile wchar_t while xor xor_eq"
+            // 传统 C 关键字
+            "restrict _Bool _Complex _Imaginary _Alignas _Alignof _Atomic"
+            "_Static_assert _Noreturn _Thread_local _Generic"
+        ), 0: "keyword"}
+
+        // Microsoft 扩展关键字
+        {match: keywordsToRegex(
+            "__alignof __asm __assume __based __cdecl __declspec __event __except"
+            "__fastcall __finally __forceinline __hook __if_exists __if_not_exists"
+            "__inline __int8 __int16 __int32 __int64 __interface __leave __m64 __m128"
+            "__m128d __m128i __ptr32 __ptr64 __raise __restrict __single_inheritance"
+            "__sptr __stdcall __super __thiscall __unaligned __unhook __uptr __uuidof"
+            "__vectorcall __virtual_inheritance __multiple_inheritance __w64 __wchar_t"
+        ), 0: "keyword2"}
+
+        // C++/CLI 和 C++/CX 关键字
+        {match: keywordsToRegex(
+            "__abstract __box __delegate __gc __identifier __nogc __noop __pin"
+            "__property __sealed __try_cast __value abstract array as_friend"
+            "delegate event finally gcnew generic initonly interior_ptr literal"
+            "property safecast sealed"
+        ), 0: "keyword2"}
+
+        // 布尔和空值常量
+        {match: keywordsToRegex("true false nullptr NULL"), 0: "constant"}
+
+        // namespace 声明/使用
+        {match: /\b(namespace)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "namespace"}
+        {match: /\b(using)\s+(namespace)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "keyword", 3: "namespace"}
+
+        // 类型定义：typedef/using ... TypeName
+        {match: /\b(typedef|using)\s+/, 1: "keyword"}
+
+        // class/struct/union/enum 定义
+        {match: /\b(class|struct|union|enum)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "type"}
+
+        // template 声明
+        {match: /\b(template)\s*</, 1: "keyword"}
+
+        // 作用域解析运算符 ::
+        {match: /::/, 0: "operator"}
+
+        // 类型名
+        {include: "typeName"}
+
+        // 全大写常量（宏）
+        {match: /\b[A-Z][A-Z0-9_]{2,}\b/, 0: "constant"}
+
+        // 函数调用
+        {match: /\b(/ + include("identifier") + /)(?=\s*\()/, 1: "variable"}
+    ]
+}

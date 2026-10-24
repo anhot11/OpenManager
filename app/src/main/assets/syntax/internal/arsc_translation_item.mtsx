@@ -1,0 +1,34 @@
+{
+    name: ["ArscTranslationItem"]
+    styles: [
+        "default", #EE000000, #EED0D0D0
+        "keyword", #434D42#DBF4D2, #868990#474A50
+        "error",   #F50000#DBF4D2, #BC3F3C#474A50
+    ]
+    contains: [
+        {
+            start: {match: "<[^/>\\s]+"}
+            end: {match: "[?/]?>|$"}
+            style: "keyword"
+            contains: [
+                {match: /(?:([^='"<\/>\s]+)(:))?([^='"<\/>\s]+)/}
+                {
+                    group: link
+                    contains: [
+                        {match: /=\s*/}
+                        {match: /(?s)(["'])(.*?)\1/}
+                    ]
+                }
+            ]
+        }
+        {
+            match: "</\\s*[^>\\s]+\\s*>", 0: "keyword"
+        }
+        {
+            match: /&(?:amp|gt|lt|quot|apos|#\d+);/, 0: "keyword"
+        }
+        {
+            match: /&[a-zA-Z0-9#]*;?/, 0: "error"
+        }
+    ]
+}

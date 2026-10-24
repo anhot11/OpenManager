@@ -1,0 +1,10 @@
+{
+    // @author: A4-Tacks
+    // @email: wdsjxhno1001@163.com
+    name: ["CSV", ".csv"]
+    contains: [
+        {match: ",", 0: "keyword"}
+        {builtin: #C_DOUBLE_QUOTED_STRING#}
+        {number: "10"}
+    ]
+}

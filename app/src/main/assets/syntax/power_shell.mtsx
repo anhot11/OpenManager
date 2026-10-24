@@ -1,0 +1,46 @@
+{
+    name: ["PowerShell", ".ps1", ".psm1", ".psd1"]
+    styles: [
+        "cmdlet" > "keyword"
+        "variable", #466D7B, #8195B7
+        "operator", #7C1E8F, #BD80B8
+    ]
+    comment: {startsWith: "#"}
+    comment: {startsWith: "<#", endsWith: "#>"}
+    contains: [
+        // Strings
+        {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /"/}
+            contains: [
+                {match: /`[`"'$]/, 0: "strEscape"}
+                {match: /\$(?:[a-zA-Z_]\w*|\{[^}]+\})/, 0: "variable"}
+            ]
+        }
+        {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /'/}
+        }
+
+        // Numbers
+        {number: "2|8|10|16|F|E|_"}
+
+        // Variables
+        {match: /\$(?:[a-zA-Z_]\w*|\{[^}]+\})/, 0: "variable"}
+
+        // Keywords
+        {match: keywordsToRegex(
+            "begin break catch class clean continue data define do dynamicparam else elseif end enum exit"
+            "filter finally for foreach from function hidden if in param process return static switch throw"
+            "trap try until using var while"
+        ), 0: "keyword"}
+
+        // Cmdlets and Aliases
+        {match: /\b(?:Get|Set|New|Remove|Add|Clear|Copy|Export|Import|Invoke|Measure|Select|Sort|Where)-[A-Z]\w+\b/, 0: "cmdlet"}
+
+        // Operators
+        {match: /(?<!\w)(?:[-+*\/%]=?|[=!]=|[<>]=?|-(?:and|or|xor|not)\b|-(?:band|bor|bxor|bnot|shl|shr)\b|-(?:eq|ne|gt|lt|le|ge)\b|-(?:match|notmatch|replace|like|notlike)\b|-(?:in|notin|contains|notcontains)\b|-(?:is|isnot)\b|!|\+\+|--|>>?|2>&1|-(?:split|join)\b)(?!\w)/, 0: "operator"}
+    ]
+}

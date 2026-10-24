@@ -1,0 +1,83 @@
+{
+    // @author: A4-Tacks
+    // @email: wdsjxhno1001@163.com
+    name: ["Asm", ".s", ".a", ".mac", ".lst", ".asm", ".nasm", ".masm", ".mar"]
+    ignoreCase: true
+
+    comment: {startsWith: ";",  addToContains: false}
+    comment: {startsWith: "#",  addToContains: false}
+    comment: {startsWith: "!",  addToContains: false}
+    comment: {startsWith: "|",  addToContains: false}
+    comment: {startsWith: "//", addToContains: false}
+    comment: {startsWith: "/*", endsWith: "*/", addToContains: false}
+
+    styles: [
+        "todo"      > "default", @B
+        "macro"     > "namespace"
+        "directive",  #58908A, #58908A
+    ]
+
+    defines: [
+        "todo": {match: keywordsToRegex("TODO FIXME XXX NOTE todo"), 0: "todo"}
+    ]
+
+    contains: [
+        { // comment
+            match: /(?m)(?:[;|]|^#|[#!](?!\d)|\/\/).*/
+            0: "comment"
+            0: {include: "todo"}
+        }
+        { // comment multiline
+            start: {match: "/\\*"}
+            end: {match: "\\*/"}
+            color: "comment"
+            contains: [
+                {include: "todo"}
+            ]
+        }
+        { // type
+            match: /\./ + keywordsToRegex(
+                "long ascii asciz byte double float hword int octa quad"
+                "short single space string word 2byte 4byte 8byte"
+                // ext
+            )
+            0: "keyword2"
+        }
+        { // cond
+            match: /\./ + keywordsToRegex(
+                "if iff if_false ift iftf if_true if_true_false iif else endif"
+                "irp iprc repeat rept endr"
+            )
+            0: "macro"
+        }
+        { // macro
+            match: /\./ + keywordsToRegex(
+                "include library macro mexit endm mcall mdelete"
+            )
+            0: "macro"
+        }
+        { // directive
+            match: /\.[a-z][a-z\d_\-.]*\b:?/
+            0: "directive"
+        }
+        { // label
+            match: /(?<!:)\.?\b[a-z][a-z\d_\-.]*:/
+            0: "label"
+        }
+        { // cmd
+            match: /(?m)^\s*[a-z][a-z\d_\-.]*\b/
+            0: "keyword"
+        }
+        { // special
+            match: /[#!%.@$~?]|:[a-z][a-z\d_\-.]*:/
+            0: "meta"
+        }
+        { // operator
+            match: /[\[\]+\-*\/=&<>]/
+            0: "operator"
+        }
+        {match: /,/, 0: "keyword"}
+        {builtin: #C_NUMBER#}
+        {builtin: #C_QUOTED_STRING#}
+    ]
+}

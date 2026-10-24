@@ -1,0 +1,15 @@
+{
+    name: ["Prop", ".prop", ".properties", ".cfg", ".conf"]
+    comment: {startsWith: "#"}
+    comment: {startsWith: "!"}
+    contains: [
+        {
+            style: "propVal"
+            start: {match: /(?m)^[\t ]*(?:[^\s\\:=]|\\.)+[\t ]*[:=]/, 0: "propKey"}
+            end: {match: /(?m)$/}
+            contains: [
+                {builtin: #ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}

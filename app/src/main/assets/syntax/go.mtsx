@@ -1,0 +1,106 @@
+{
+    name: ["Golang", ".go"]
+
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    styles: [
+        "funcName", #3B6C72, #F6C87B
+        "builtinFunc", #067D17, #629755
+        "builtinType" > "keyword"
+        "typeDecl", #0033B3, #FFC66D
+    ]
+
+    defines: [
+        "identifier": /[a-zA-Z_]\w*/
+
+        // 字符串和字符
+        "strings": [
+            // 双引号字符串（带转义）
+            {
+                start: {match: /"/}
+                end: {match: /(?m)"|$/}
+                style: "string"
+                contains: [
+                    {match: /\\([abfnrtv\\'"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|[0-7]{3})/, 0: "strEscape"}
+                    {match: /\\./, 0: "error"}
+                ]
+            }
+            // 原始字符串（反引号，不支持转义）
+            {match: /(?s)`[^`]*`/, 0: "string"}
+            // 字符
+            {
+                start: {match: /'/}
+                end: {match: /(?m)'|$/}
+                style: "string"
+                contains: [
+                    {match: /\\([abfnrtv\\'"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|[0-7]{3})/, 0: "strEscape"}
+                    {match: /\\./, 0: "error"}
+                ]
+            }
+        ]
+    ]
+
+    contains: [
+        // 字符串和字符
+        {include: "strings"}
+
+        // 数字（支持二进制、八进制、十进制、十六进制、浮点数、科学计数法）
+        {number: "2|10|16|F|E|_", iSuffixes: "i", fSuffixes: "i"}
+        // 十六进制浮点数（特殊处理小数点后无数字的情况，如 0x3.p10）
+        {match: /\b0[xX][0-9a-fA-F]+(\.[0-9a-fA-F]*)?[pP][\-+]?\d+i?\b/, 0: "number"}
+        {match: /\b0[oO][0-7]+i?\b/, 0: "number"}
+
+        // 关键字
+        {match: keywordsToRegex(
+            "break default func interface select case defer go map struct"
+            "chan else goto package switch const fallthrough if range type"
+            "continue for import return var"
+        ), 0: "keyword"}
+
+        // 预声明标识符 - 常量
+        {match: keywordsToRegex("true false iota nil"), 0: "constant"}
+
+        // 预声明类型
+        {match: keywordsToRegex(
+            "bool byte complex64 complex128 error float32 float64"
+            "int int8 int16 int32 int64 rune string"
+            "uint uint8 uint16 uint32 uint64 uintptr"
+            "any comparable"
+        ), 0: "builtinType"}
+
+        // 内置函数
+        {match: keywordsToRegex(
+            "append cap clear close complex copy delete imag len"
+            "make max min new panic print println real recover"
+        ), 0: "builtinFunc"}
+
+        // 类型声明：type Name
+        {match: /\b(type)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "typeDecl"}
+
+        // 函数/方法声明：func name 或 func (receiver) name
+        {
+            group: link
+            contains: [
+                {match: /\b(func)\b\s*/, 1: "keyword"}
+                {match: /\([^)]*\)\s*/}  // 可选的接收者
+                {match: include("identifier"), 0: "funcName"}
+            ]
+        }
+
+        // 函数调用：identifier(
+        {match: include("identifier") + /(?=\s*\()/, 0: "funcName"}
+
+        // 包导入中的点操作：. "package"
+        {match: /\bimport\s+\.(?=\s*")/, 0: "keyword"}
+
+        // 包选择器：package.Identifier（大写开头视为导出标识符）
+        {match: include("identifier") + /\.([A-Z]\w*)/, 1: "type"}
+
+        // 标签：label:
+        {match: /(?m)^[ \t]*(\w+)(:)(?!=)/, 1: "label", 2: "operator"}
+
+        // 类型转换/类型断言中的类型
+        {match: /\.\(/ + include("identifier") + /\)/, 0: "type"}
+    ]
+}

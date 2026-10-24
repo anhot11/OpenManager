@@ -1,0 +1,197 @@
+{
+    name: ["JavaScript", ".js", ".es", ".mjs", ".cjs"]
+    // 注释规则在正文和模板插值中共用，元数据仍供编辑器注释操作使用。
+    comment: {startsWith: "//", addToContains: false}
+    comment: {startsWith: "/*", endsWith: "*/", addToContains: false}
+    defines: [
+        "identifierPart": /[$\p{javaUnicodeIdentifierPart}]/
+        // 转义与标识符一起消费，避免转义花括号提前结束模块或模板作用域。
+        "identifierEscape": /\\u(?:[0-9a-fA-F]{4}|\{[0-9a-fA-F]+\})/
+        "identifier": /(?:[$_\p{javaUnicodeIdentifierStart}]|/ + include("identifierEscape") + /)(?:/
+            + include("identifierPart") + /|/ + include("identifierEscape") + /)*/
+        "spaceChar": /[\s\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/
+        "space": include("spaceChar") + /*/
+        "inlineSpace": /[^\S\r\n\u2028\u2029]*/
+        "lineComment": /\/\/[^\r\n\u2028\u2029]*/
+        "closedBlockComment": /\/\*(?:[^*]|\*(?!\/))*\*\//
+        "trivia": /(?:/ + include("spaceChar") + /|/ + include("lineComment") + /|/ + include("closedBlockComment") + /)*/
+        // 连续匹配成员和别名时保留中间注释的样式。
+        "triviaMatcher": {
+            match: include("trivia")
+            0: {match: include("lineComment") + /|/ + include("closedBlockComment"), 0: "comment"}
+        }
+        "comments": [
+            {match: include("lineComment"), 0: "comment"}
+            {
+                start: {match: /\/\*/}
+                end: {match: /\*\//}
+                style: "comment"
+            }
+        ]
+        // 先消费属性名，防止保留字属性触发正则或模块规则；排除展开运算符。
+        "propertyAccess": {
+            group: linkAll
+            style: "default"
+            contains: [
+                {match: /(?:(?<!\.)|(?<=[0-9]\.))\.(?!\.)/}
+                {include: "triviaMatcher"}
+                {match: /#?/ + include("identifier")}
+            ]
+        }
+        "escapedChar": [
+            {match: /\\(?:\r\n|[\r\n\u2028\u2029])/, 0: "strEscape"}
+            {match: /\\(?:u(?:[0-9a-fA-F]{4}|\{[0-9a-fA-F]+\})|x[0-9a-fA-F]{2}|[0-3]?[0-7]{1,2})/, 0: "strEscape"}
+            // JS 允许普通字符转义；只有不完整的 x/u 转义在词法层标错。
+            {match: /\\[^xu\r\n\u2028\u2029]/, 0: "strEscape"}
+            {match: /\\[xu]/, 0: "error"}
+        ]
+        "single-quoted-string": {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /'|(?=[\r\n])/}
+            contains: [
+                {include: "escapedChar"}
+            ]
+        }
+        "double-quoted-string": {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /"|(?=[\r\n])/}
+            contains: [
+                {include: "escapedChar"}
+            ]
+        }
+        "backtick-string": {
+            style: "string"
+            start: {match: /`/}
+            end: {match: /`/}
+            contains: [
+                {include: "escapedChar"}
+                {include: "dollarExp"}
+            ]
+        }
+        "regex": {
+            // 固定上下文后向前扫描空白；不猜测右括号及可作变量的 await/yield 后的正则。
+            start: {
+                match: /(?:(?<=[=,(\[&|!:;?{])|(?<==>)|\A|(?<![.$\p{javaUnicodeIdentifierPart}])(/
+                    + keywordsToRegex("return throw case typeof void delete in instanceof")
+                    + /)(?!/ + include("identifierPart") + /|\\))/ + include("space") + /(\/)(?![\/*])/
+                0: "default"
+                1: "keyword"
+                2: "meta"
+            }
+            end: {match: /\/([dgimsuvy]*)|(?=[\r\n\u2028\u2029])/, 1: "operator"}
+            style: "meta"
+            contains: [
+                {match: /\\[^\r\n\u2028\u2029]/, 0: "strEscape"}
+                {
+                    start: {match: /\[/}
+                    end: {match: /\]|(?=[\r\n\u2028\u2029])/}
+                    contains: [
+                        {match: /\\[^\r\n\u2028\u2029]/, 0: "strEscape"}
+                    ]
+                }
+            ]
+        }
+        "dollarExp": {
+            start: {match: /\$\{/}
+            end: {match: /\}/}
+            style: "strEscape"
+            childrenStyle: "default"
+            contains: [
+                {include: "braces"}
+                {include: "code"}
+            ]
+        }
+        // 仅在插值内平衡对象和函数体；字符串、注释及正则先消费各自的花括号。
+        "braces": {
+            start: {match: /\{/}
+            end: {match: /\}/}
+            style: "default"
+            contains: [
+                {include: "braces"}
+                {include: "code"}
+            ]
+        }
+        // as 只在静态模块别名中着色，避免影响同名变量和动态 import(...)。
+        "moduleAliases": [
+            {
+                start: {
+                    match: /(?<!/ + include("identifierPart") + /)(/ + keywordsToRegex("import export") + /)(?!/ + include("identifierPart") + /|\\)/
+                        + include("space") + /(?:/ + include("identifier") + include("space")
+                        + /,/ + include("space") + /)?\{/
+                    0: "default"
+                    1: "keyword"
+                }
+                end: {match: /\}/}
+                style: "default"
+                contains: [
+                    {include: "comments"}
+                    // link 允许无别名成员；原名和别名均可叫 as，只有中间一项是关键字。
+                    {
+                        group: link
+                        style: "default"
+                        contains: [
+                            {include: "moduleName"}
+                            {include: "triviaMatcher"}
+                            {match: /as(?!/ + include("identifierPart") + /|\\)/, 0: "keyword"}
+                            {include: "triviaMatcher"}
+                            {include: "moduleName"}
+                        ]
+                    }
+                ]
+            }
+            {
+                match: /(?<!/ + include("identifierPart") + /)(/ + keywordsToRegex("import export") + /)(?!/ + include("identifierPart") + /|\\)/
+                    + include("space") + /(?:/ + include("identifier") + include("space")
+                    + /,/ + include("space") + /)?\*/ + include("space") + /(as)(?!/ + include("identifierPart") + /|\\)/
+                1: "keyword"
+                2: "keyword"
+            }
+        ]
+        "moduleName": {
+            group: select
+            style: "default"
+            contains: [
+                {include: "single-quoted-string"}
+                {include: "double-quoted-string"}
+                {match: include("identifier")}
+            ]
+        }
+        "code": [
+            {include: "comments"}
+            {include: "propertyAccess"}
+            {include: "single-quoted-string"}
+            {include: "double-quoted-string"}
+            {include: "regex"}
+            {include: "backtick-string"}
+            {number: "2|8|10|16|F|E|_", iSuffixes: "n", style: "number"}
+            // async 是上下文关键字，普通变量和 async(...) 调用保留默认样式。
+            {
+                match: /(?<!/ + include("identifierPart") + /)\basync(?!/ + include("identifierPart") + /|\\)(?=/
+                    + /[^\S\r\n\u2028\u2029]+(?:function\b|\*?/ + include("identifier")
+                    + include("inlineSpace") + /(?:=>|\())|/ + include("inlineSpace")
+                    + /\([^()\r\n\u2028\u2029]*\)/ + include("inlineSpace") + /=>)/
+                0: "keyword"
+            }
+            {
+                match: /(?<!/ + include("identifierPart") + /)/ + keywordsToRegex(
+                    "await break case catch class const continue debugger default delete do else enum export"
+                    "extends false finally for function if implements import instanceof interface let"
+                    "new null package private protected public return static super switch this with"
+                    "throw true try typeof var void while yield"
+                ) + /(?!/ + include("identifierPart") + /|\\)/
+                0: "keyword"
+            }
+            // 关键字优先，但右边界须排除转义；普通标识符整体消费，避免内部片段触发规则。
+            {match: include("identifier"), 0: "default"}
+        ]
+    ]
+    contains: [
+        {match: /\A#![^\r\n\u2028\u2029]*/, 0: "comment"}
+        {include: "moduleAliases"}
+        {include: "code"}
+    ]
+    codeFormatter: #BUILT_IN_JS_FORMATTER#
+    codeShrinker: #BUILT_IN_JS_SHRINKER#
+}

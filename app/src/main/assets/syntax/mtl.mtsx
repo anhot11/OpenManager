@@ -1,0 +1,33 @@
+{
+    name: ["MT-Plugin-Language", ".mtl"]
+    hide: true
+    styles: [
+        "errorBg", #000#20F50000, #000#50BC3F3C
+        "errorU" > "error" @U
+    ]
+    comment: {startsWith: "#", addToContains: false}
+    contains: [
+        // 注释从行首开始匹配，确保不会被其他匹配覆盖
+        {match: /(?m)^[ \t]*#.*$/, 0: "comment"}
+
+        // 匹配 "key: value"
+        {
+            start: {
+                match: /(?m)^([^\n:]+)(: |(:.?))/
+                0: "propKey"
+                1: {match: /\s/, 0: "errorBg"} // key中不能有空白符号
+                3: "errorU" // 冒号后面必须有空格
+            }
+            end: {match: /(?m)$/}
+            style: "propVal"
+            contains: [
+                {match: /\\([tnr\\]|[uU][0-9a-fA-F]{4})/, 0: "strEscape"}
+                {match: /\\(\n|$)/, 0: "strEscape"}
+                {match: /\\./, 0: "error"}
+            ]
+        }
+
+        // 其他的非空白符号显示红色错误
+        {match: /\S+/, 0: "error"}
+    ]
+}

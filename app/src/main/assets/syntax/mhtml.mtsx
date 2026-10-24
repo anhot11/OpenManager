@@ -1,0 +1,74 @@
+// require MT >= 2.26.9
+{
+    name: ["MHTML", ".mhtml", ".mht"]
+
+    defines: [
+        // 头字段和折行逐行消费，空行始终留给正文分隔符。
+        "partStart": /(?m)^(--([0-9A-Za-z'()+_,.\/:=? -]{1,70}?))[ \t]*\r?\n/
+        "headerLine": /(?:[A-Za-z0-9-]++:[^\r\n]*+|[ \t]++[^\r\n]*+)\r?\n/
+        "headers": [
+            {match: /(?mi)^(Content-Type)(:)[ \t]*(?:\r?\n[ \t]+)?([A-Za-z0-9!#$&^_.+-]+\/[A-Za-z0-9!#$&^_.+-]+)/, 1: "attrName", 2: "operator", 3: "type"}
+            {match: /(?m)^([A-Za-z0-9-]+)(:)/, 1: "attrName", 2: "operator"}
+            {match: /"(?:\\[^\r\n]|[^"\\\r\n])*+"/, 0: "string"}
+            {match: /(?i)\b/ + keywordsToRegex("charset boundary type start") + /(?=[ \t]*=)/, 0: "propKey"}
+            {match: /[;=]/, 0: "operator"}
+        ]
+    ]
+
+    contains: [
+        // 文件头只在开头识别，避免把前言和尾声中的普通文本当成 MIME 头。
+        {
+            start: {match: /\A\uFEFF?(?=[A-Za-z0-9-]+:)/}
+            end: {match: /\r?\n\r?\n/}
+            contains: [{include: "headers"}]
+        }
+
+        // 从实际分隔行保存边界；精确匹配下一段，避免子语法吞掉后续资源。
+        // Base64 优先于媒体类型，无论编码字段位于 Content-Type 前还是后。
+        {
+            start: {
+                match: include("partStart") + /((?:(?!(?i:Content-Transfer-Encoding):)/ + include("headerLine") + /)*+(?i:Content-Transfer-Encoding):[ \t]*(?:\r?\n[ \t]+)?(?i:base64)[ \t]*\r?\n(?:/ + include("headerLine") + /)*+)\r?\n/
+                export: 2 => "boundary"
+                1: "meta"
+                3: {include: "headers"}
+            }
+            end: {match: /(?m)^(?=--/ + var("boundary") + /(?:--)?[ \t]*\r?$)/}
+            childrenStyle: "comment"
+        }
+
+        // 直接按原文高亮，不解码 quoted-printable；编码后的属性和软换行仅作近似显示。
+        {
+            start: {
+                match: include("partStart") + /((?:(?!(?i:Content-Type):)/ + include("headerLine") + /)*+(?i:Content-Type):[ \t]*(?:\r?\n[ \t]+)?([^; \t\r\n]+)[^\r\n]*+\r?\n(?:/ + include("headerLine") + /)*+)\r?\n/
+                export: 2 => "boundary"
+                1: "meta"
+                3: {include: "headers"}
+            }
+            end: {match: /(?m)^(?=--/ + var("boundary") + /(?:--)?[ \t]*\r?$)/}
+            childrenSyntax: {
+                capture: 4
+                ignoreCase: true
+                "text/html" => "MHTML-HTML"
+                "text/css" => "MHTML-CSS"
+                "text/javascript" => ".js"
+                "application/javascript" => ".js"
+                "application/json" => ".json"
+                "image/svg+xml" => ".svg"
+            }
+        }
+
+        // 无媒体类型时只显示编码转义，不猜测正文语言。
+        {
+            start: {
+                match: include("partStart") + /((?:/ + include("headerLine") + /)*+)\r?\n/
+                export: 2 => "boundary"
+                1: "meta"
+                3: {include: "headers"}
+            }
+            end: {match: /(?m)^(?=--/ + var("boundary") + /(?:--)?[ \t]*\r?$)/}
+            contains: [{match: /=(?:[0-9A-Fa-f]{2}|\r?\n)/, 0: "strEscape"}]
+        }
+
+        {match: /(?m)^--[0-9A-Za-z'()+_,.\/:=? -]{1,70}--[ \t]*\r?$/, 0: "meta"}
+    ]
+}

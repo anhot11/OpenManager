@@ -1,0 +1,135 @@
+{
+    name: ["Batch", ".bat", ".cmd"]
+
+    // 忽略大小写（批处理命令不区分大小写）
+    ignoreCase: true
+
+    // 自定义样式
+    styles: [
+        "path" > "type"              // 文件路径样式
+        "envVar" > "constant"        // 环境变量样式
+    ]
+
+    // 行注释（两种方式）
+    comment: {startsWith: "::"}      // :: 注释
+    comment: {startsWith: "rem ", insertSpace: false}  // rem 注释
+
+    // 括号配对
+    bracketPairs: ["()"]
+
+    // 正则定义
+    defines: [
+        // 环境变量和参数（用于字符串内外复用）
+        "variables": [
+            // 延迟扩展变量 !var!
+            {match: /!\w+!/, 0: "envVar"}
+
+            // 循环变量 %%var 或 %var（在脚本中）
+            {match: /%%?\w+/, 0: "envVar"}
+
+            // 环境变量 %VAR%（支持修饰符如 %~dp0）
+            {match: /%[\w:,~\-=]+%/, 0: "envVar"}
+
+            // 命令行参数 %0-%9 和 %*
+            {match: /%[0-9*]/, 0: "envVar"}
+
+            // 特殊参数修饰符 %~dp0, %~nx1 等
+            {match: /%~[fpdnxsatz]*[0-9]/, 0: "envVar"}
+        ]
+    ]
+
+    contains: [
+        // ===== 字符串 =====
+        {
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            style: "string"
+            contains: [
+                // 转义字符（批处理中 ^ 是转义符）
+                {match: /\^./, 0: "strEscape"}
+
+                // 字符串内的变量
+                {include: "variables"}
+            ]
+        }
+
+        // ===== 注释 =====
+        // rem 命令（不以 :: 开头的注释）
+        {match: /(?m)^\s*rem\b.*$/, 0: "comment"}
+        {match: /\brem\b.*/, 0: "comment"}
+
+        // ===== 变量（字符串外） =====
+        {include: "variables"}
+
+        // ===== 关键字命令 =====
+        {match: keywordsToRegex(
+            // 基础命令
+            "echo set call exit goto if else not exist defined errorlevel"
+
+            // 流程控制
+            "for in do shift choice"
+
+            // 文件操作
+            "copy xcopy move del erase ren rename mkdir md rmdir rd type"
+            "find findstr more attrib"
+
+            // 目录操作
+            "cd chdir dir pushd popd"
+
+            // 系统命令
+            "cls color date time ver vol path prompt"
+            "start cmd pause timeout"
+
+            // 进程管理
+            "tasklist taskkill"
+
+            // 网络命令
+            "ping telnet ipconfig netstat"
+
+            // 注册表
+            "reg regedit"
+
+            // 其他常用命令
+            "setlocal endlocal assoc ftype mklink shutdown"
+
+            // 外部工具（常见）
+            "adb fastboot java python pip wget curl busybox"
+        ), 0: "keyword"}
+
+        // ===== 特殊命令模式 =====
+        // goto 标签跳转
+        {
+            match: /\b(goto)\s+(:?)(\w+)/
+            1: "keyword"
+            2: "operator"
+            3: "label"
+        }
+
+        // 标签定义 :label
+        {match: /(?m)^\s*:\w+/, 0: "label"}
+
+        // ===== 比较运算符 =====
+        {match: /\b(EQU|NEQ|LSS|LEQ|GTR|GEQ)\b/, 0: "operator"}
+        {match: /==/, 0: "operator"}
+
+        // ===== 特殊前缀 =====
+        // @ 符号（抑制命令回显）
+        {match: /@/, 0: "meta"}
+
+        // ===== 重定向和管道 =====
+        {match: /[<>|&]+/, 0: "operator"}
+
+        // ===== 数字 =====
+        {match: /\b\d+\b/, 0: "number"}
+
+        // ===== 文件路径 =====
+        // Windows 路径（支持盘符、反斜杠、特殊字符）
+        {match: /[a-zA-Z]:[\\\/][\w\-\u0080-\uffff#$.,\\\/]*/, 0: "path"}
+
+        // 相对路径或网络路径
+        {match: /(?:\.{1,2}[\\\/])?[\w\-\u0080-\uffff#$.,]+(?:[\\\/][\w\-\u0080-\uffff#$.,]+)+/, 0: "path"}
+
+        // UNC 路径 \\server\share
+        {match: /\\\\[\w\-\u0080-\uffff.]+\\[\w\-\u0080-\uffff#$.,\\\/]*/, 0: "path"}
+    ]
+}

@@ -1,0 +1,218 @@
+{
+    // Visual Basic 语法高亮文件
+    // 支持 VB.NET、VBA、VBScript 等 Visual Basic 变体
+
+    name: ["Visual Basic", ".vb", ".vbs", ".bas", ".frm"]
+    ignoreCase: true  // VB 不区分大小写
+
+    comment: {startsWith: "'"}
+    comment: {startsWith: "REM ", insertSpace: false}
+
+    bracketPairs: ["{}", "[]", "()"]
+
+    styles: [
+        // 预处理指令样式
+        "directive" > "meta"
+        // 文档注释样式
+        "docComment" > "comment", @I
+        // XML 文档标签
+        "xmlTag", #0000FF, #E8BF6A
+    ]
+
+    defines: [
+        // 转义字符（VB 字符串中 "" 表示一个引号）
+        "stringEscape": {match: /""/, 0: "strEscape"}
+
+        // 普通字符串
+        "string": {
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            style: "string"
+            contains: [
+                {include: "stringEscape"}
+            ]
+        }
+
+        // 日期字面量 #date#
+        "dateLiteral": {
+            start: {match: /#/}
+            end: {match: /#/}
+            style: "constant"
+        }
+
+        // XML 文档注释
+        "xmlDocComment": {
+            start: {match: /'''/}
+            end: {match: /(?m)$/}
+            style: "docComment"
+            contains: [
+                // XML 标签
+                {match: /<\/?[a-zA-Z][\w.-]*>/, 0: "xmlTag"}
+                {match: /<[a-zA-Z][\w.-]*\s*\/>/, 0: "xmlTag"}
+            ]
+        }
+
+        // 行继续符 _
+        "lineContinuation": {match: /(?m)_\s*$/, 0: "operator"}
+
+        // 类型字符后缀
+        "typeSuffix": /[%&@!#$]/
+    ]
+
+    contains: [
+        // XML 文档注释（必须在普通注释之前）
+        {include: "xmlDocComment"}
+
+        // 预处理指令
+        {
+            start: {match: /(?m)^\s*#(Const|If|ElseIf|Else|End\s+If|Region|End\s+Region|ExternalSource|End\s+ExternalSource|ExternalChecksum)\b/, 0: "directive"}
+            end: {match: /(?m)$/}
+            style: "directive"
+            contains: [
+                {include: "string"}
+                {match: /'[^\r\n]*/, 0: "comment"}
+                {match: /\bREM\b[^\r\n]*/, 0: "comment"}
+            ]
+        }
+
+        // 字符串
+        {include: "string"}
+
+        // 日期字面量
+        {include: "dateLiteral"}
+
+        // 数字
+        {number: "2|8|10|16|F|E", iSuffixes: "S|I|L|US|UI|UL|D|F|R", fSuffixes: "D|F|R"}
+
+        // 控制流关键字
+        {match: keywordsToRegex(
+            "If Then Else ElseIf End EndIf"
+            "Select Case"
+            "For To Step Next Each In"
+            "While Wend Do Loop Until"
+            "With"
+            "Try Catch Finally Throw"
+            "GoTo GoSub Return On Resume"
+            "Exit Continue"
+            "Stop"
+        ), 0: "keyword"}
+
+        // 声明关键字
+        {match: keywordsToRegex(
+            "Dim Const Static ReDim Preserve"
+            "Public Private Protected Friend"
+            "Shared Shadows Overloads Overrides Overridable NotOverridable MustOverride"
+            "ReadOnly WriteOnly"
+            "WithEvents"
+            "ByVal ByRef Optional ParamArray"
+            "As New"
+            "Let Set Get"
+            "Declare Lib Alias"
+        ), 0: "keyword"}
+
+        // 类型定义关键字
+        {match: keywordsToRegex(
+            "Class Module Structure Enum Interface Delegate"
+            "Sub Function Property Event Operator"
+            "Namespace Imports"
+            "Inherits Implements"
+            "Partial MustInherit NotInheritable"
+            "Type"
+        ), 0: "keyword"}
+
+        // 运算符关键字
+        {match: keywordsToRegex(
+            "And Or Not Xor AndAlso OrElse"
+            "Is IsNot Like"
+            "Mod"
+            "TypeOf GetType"
+            "AddressOf"
+            "Await Async"
+            "Yield Iterator"
+        ), 0: "keyword"}
+
+        // 其他关键字
+        {match: keywordsToRegex(
+            "Call RaiseEvent AddHandler RemoveHandler"
+            "Handles"
+            "SyncLock"
+            "Using"
+            "Narrowing Widening CType DirectCast TryCast"
+            "CBool CByte CChar CDate CDbl CDec CInt CLng CObj CSByte CShort CSng CStr CUInt CULng CUShort"
+            "Of"
+            "Default Custom"
+            "Erase"
+            "Error Err"
+            "Option Explicit Strict Compare Binary Text"
+            "Attribute"
+        ), 0: "keyword"}
+
+        // 内置常量
+        {match: keywordsToRegex(
+            "True False Nothing Null Empty"
+            "vbCrLf vbCr vbLf vbNewLine vbNullChar vbNullString vbTab vbBack vbFormFeed vbVerticalTab"
+            "vbTrue vbFalse"
+            "vbEmpty vbNull vbInteger vbLong vbSingle vbDouble vbCurrency vbDate vbString vbObject vbError vbBoolean vbVariant vbDataObject vbDecimal vbByte vbArray"
+        ), 0: "constant"}
+
+        // Me/MyBase/MyClass
+        {match: keywordsToRegex("Me MyBase MyClass"), 0: "keyword2"}
+
+        // 内置类型
+        {match: keywordsToRegex(
+            "Boolean Byte Char Date Decimal Double Integer Long Object SByte Short Single String UInteger ULong UShort"
+            "Variant Currency"
+        ), 0: "type"}
+
+        // 类/结构/模块/接口/枚举定义
+        {match: /\b(Class|Structure|Module|Interface|Enum)\s+(\w+)/, 1: "keyword", 2: "type"}
+
+        // Sub/Function/Property 定义
+        {match: /\b(Sub|Function|Property)\s+(\w+)/, 1: "keyword", 2: "funcname"}
+
+        // 事件定义
+        {match: /\b(Event)\s+(\w+)/, 1: "keyword", 2: "funcname"}
+
+        // 标签（用于 GoTo）
+        {match: /(?m)^\s*(\w+):(?!:)/, 1: "label"}
+
+        // 函数调用
+        {match: /\b(\w+)(?=\s*\()/, 1: "funcname"}
+
+        // 成员访问（方法/属性）
+        {match: /\.(\w+)(?=\s*\()/, 1: "funcname"}
+        {match: /\.(\w+)/, 1: "variable"}
+
+        // 类型字符变量（如 name$, count%）
+        {match: /\b(\w+)[%&@!#$]/, 1: "variable"}
+
+        // 属性特性 <Attribute>
+        {
+            start: {match: /<(?=[A-Z])/}
+            end: {match: />/}
+            style: "meta"
+            contains: [
+                {include: "string"}
+                {match: keywordsToRegex(
+                    "Assembly Module"
+                    "Obsolete Serializable NonSerialized"
+                    "DllImport MarshalAs StructLayout FieldOffset"
+                    "ComVisible Guid"
+                    "Conditional DebuggerStepThrough DebuggerHidden"
+                    "WebMethod"
+                ), 0: "meta"}
+                {match: /\b\w+Attribute\b/, 0: "meta"}
+                {match: /\b[A-Z]\w*\b/, 0: "meta"}
+                {number: "10"}
+                {match: /:=/, 0: "operator"}
+            ]
+        }
+
+        // 行继续符
+        {include: "lineContinuation"}
+
+        // 运算符
+        {match: /[+\-*\/\\^&=<>]+/, 0: "operator"}
+        {match: /:=/, 0: "operator"}
+    ]
+}

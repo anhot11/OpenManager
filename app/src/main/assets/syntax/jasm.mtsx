@@ -1,0 +1,192 @@
+{
+    name: ["Jasm", ".jasm", ".class"] // MT将class反编译为jasm进行编辑
+    ignoreCase: false
+
+    comment: {startsWith: "//", addToContains: false}
+    comment: {startsWith: "/*", endsWith: "*/", addToContains: false}
+
+    bracketPairs: ["{}", "[]", "()"]
+
+    styles: [
+        "todo"           > "default", @B
+        "declaration"    > "keyword2"
+        "cpTag"          > "type"
+        "cpIndex"        > "number"
+        "cpRefKind"      > "macro"
+        "annotationName" > "meta"
+        "paramMeta"      > "meta"
+        "memberName"     > "function"
+        "descriptor"     > "type"
+    ]
+
+    defines: [
+        "todo": {match: keywordsToRegex("TODO FIXME XXX NOTE BUG"), 0: "todo"}
+        "namePath": /[A-Za-z_$][\w$\/.-]*/
+        "qualifiedPath": /[A-Za-z_$][\w$]*(?:[\/.$-][A-Za-z_$][\w$]*)+/
+        "labelName": /[A-Za-z_$][\w$]*/
+        "primitiveDesc": /\[*[BCDFIJSVZ]/
+    ]
+
+    contains: [
+        { // 行注释，顺带把 TODO 一类提示词提亮
+            match: /\/\/.*/
+            0: "comment"
+            0: {include: "todo"}
+        }
+        { // 块注释沿用相同处理，避免在注释里误命中字节码规则
+            start: {match: /\/\*/}
+            end: {match: /\*\//}
+            style: "comment"
+            contains: [
+                {include: "todo"}
+            ]
+        }
+
+        {builtin: #JAVA_QUOTED_STRING#}
+        {builtin: #JAVA_NUMBER#}
+
+        { // 运行时可见、不可见与类型注解共用同一类前缀
+            match: /(@(?:T[+-]|[+-]))([A-Za-z_$][\w$\/.-]*)/
+            1: "meta"
+            2: "annotationName"
+        }
+        { // 参数名与参数标志使用独立块，避免和常量池索引 #n 混淆
+            start: {match: /#\{/, 0: "paramMeta"}
+            end: {match: /\}/, 0: "paramMeta"}
+            style: "meta"
+            contains: [
+                {match: /\bP\d+\b/, 0: "variable"}
+                {match: keywordsToRegex("final synthetic mandated"), 0: "keyword"}
+                {match: /\b[A-Za-z_$][\w$]*\b/, 0: "variable"}
+            ]
+        }
+
+        { // package 语句里允许使用斜杠路径
+            match: /(?m)^\s*(package)(\s+)(/ + include("namePath") + /)(\s*;)/
+            1: "declaration"
+            3: "namespace"
+            4: "operator"
+        }
+        { // 顶层与模块语句后的名称单独着色，提升结构可读性
+            match: /\b(class|interface|module|extends|implements|throws|uses|provides|to|with|exports|opens)\b(\s+)(#\d+|/ + include("namePath") + /)/
+            1: "declaration"
+            3: "type"
+        }
+        { // 成员声明优先识别名字，避免被后续通用规则吃掉
+            match: /\b(Field|Method|Component)\b(\s+)(?:("[^"]+")|([A-Za-z_$][\w$<>$]*))(?=:)/
+            1: "declaration"
+            3: "string"
+            4: "memberName"
+        }
+        { // 常量池声明里的 tag 具有固定位置，适合做上下文匹配
+            match: /(?m)^\s*(const)(\s+)(#\d+)(\s*=\s*)([A-Za-z][A-Za-z0-9]*)/
+            1: "declaration"
+            3: "cpIndex"
+            4: "operator"
+            5: "cpTag"
+        }
+
+        { // 把行号、标签与 opcode 一次匹配，避免前缀先被消费后导致指令失去行首锚点
+            match: /(?m)^\s*(?:(\d+):\s*)?(?:([A-Za-z_$][\w$]*):\s*)?(/ + keywordsToRegex(
+                "opc_dead opc_label nop aconst_null iconst_m1 iconst_0 iconst_1 iconst_2 iconst_3 iconst_4 iconst_5 lconst_0"
+                "lconst_1 fconst_0 fconst_1 fconst_2 dconst_0 dconst_1 bipush sipush ldc ldc_w ldc2_w iload"
+                "lload fload dload aload iload_0 iload_1 iload_2 iload_3 lload_0 lload_1 lload_2 lload_3"
+                "fload_0 fload_1 fload_2 fload_3 dload_0 dload_1 dload_2 dload_3 aload_0 aload_1 aload_2 aload_3"
+                "iaload laload faload daload aaload baload caload saload istore lstore fstore dstore"
+                "astore istore_0 istore_1 istore_2 istore_3 lstore_0 lstore_1 lstore_2 lstore_3 fstore_0 fstore_1 fstore_2"
+                "fstore_3 dstore_0 dstore_1 dstore_2 dstore_3 astore_0 astore_1 astore_2 astore_3 iastore lastore fastore"
+                "dastore aastore bastore castore sastore pop pop2 dup dup_x1 dup_x2 dup2 dup2_x1"
+                "dup2_x2 swap iadd ladd fadd dadd isub lsub fsub dsub imul lmul"
+                "fmul dmul idiv ldiv fdiv ddiv irem lrem frem drem ineg lneg"
+                "fneg dneg ishl lshl ishr lshr iushr lushr iand land ior lor"
+                "ixor lxor iinc i2l i2f i2d l2i l2f l2d f2i f2l f2d"
+                "d2i d2l d2f i2b i2c i2s lcmp fcmpl fcmpg dcmpl dcmpg ifeq"
+                "ifne iflt ifge ifgt ifle if_icmpeq if_icmpne if_icmplt if_icmpge if_icmpgt if_icmple if_acmpeq"
+                "if_acmpne goto jsr ret tableswitch lookupswitch ireturn lreturn freturn dreturn areturn return"
+                "getstatic putstatic getfield putfield invokevirtual invokespecial invokestatic invokeinterface invokedynamic new newarray anewarray"
+                "arraylength athrow checkcast instanceof monitorenter monitorexit wide multianewarray ifnull ifnonnull goto_w jsr_w"
+                "breakpoint bytecode try endtry catch var endvar locals_map stack_map unset_fields stack_map_frame stack_map_entry"
+                "stack_frame_type frame_type entry_type type endtype impdep1 impdep2 iload_w lload_w fload_w dload_w aload_w"
+                "istore_w lstore_w fstore_w dstore_w astore_w ret_w iinc_w load_ubyte priv_load_ubyte load_byte priv_load_byte load_char"
+                "priv_load_char load_short priv_load_short load_word priv_load_word load_char_oe priv_load_char_oe load_short_oe priv_load_short_oe load_word_oe priv_load_word_oe ncload_ubyte"
+                "priv_ncload_ubyte ncload_byte priv_ncload_byte ncload_char priv_ncload_char ncload_short priv_ncload_short ncload_word priv_ncload_word ncload_char_oe priv_ncload_char_oe ncload_short_oe"
+                "priv_ncload_short_oe ncload_word_oe priv_ncload_word_oe cache_flush priv_cache_flush store_byte priv_store_byte store_short priv_store_short store_word priv_store_word store_short_oe"
+                "priv_store_short_oe store_word_oe priv_store_word_oe ncstore_byte priv_ncstore_byte ncstore_short priv_ncstore_short ncstore_word priv_ncstore_word ncstore_short_oe priv_ncstore_short_oe ncstore_word_oe"
+                "priv_ncstore_word_oe zero_line priv_zero_line ret_from_sub enter_sync_method priv_ret_from_trap priv_read_dcache_tag priv_read_dcache_data priv_read_icache_tag priv_read_icache_data priv_powerdown priv_read_scache_data"
+                "priv_cache_index_flush priv_write_dcache_tag priv_write_dcache_data priv_write_icache_tag priv_write_icache_data priv_reset priv_write_scache_data priv_read_reg_0 priv_read_reg_1 priv_read_reg_2 priv_read_reg_3 priv_read_reg_4"
+                "priv_read_reg_5 priv_read_reg_6 priv_read_reg_7 priv_read_reg_8 priv_read_reg_9 priv_read_reg_10 priv_read_reg_11 priv_read_reg_12 priv_read_reg_13 priv_read_reg_14 priv_read_reg_15 priv_read_reg_16"
+                "priv_read_reg_17 priv_read_reg_18 priv_read_reg_19 priv_read_reg_20 priv_read_reg_21 priv_read_reg_22 priv_read_reg_23 priv_read_reg_24 priv_read_reg_25 priv_read_reg_26 priv_read_reg_27 priv_read_reg_28"
+                "priv_read_reg_29 priv_read_reg_30 priv_read_reg_31 priv_write_reg_0 priv_write_reg_1 priv_write_reg_2 priv_write_reg_3 priv_write_reg_4 priv_write_reg_5 priv_write_reg_6 priv_write_reg_7 priv_write_reg_8"
+                "priv_write_reg_9 priv_write_reg_10 priv_write_reg_11 priv_write_reg_12 priv_write_reg_13 priv_write_reg_14 priv_write_reg_15 priv_write_reg_16 priv_write_reg_17 priv_write_reg_18 priv_write_reg_19 priv_write_reg_20"
+                "priv_write_reg_21 priv_write_reg_22 priv_write_reg_23 priv_write_reg_24 priv_write_reg_25 priv_write_reg_26 priv_write_reg_27 priv_write_reg_28 priv_write_reg_29 priv_write_reg_30 priv_write_reg_31"
+            ) + /)(?=\s|[;{]|$)/
+            1: "number"
+            2: "label"
+            3: "keyword"
+        }
+        { // 纯行号行与非指令标签仍然保留单独规则，补足上面的结构化匹配
+            match: /(?m)^\s*(\d+):/
+            1: "number"
+        }
+        { // 标签声明既可能是 Lxx，也可能是 try/catch 使用的 Txx
+            match: /(?m)^\s*(?:\d+:\s*)?(/ + include("labelName") + /):/
+            1: "label"
+        }
+        {match: /\b[LT]\d+\b/, 0: "label"}
+        {match: /#\d+/, 0: "cpIndex"}
+
+        {match: /@/, 0: "meta"}
+        {match: keywordsToRegex(
+                "public private protected static final super interface abstract"
+                "synthetic annotation enum native synchronized bridge varargs strict"
+                "volatile transient open transitive mandated deprecated identity value"
+            ), 0: "keyword"
+        }
+        {match: keywordsToRegex(
+                "package class interface module const Field Method InnerClass BootstrapMethod NestHost"
+                "NestMembers Signature Record Component PermittedSubclasses SourceFile EnclosingMethod SourceDebugExtension LoadableDescriptors StackMapTable"
+                "StackMap LineTable LocalVariables LocalVariableTypes extends implements throws stack locals version"
+                "requires exports opens uses provides to with of line Start"
+                "Slot Name Descriptor number_of_entries frame_type entry_type offset_delta offset stack_map locals_map"
+                "unset_fields Arguments bits default this_class super_class"
+            ), 0: "declaration"
+        }
+        {match: keywordsToRegex(
+                "Utf8 Asciz Integer int Byte byte Char char Short"
+                "short Boolean boolean Float float Long long Double double"
+                "Class class String string Field Fieldref Method Methodref InterfaceMethod"
+                "InterfaceMethodref NameAndType MethodHandle MethodType Dynamic InvokeDynamic Module Package"
+            ), 0: "cpTag"
+        }
+        {match: keywordsToRegex(
+                "REF_getField REF_getStatic REF_putField REF_putStatic REF_invokeVirtual"
+                "REF_invokeStatic REF_invokeSpecial REF_newInvokeSpecial REF_invokeInterface"
+            ), 0: "cpRefKind"
+        }
+        {match: keywordsToRegex(
+                "true false null Inf Infinity NaN same stack1 stack1_ex same_ex append full chop1 chop2 chop3 early_larval ARRAY"
+                "INNER_TYPE WILDCARD TYPE_ARGUMENT TYPEPARAM SUPERTYPE TYPEPARAM_BOUND EMPTY"
+                "METHODPARAM EXCEPTION LOCALVAR CATCH OFFSET TYPEARG CLASS_TYPE_PARAMETER"
+                "METHOD_TYPE_PARAMETER CLASS_EXTENDS CLASS_TYPE_PARAMETER_BOUND METHOD_TYPE_PARAMETER_BOUND FIELD METHOD_RETURN METHOD_RECEIVER"
+                "METHOD_FORMAL_PARAMETER THROWS LOCAL_VARIABLE RESOURCE_VARIABLE EXCEPTION_PARAM INSTANCEOF NEW"
+                "CONSTRUCTOR_REFERENCE_RECEIVER METHOD_REFERENCE_RECEIVER CAST CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT METHOD_INVOCATION_TYPE_ARGUMENT CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT METHOD_REFERENCE_TYPE_ARGUMENT"
+            ), 0: "constant"
+        }
+
+        { // 注解键、InnerClass 别名和类似 name = value 的结构统一按变量处理
+            match: /\b([A-Za-z_$][\w$]*)(\s*=)/
+            1: "variable"
+            2: "operator"
+        }
+        { // 只对带分隔符的路径名做通用提亮，避免把普通标识符全部染色
+            match: /\b/ + include("qualifiedPath") + /\b/
+            0: "type"
+        }
+        { // 裸露的基本类型描述符主要出现在字段与组件声明中
+            match: /(:)(/ + include("primitiveDesc") + /)(?=(?:\s|[;,}\]])|$)/
+            1: "operator"
+            2: "descriptor"
+        }
+        {match: /[{}()\[\],;:=.]/, 0: "operator"}
+    ]
+}

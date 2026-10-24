@@ -1,0 +1,51 @@
+{
+    name: ["Groovy", ".groovy", ".gradle"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    styles: [
+        "bold", @B
+    ]
+    defines: [
+        "doubleQuotedString": {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {builtin: #JAVA_ESCAPED_CHAR#}
+                {include: "strInjection"}
+            ]
+        }
+        "strInjection": {
+            start: {match: /\$\{/, 0: "bold"}
+            end: {match: /\}/, 0: "bold"}
+            style: "default"
+            contains: [
+                {builtin: #JAVA_NUMBER#}
+                {builtin: #JAVA_SINGLE_QUOTED_STRING#}
+                {include: "doubleQuotedString"}
+                {include: "strInjection"}
+            ]
+        }
+    ]
+    contains: [
+        {
+            style: "string"
+            start: {match: /"""/}
+            end: {match: /"""/}
+        }
+        {builtin: #JAVA_NUMBER#}
+        {builtin: #JAVA_SINGLE_QUOTED_STRING#}
+        {include: "doubleQuotedString"}
+        {match: /@\w+(?:\.\w+)*/, 0: "meta"}
+        {match: /\b(?!(?:CRC32|URL)\b)[A-Z][A-Z0-9]+\b(?!\.)(?!\s{0,10}\()/, 0: "constant"}
+        {match: /\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b(?!\.)(?!\s{0,10}\()/, 0: "constant"}
+        {match: keywordsToRegex(
+                "while volatile void try true transient throws throw this synchronized switch super strictfp static"
+                "short return public protected private package null new native long interface int instanceof import"
+                "implements if goto for float finally final false extends enum else double do default continue const"
+                "class char catch case byte break boolean assert abstract var record yield sealed non-sealed permits"
+                "when def"
+            ), 0: "keyword"
+        }
+    ]
+}

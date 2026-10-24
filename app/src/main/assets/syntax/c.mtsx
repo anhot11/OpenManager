@@ -1,0 +1,91 @@
+{
+    name: ["C", ".c"]
+
+    // 自定义样式
+    styles: [
+        "preprocessor" > "meta"
+        "funcDef" > "keyword", @B
+    ]
+
+    // 注释配置
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    // 可复用定义
+    defines: [
+        // 标识符
+        "identifier": /[a-zA-Z_]\w*/
+
+        // 类型名（大写开头或常见类型）
+        "typeName": [
+            {match: /\b[A-Z]\w*\b/, 0: "type"}
+            {match: keywordsToRegex(
+                "size_t ssize_t ptrdiff_t intptr_t uintptr_t"
+                "int8_t int16_t int32_t int64_t"
+                "uint8_t uint16_t uint32_t uint64_t"
+                "FILE DIR time_t clock_t"
+            ), 0: "type"}
+        ]
+    ]
+
+    contains: [
+        // 字符串和字符
+        {builtin: #C_QUOTED_STRING#}
+
+        // 数字
+        {builtin: #C_NUMBER#}
+
+        // #include 带尖括号
+        {match: /(?m)^[ \t]*(#[ \t]*include)(\s*<[^>]+>)/, 1: "preprocessor", 2: "string"}
+
+        // #include 带引号（由内置字符串处理，这里只高亮指令）
+        {match: /(?m)^[ \t]*(#[ \t]*include)\b/, 1: "preprocessor"}
+
+        // #define 宏定义
+        {
+            start: {match: /(?m)^[ \t]*(#[ \t]*define)\s+(/ + include("identifier") + /)/, 1: "preprocessor", 2: "constant"}
+            end: {match: /(?m)(?<!\\)$/}
+            style: "default"
+            contains: [
+                {match: /\/\/[^\r\n]*/, 0: "comment"}
+                {
+                    style: "comment"
+                    start: {match: /\/\*/}
+                    end: {match: /\*\//}
+                }
+                {builtin: #C_QUOTED_STRING#}
+                {builtin: #C_NUMBER#}
+                {match: /\\$/, 0: "preprocessor"}  // 行续接符
+            ]
+        }
+
+        // 其他预处理指令
+        {match: /(?m)^[ \t]*(#[ \t]*\w+)/, 1: "preprocessor"}
+
+        // 关键字
+        {match: keywordsToRegex(
+            "auto break case char const continue default do double else enum extern float for"
+            "goto if int long register return short signed sizeof static struct switch typedef"
+            "union unsigned void volatile while inline restrict _Bool _Complex _Imaginary"
+            "_Alignas _Alignof _Atomic _Static_assert _Noreturn _Thread_local _Generic"
+        ), 0: "keyword"}
+
+        // 布尔和空值常量
+        {match: keywordsToRegex("true false NULL"), 0: "constant"}
+
+        // 类型定义：typedef ... TypeName;
+        {match: /\b(typedef)\s+/, 1: "keyword"}
+
+        // struct/union/enum 定义
+        {match: /\b(struct|union|enum)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "type"}
+
+        // 类型名
+        {include: "typeName"}
+
+        // 全大写常量（宏）
+        {match: /\b[A-Z][A-Z0-9_]{2,}\b/, 0: "constant"}
+
+        // 函数调用
+        {match: /\b(/ + include("identifier") + /)(?=\s*\()/, 1: "variable"}
+    ]
+}

@@ -1,0 +1,41 @@
+{
+    name: ["MT-Dictionary", ".mtd"]
+    hide: true
+    ignoreCase: true
+    styles: [
+        "placeholder" @BU
+    ]
+    defines: [
+        "children": [
+            {builtin: #JAVA_ESCAPED_CHAR#}
+            {match: /%(\d+\$)?(\.?\d+)?[sdifoxt]/, 0: "placeholder"}
+            {match: /<(\/?)([a-z][a-z0-9]*)\b[^>]*>/, 0: "constant"}
+        ]
+    ]
+    contains: [
+        {
+            group: link
+            contains: [
+                {match: /\{\s*/}
+                {
+                    style: "meta"
+                    start: {match: /"/}
+                    end: {match: /(?m)"|$/}
+                    contains: [
+                        {include: "children"}
+                    ]
+                }
+                {match: /\s*/}
+                {
+                    style: "string"
+                    start: {match: /"/}
+                    end: {match: /(?m)"|$/}
+                    contains: [
+                        {include: "children"}
+                    ]
+                }
+                {match: /\s*\}/}
+            ]
+        }
+    ]
+}

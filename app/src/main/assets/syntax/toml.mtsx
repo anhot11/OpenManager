@@ -1,0 +1,94 @@
+{
+    // @author: A4-Tacks
+    // @email: wdsjxhno1001@163.com
+    // @last-edit-date: 2025-08-08
+    // @repo: https://github.com/A4-Tacks/TOML-SyntaxHighLight-For-MT-Manager
+    name: ["TOML", ".toml"]
+
+    comment: {startsWith: "#"}
+
+    defines: [
+        "bg": /(?<=\n|^)/
+        "HEXDIG": /[\da-fA-F]/
+        "ws": /(?:[ \t]*)/
+        "escaped": /(?:\\(?:["\\bfnrt]|u/+include("HEXDIG")+/{4}|U/+include("HEXDIG")+/{8})|(\\.))/ // (error)
+        "quoted-key": /(?:"(?:(/+include("escaped")+/)|[ \t!#-\[\]-~\x80-\ud7ff\ue000-\x{10ffff}])*"|'[\t -&(-~\x80-\ud7ff\ue000-\x{10ffff}]*')/ // (strEscape,error)
+        "unquoted-key": /(?:[A-Za-z0-9\-_]+)/
+        "simple-key": /(?:/+include("unquoted-key")+/|/+include("quoted-key")+/)/ // (strEscape,error)
+        "key": /(?:/+include("simple-key")+/(?:/+include("ws")+/(\.)/+include("ws")+include("simple-key")+/)*)/ // (strEscape,error,default,strEscape,error)
+        "nonkey": /(?<!\.\s?\s?\s?)/
+        "tododot": /(?:(?:\./+include("ws")+/)?)/
+    ]
+
+    contains: [
+        { // date
+            match: /(?:(?:(?:\d{4}(?:-\d{2}){2})[tT ](?:(?:\d{2}(?::\d{2}){2}(?:\.\d+)?)(?:Z|[+\-]\d{2}:\d{2})))|(?:(?:\d{4}(?:-\d{2}){2})[tT ](?:\d{2}(?::\d{2}){2}(?:\.\d+)?))|(?:\d{4}(?:-\d{2}){2})|(?:\d{2}(?::\d{2}){2}(?:\.\d+)?))/
+            0: "number"
+        }
+        { // key
+            match: include("tododot")+/(/+include("tododot")+include("key")+/)/+include("ws")+include("tododot")+/=/
+            recordAllGroups: true
+            1: "variable"
+            2: "strEscape"
+            3: "error"
+            4: "default"
+            5: "strEscape"
+            6: "error"
+        }
+        { // table
+            match: include("bg")+include("ws")+/(?:\[{2}/+include("ws")+include("tododot")+include("key")+include("ws")+include("tododot")+/\]{2}|\[/+include("ws")+include("tododot")+include("key")+include("ws")+include("tododot")+/\])/
+            recordAllGroups: true
+            0: "propKey"
+            1: "constant"
+            2: "error"
+            3: "default"
+            4: "constant"
+            5: "error"
+            6: "constant"
+            7: "error"
+            8: "default"
+            9: "constant"
+            10: "error"
+        }
+        { // ml string
+            start: {match: /"""/}
+            end: {match: /"""/}
+            style: "string"
+            contains: [
+                {
+                    match: /\x5c/+include("ws")+/(?:\n|\r\n)/
+                    0: "strEscape"
+                }
+                {
+                    match: include("escaped")
+                    0: "strEscape"
+                    1: "error"
+                }
+            ]
+        }
+        { // ml literal string
+            start: {match: /'''/}
+            end: {match: /'''/}
+            style: "string"
+        }
+        { // inline string
+            match: include("quoted-key")
+            recordAllGroups: true
+            0: "string"
+            1: "strEscape"
+            2: "error"
+        }
+        { // boolean
+            match: include("nonkey")+/(?:true|false)/
+            0: "number"
+        }
+        { // float
+            match: include("nonkey")+/(?<!\w)(?:[+\-]?(?:[1-9](?:_?\d)+|\d)(?:(?:[eE][+\-]?\d(?:\d|_\d)*)|(?:\.\d(?:\d|_\d)*)(?:[eE][+\-]?\d(?:\d|_\d)*)?)|(?:[+\-]?(?:inf|nan)))(?!\w)/,
+            0: "number"
+        }
+        { // integer
+            match: include("nonkey")+/(?<!\w)(?:0(?:x/+include("HEXDIG")+/(?:/+include("HEXDIG")+/|_/+include("HEXDIG")+/)*|o[0-7](?:[0-7]|_[0-7])*|b[01](?:[01]|_[01])*)|[+\-]?(?:[1-9](?:\d|_\d)+|\d))(?!\w)/
+            0: "number"
+        }
+    ]
+}

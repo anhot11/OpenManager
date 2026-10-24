@@ -1,0 +1,23 @@
+{
+    name: ["Kotlin", ".kt", ".kts"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    contains: [
+        {
+            style: "string"
+            start : {match: /"""/}
+            end: {match: /"""/}
+        }
+        {builtin: #JAVA_QUOTED_STRING#}
+        {builtin: #JAVA_NUMBER#}
+        {match: /@\w+/, 0: "meta"}
+        {match: keywordsToRegex(
+                "as break class continue do else false for fun if in interface is null object package"
+                "return super this throw true try typealias typeof val var when while catch constructor"
+                "delegate dynamic finally import actual abstract annotation companion const crossinline"
+                "data enum expect external final infix inline inner internal lateinit noinline open"
+                "operator out override private protected public reified sealed suspend tailrec vararg"
+            ), 0: "keyword"
+        }
+    ]
+}

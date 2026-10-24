@@ -1,0 +1,194 @@
+//
+// 普通字符串
+//
+{
+    // 匹配转义符号，仅包含\x
+    name: #ESCAPED_CHAR#
+    contains: [
+        {match: /\\./, 0: "strEscape"}
+    ]
+}
+{
+    // 单引号字符串
+    name: #SINGLE_QUOTED_STRING#
+    contains: [
+        {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /(?m)'|$/}
+            contains: [
+                {builtin: #ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}
+{
+    // 双引号字符串
+    name: #DOUBLE_QUOTED_STRING#
+    contains: [
+        {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {builtin: #ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}
+{
+    // 单双引号字符串
+    name: #QUOTED_STRING#
+    contains: [
+        {builtin: #SINGLE_QUOTED_STRING#}
+        {builtin: #DOUBLE_QUOTED_STRING#}
+    ]
+}
+
+
+
+//
+// Java字符串
+//
+{
+    // 匹配Java转义符号，包含 \b \t \n \f \r \" \' \\ \000 \u0000，匹配失败时会进行红色标记
+    name: #JAVA_ESCAPED_CHAR#
+    contains: [
+        {match: /\\([btnfr"'\\]|([0-3]?[0-7])?[0-7]|[uU][0-9a-fA-F]{4})/, 0: "strEscape"}
+        {match: /\\./, 0: "error"}
+    ]
+}
+{
+    // Java单引号字符串
+    name: #JAVA_SINGLE_QUOTED_STRING#
+    contains: [
+        {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /(?m)'|$/}
+            contains: [
+                {builtin: #JAVA_ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}
+{
+    // Java双引号字符串
+    name: #JAVA_DOUBLE_QUOTED_STRING#
+    contains: [
+        {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {builtin: #JAVA_ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}
+{
+    // Java单双引号字符串
+    name: #JAVA_QUOTED_STRING#
+    contains: [
+        {builtin: #JAVA_SINGLE_QUOTED_STRING#}
+        {builtin: #JAVA_DOUBLE_QUOTED_STRING#}
+    ]
+}
+
+
+
+//
+// C字符串
+//
+{
+    // 匹配C转义符号，包含 \a \b \t \n \f \r \v \? \" \' \\ \077 \uhhhh \uhhhhhhhh  \xhh..，匹配失败时会进行红色标记
+    name: #C_ESCAPED_CHAR#
+    contains: [
+        {match: /\\([abtnfrv?"'\\]|[0-7]{1,3}|[uU][0-9a-fA-F]{4}(?:[0-9a-fA-F]{4})?|[xX][0-9a-fA-F]+)/, 0: "strEscape"}
+        {match: /\\./, 0: "error"}
+    ]
+}
+{
+    // C单引号字符串
+    name: #C_SINGLE_QUOTED_STRING#
+    contains: [
+        {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /(?m)'|$/}
+            contains: [
+                {builtin: #C_ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}
+{
+    // C双引号字符串
+    name: #C_DOUBLE_QUOTED_STRING#
+    contains: [
+        {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {builtin: #C_ESCAPED_CHAR#}
+            ]
+        }
+    ]
+}
+{
+    // C单双引号字符串
+    name: #C_QUOTED_STRING#
+    contains: [
+        {builtin: #C_SINGLE_QUOTED_STRING#}
+        {builtin: #C_DOUBLE_QUOTED_STRING#}
+    ]
+}
+
+
+//
+// 匹配数字，支持整数与小数
+//
+{
+    name: #NORMAL_NUMBER#
+    contains: [
+        {number: "10|F"}
+    ]
+}
+//
+// 编程语言数字，大多数语言适用
+//
+{
+    name: #PROGRAM_NUMBER#
+    contains: [
+        {number: "2|10|16|F|E"}
+    ]
+}
+//
+// 编程语言数字，与上面比取消了二进制支持
+//
+{
+    name: #PROGRAM_NUMBER2#
+    contains: [
+        {number: "10|16|F|E"}
+    ]
+}
+//
+// Java数字
+//
+{
+    name: #JAVA_NUMBER#
+    contains: [
+        {number: "2|10|16|F|E|P|_", iSuffixes: "L", fSuffixes: "F|D"}
+    ]
+}
+//
+// C语言数字
+//
+{
+    name: #C_NUMBER#
+    contains: [
+        {number: "2|10|16|F|E|P|'", iSuffixes: "L|U|LU|UL", fSuffixes: "F"}
+    ]
+}
+

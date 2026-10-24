@@ -1,0 +1,95 @@
+{
+    name: ["HLSL", ".hlsl", ".fx", ".fxh", ".vsh", ".psh", ".csh", ".gsh", ".hsh", ".dsh"]
+    styles: [
+        "preprocessor", #A020F0, #BC3FBC
+        "builtin", #0000FF, #FFC66D
+        "typeQualifier", #2E8B57, #50B0C0
+        "storageQualifier", #A52A2A, #CC7832
+        "semantic", #4169E1, #9876AA
+        "constant", #8B0000, #9876AA
+        "systemValue", #006400, #9876AA
+        "technique", #8B008B, #CC7832
+        "annotation", #B8860B, #BBB529
+        "attribute", #4682B4, #9876AA
+    ]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    defines: [
+        "identifier": /\b[a-zA-Z_]\w*\b/
+    ]
+    contains: [
+        {builtin: #C_QUOTED_STRING#}
+        {
+            number: "2|8|10|16|F|E|P|_"
+            iSuffixes: "u|U"
+            fSuffixes: "f|h"
+        }
+        {match: /(?m)^[ \t]*(#[ \t]*include)(\s*<.*?>)/, 1: "preprocessor", 2: "string"}
+        {match: /(?m)^[ \t]*#[ \t]*\S+/, 0: "preprocessor"}
+        {match: keywordsToRegex(
+                "break case continue default do else for if return switch while struct discard sum discard clip"
+            ), 0: "keyword"
+        }
+        // Type qualifiers
+        {match: keywordsToRegex(
+                "const static inline in out inout"
+            ), 0: "typeQualifier"
+        }
+        // Storage qualifiers
+        {match: keywordsToRegex(
+                "extern nointerpolation precise shared groupshared static uniform volatile"
+            ), 0: "storageQualifier"
+        }
+        // Types
+        {match: keywordsToRegex(
+                "void matrix"
+                "texture Texture1D Texture1DArray Texture2D Texture2DArray Texture3D TextureCube"
+                "RWTexture1D RWTexture1DArray RWTexture2D RWTexture2DArray RWTexture3D"
+                "Buffer StructuredBuffer AppendStructuredBuffer ConsumeStructuredBuffer"
+                "RWBuffer RWStructuredBuffer ByteAddressBuffer RWByteAddressBuffer"
+                "PointStream LineStream TriangleStream InputPatch OutputPatch"
+                "sampler sampler1D sampler2D sampler3D samplerCUBE SamplerState SamplerComparisonState"
+                "Sampler Sampler1D Sampler2D Sampler3D SamplerCUBE"
+                "SamplerData1D SamplerData2D SamplerData3D SamplerDataCube"
+                "cbuffer tbuffer"
+            ), 0: "type"
+        }
+        // Types2
+        {match: /\b((int|bool|uint|half|float|double|min10float|min16float|min12int|min16int|min16uint)[0-4]?)\b/, 0: "type"}
+        // Types3
+        {match: /\b((bool|int|double|float|uint)[1-4]x[1-4])\b/, 0: "type"}
+        // Semantics
+        {match: /:\s*(SV_\w+|[A-Z0-9_]+)/, 1: "semantic"}
+        // System value semantics
+        {match: /\b(SV_\w+)\b/, 0: "systemValue"}
+        // Built-in constants
+        {match: /\b(true|false)\b/, 0: "constant"}
+        // Built-in functions
+        {match: keywordsToRegex(
+        // Intrinsic functions
+                "abs acos all AllMemoryBarrier AllMemoryBarrierWithGroupSync any asdouble asfloat asin asint asuint atan atan2"
+                "ceil clamp clip cos cosh countbits cross D3DCOLORtoUBYTE4 ddx ddx_coarse ddx_fine ddy ddy_coarse ddy_fine"
+                "degrees determinant DeviceMemoryBarrier DeviceMemoryBarrierWithGroupSync distance dot dst exp exp2 f16tof32"
+                "f32tof16 faceforward firstbithigh firstbitlow floor fma fmod frac frexp fwidth GetRenderTargetSampleCount"
+                "GetRenderTargetSamplePosition GroupMemoryBarrier GroupMemoryBarrierWithGroupSync InterlockedAdd"
+                "InterlockedAnd InterlockedCompareExchange InterlockedCompareStore InterlockedExchange InterlockedMax"
+                "InterlockedMin InterlockedOr InterlockedXor isfinite isinf isnan ldexp length lerp lit log log10 log2 mad max"
+                "min modf mul noise normalize pow radians rcp reflect refract reversebits round rsqrt saturate sign sin sincos"
+                "sinh smoothstep sqrt step tan tanh transpose trunc"
+                "CalculateLevelOfDetail CalculateLevelOfDetailUnclamped Gather GatherRed GatherGreen GatherBlue GatherAlpha"
+                "GetDimensions GetSamplePosition Load Sample SampleBias SampleCmp SampleCmpLevelZero SampleGrad SampleLevel"
+                "GetDimensions Load Store Append Consume IncrementCounter DecrementCounter"
+            ), 0: "builtin"
+        }
+        // Function definitions
+        {match: include("identifier") + /(?=\s*\()/, 0: "funName"}
+        // Techniques and passes
+        {match: /\b(technique|pass)\b/, 0: "technique"}
+        // Annotations
+        {match: /<\s*[a-zA-Z_]\w*\s*>/, 0: "annotation"}
+        // Attributes
+        {match: /\[\s*[a-zA-Z_]\w*\s*\]/, 0: "attribute"}
+        // Special operators
+        {match: /\b(register|packoffset)\b/, 0: "keyword"}
+    ]
+}

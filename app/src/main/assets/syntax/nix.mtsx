@@ -1,0 +1,70 @@
+{
+    // @author: 桜 北橋
+    // @email: kitahashisakura@outlook.com
+    name: ["Nix", ".nix"]
+    comment: {startsWith: "#"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    styles: [
+        "keyword" > "keyword"
+        "function" > "function"
+        "path" > "string"
+        "uri" > "string"
+        "builtin" > "builtin"
+        "constant" > "constant"
+        "operator" > "operator"
+        "variable" > "variable"
+        "map-key" > "key"
+        "interpolation" > "variable"
+    ]
+    contains: [
+        {
+            style: "string"
+            start: {match: /''/}
+            end: {match: /''/}
+            contains: [
+                {match: /\$\{[^}]*\}/, 0: "interpolation"}
+                {match: /'''/}
+            ]
+        }
+        {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /"/}
+            contains: [
+                {match: /\$\{[^}]*\}/, 0: "interpolation"}
+                {match: /\\"/}
+                {match: /\\n/}
+                {match: /\\t/}
+            ]
+        }
+        
+        // 路径和 URL
+        {match: /<[^>]*>/, 0: "path"}
+        {match: /(\.\.?\/)[\w.\/-]*/, 0: "path"}
+        {match: /[a-z+]+:\/\/\S+/, 0: "uri"}
+        
+        {match: /[0-9][0-9_]*(\.[0-9_]+)?/, 0: "number"}
+        
+        // 关键字
+        {match: keywordsToRegex(
+            "let in with rec inherit if then else assert or import"
+        ), 0: "keyword"}
+        
+        // 内置常量和函数
+        {match: keywordsToRegex(
+            "true false null builtins map filter derivation toString"
+        ), 0: "builtin"}
+        
+        // 运算符
+        {match: /(?:!|\?|&&|\|\||->|\.\.|\+\+|--|\+|-|\*|\/|=|!=|<=|>=|<|>|:)/, 0: "operator"}
+        
+        // 函数定义
+        {match: /\b([a-zA-Z_][\w'-]*)\s*:/, 1: "parameter"}
+        
+        // 属性键名
+        {match: /\b([a-zA-Z_][\w'-]*)\s*=/, 1: "map-key"}
+        
+        // 函数调用
+        {match: /\b([a-zA-Z_][\w'-]*)\s+(?=[^\s])/, 1: "function"}
+    ]
+}

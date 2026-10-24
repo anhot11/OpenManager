@@ -1,0 +1,110 @@
+// require MT >= 2.18.4
+{
+    name: ["Svg", ".svg"]
+    styles: [
+        "tagNameBracket", #000000, #E8BF6A
+    ]
+    comment: {startsWith: "<!--", endsWith: "-->"}
+    bracketPairs: ["<>", "{}", "[]", "()"]
+
+    defines: [
+        "colorMatcher": {
+            match: /(?<![;&])#([a-fA-F0-9]{3,8})\b/, 0: "parseColor(auto,1,HEXA)" // 与XML的唯一区别
+        }
+
+        "tagName": /[a-zA-Z_][\w:\.\-]*/
+
+        "attrContent": [
+            // xmlns:namespace 特殊处理
+            {
+                match: /(xmlns:)([a-zA-Z_][\w\.\-]*)/
+                1: "attrName"
+                2: "namespace"
+            }
+            // namespace:attrName 普通情况
+            {
+                match: /([a-zA-Z_][\w\.\-]*)(:[a-zA-Z_][\w\.\-]*)/
+                1: "namespace"
+                2: "attrName"
+            }
+            // 普通属性名（无命名空间）
+            {match: /[a-zA-Z_][\w\.\-]*/, 0: "attrName"}
+            // 等号
+            {match: /\s*=\s*/, 0: "string"}
+            // 双引号属性值
+            {
+                style: "propVal"
+                start: {match: /"/}
+                end: {match: /"|$/}
+                contains: [
+                    {include: "colorMatcher"}
+                    {match: /&([a-zA-Z_][\w:\.\-]*|#\d+|#x[0-9a-fA-F]+);/, 0: "strEscape"}
+                    {match: /&/, 0: "error"}
+                ]
+            }
+            // 单引号属性值
+            {
+                style: "propVal"
+                start: {match: /'/}
+                end: {match: /'|$/}
+                contains: [
+                    {include: "colorMatcher"}
+                    {match: /&([a-zA-Z_][\w:\.\-]*|#\d+|#x[0-9a-fA-F]+);/, 0: "strEscape"}
+                    {match: /&/, 0: "error"}
+                ]
+            }
+        ]
+    ]
+
+    contains: [
+        // XML 声明
+        {
+            start: {match: /<\?(xml)/, 0: "tagNameBracket", 1: "tagName"}
+            end: {match: /\?>/, 0: "tagNameBracket"}
+            style: "meta"
+            contains: [{include: "attrContent"}]
+        }
+
+        // 处理指令
+        {
+            start: {match: /<\?/, 0: "meta"}
+            end: {match: /\?>/, 0: "meta"}
+            style: "meta"
+        }
+
+        // DOCTYPE 声明
+        {
+            start: {match: /<!DOCTYPE/, 0: "meta"}
+            end: {match: />/, 0: "meta"}
+            style: "meta"
+        }
+
+        // CDATA 区段
+        {
+            start: {match: /<!\[CDATA\[/, 0: "meta"}
+            end: {match: /\]\]>/, 0: "meta"}
+            style: "string"
+        }
+
+        // 自闭合标签 <tag ... />
+        {
+            start: {match: /<(/ + include("tagName") + /)/, 0: "tagNameBracket", 1: "tagName"}
+            end: {match: /\/?>|$/, 0: "tagNameBracket"}
+            contains: [{include: "attrContent"}]
+        }
+
+        // 结束标签 </tag>
+        {
+            match: /<\/(/ + include("tagName") + /)\s*>/
+            0: "tagNameBracket"
+            1: "tagName"
+        }
+
+        // 实体引用
+        {match: /&([a-zA-Z_][\w:\.\-]*|#\d+|#x[0-9a-fA-F]+);/, 0: "strEscape"}
+
+        // 错误的实体引用
+        {match: /&/, 0: "error"}
+    ]
+    codeFormatter: #BUILT_IN_XML_FORMATTER#
+}

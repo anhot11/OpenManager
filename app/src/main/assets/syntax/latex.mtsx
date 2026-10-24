@@ -1,0 +1,268 @@
+{
+    name: ["LaTeX", ".tex", ".latex", ".sty", ".cls"]
+    
+    comment: {startsWith: "%"}
+    
+    styles: [
+        "command" > "keyword"              // LaTeX 命令
+        "environment" > "keyword2"         // 环境名称
+        "mathDelim" > "operator", @B       // 数学模式分隔符
+        "mathContent", #1750EB, #6897BB    // 数学内容
+        "optionalArg" > "meta"             // 可选参数
+        "requiredArg" > "propVal"          // 必需参数
+        "specialChar" > "strEscape"        // 特殊字符
+        "boldText", @B                     // 粗体文本
+        "italicText", @I                   // 斜体文本
+        "underlineText", @U                // 下划线文本
+    ]
+    
+    defines: [
+        // LaTeX 命令名称(反斜杠 + 字母或单个非字母字符)
+        "commandName": /\\(?:[a-zA-Z]+|[^a-zA-Z])/
+        
+        // 章节命令
+        "sectionCommands": keywordsToRegex(
+            "part chapter section subsection subsubsection"
+            "paragraph subparagraph"
+        )
+
+        // 常用命令关键字
+        "commonCommands": keywordsToRegex(
+            "documentclass usepackage"
+            "title author date maketitle abstract"
+            "cite ref label bibliographystyle bibliography"
+            "includegraphics caption"
+            "newcommand renewcommand newenvironment"
+            "input include"
+        )
+
+        // 特殊字符转义
+        "specialChars": [
+            {match: /\\[#$%&_{}\[\]\\]/, 0: "specialChar"}
+            {match: /\\(textbackslash|textasciitilde|textasciicircum)/, 0: "specialChar"}
+        ]
+
+        // 可选参数 [...]
+        "optionalArg": {
+            start: {match: /\[/}
+            end: {match: /\]/}
+            style: "optionalArg"
+            contains: [
+                {include: "commands"}
+                {include: "specialChars"}
+            ]
+        }
+
+        // 必需参数 {...} (普通样式)
+        "requiredArg": {
+            start: {match: /\{/}
+            end: {match: /\}/}
+            style: "requiredArg"
+            contains: [
+                {include: "textFormatting"}
+                {include: "commands"}
+                {include: "specialChars"}
+                {include: "mathInline"}
+            ]
+        }
+
+        // 文本格式化命令
+        "textFormatting": [
+            // \textbf{粗体}
+            {
+                start: {match: /\\textbf/, 0: "command"}
+                end: {match: /(?<=\})/}  // 在 } 之后结束
+                contains: [
+                    {
+                        start: {match: /\{/}
+                        end: {match: /\}/}
+                        style: "boldText"
+                        contains: [
+                            {include: "textFormatting"}
+                            {include: "commands"}
+                            {include: "specialChars"}
+                            {include: "mathInline"}
+                        ]
+                    }
+                ]
+            }
+
+            // \textit{斜体}
+            {
+                start: {match: /\\textit/, 0: "command"}
+                end: {match: /(?<=\})/}
+                contains: [
+                    {
+                        start: {match: /\{/}
+                        end: {match: /\}/}
+                        style: "italicText"
+                        contains: [
+                            {include: "textFormatting"}
+                            {include: "commands"}
+                            {include: "specialChars"}
+                            {include: "mathInline"}
+                        ]
+                    }
+                ]
+            }
+
+            // \underline{下划线}
+            {
+                start: {match: /\\underline/, 0: "command"}
+                end: {match: /(?<=\})/}
+                contains: [
+                    {
+                        start: {match: /\{/}
+                        end: {match: /\}/}
+                        style: "underlineText"
+                        contains: [
+                            {include: "textFormatting"}
+                            {include: "commands"}
+                            {include: "specialChars"}
+                            {include: "mathInline"}
+                        ]
+                    }
+                ]
+            }
+
+            // \emph{强调} - 通常显示为斜体
+            {
+                start: {match: /\\emph/, 0: "command"}
+                end: {match: /(?<=\})/}
+                contains: [
+                    {
+                        start: {match: /\{/}
+                        end: {match: /\}/}
+                        style: "italicText"
+                        contains: [
+                            {include: "textFormatting"}
+                            {include: "commands"}
+                            {include: "specialChars"}
+                            {include: "mathInline"}
+                        ]
+                    }
+                ]
+            }
+
+            // \texttt{等宽字体}
+            {
+                start: {match: /\\texttt/, 0: "command"}
+                end: {match: /(?<=\})/}
+                contains: [
+                    {
+                        start: {match: /\{/}
+                        end: {match: /\}/}
+                        style: "requiredArg"
+                        contains: [
+                            {include: "commands"}
+                            {include: "specialChars"}
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        // 所有命令(用于递归引用)
+        "commands": [
+            // \begin{环境名} 和 \end{环境名} 的统一处理
+            {
+                match: /\\(begin|end)\{([^}]+)\}/
+                1: "command"
+                2: "environment"
+            }
+
+            // 章节命令(特殊高亮)
+            {
+                group: link
+                contains: [
+                    {match: /\\/ + include("sectionCommands"), 0: "command"}
+                    {include: "optionalArg"}
+                    {include: "requiredArg"}
+                ]
+            }
+
+            // 常用命令
+            {match: /\\/ + include("commonCommands"), 0: "command"}
+
+            // 普通命令
+            {match: include("commandName"), 0: "command"}
+        ]
+
+        // 行内数学模式 $...$
+        "mathInline": {
+            start: {match: /\$/}
+            end: {match: /\$/}
+            style: "mathDelim"
+            childrenStyle: "mathContent"
+            contains: [
+                {include: "mathCommands"}
+                {match: /\\./, 0: "specialChar"}
+            ]
+        }
+
+        // 数学命令
+        "mathCommands": [
+            // 数学函数
+            {match: /\\/ + keywordsToRegex(
+                "sin cos tan cot sec csc"
+                "arcsin arccos arctan"
+                "sinh cosh tanh coth"
+                "exp log ln lg"
+                "lim sup inf max min"
+                "det dim ker"
+            ), 0: "command"}
+
+            // 数学符号命令
+            {match: /\\/ + keywordsToRegex(
+                "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu"
+                "nu xi pi rho sigma tau upsilon phi chi psi omega"
+                "Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega"
+                "sum prod int oint"
+                "frac sqrt"
+                "left right"
+                "infty partial nabla"
+                "rightarrow leftarrow Rightarrow Leftarrow leftrightarrow Leftrightarrow"
+                "leq geq neq approx equiv"
+                "times cdot div pm mp"
+                "in notin subset supset subseteq supseteq"
+                "cup cap"
+                "forall exists"
+                "text"
+            ), 0: "command"}
+
+            // 其他数学命令
+            {match: include("commandName"), 0: "command"}
+        ]
+    ]
+
+    contains: [
+        // 显示数学模式 \[...\] 或 $$...$$
+        {
+            start: {match: /\\\[|\$\$/}
+            end: {match: /\\\]|\$\$/}
+            style: "mathDelim"
+            childrenStyle: "mathContent"
+            contains: [
+                {include: "mathCommands"}
+                {match: /\\./, 0: "specialChar"}
+                {match: /&/, 0: "operator"}  // 对齐符号
+            ]
+        }
+
+        // 行内数学模式 $...$
+        {include: "mathInline"}
+
+        // 文本格式化命令(放在 commands 前面,优先匹配)
+        {include: "textFormatting"}
+
+        // 命令(包含所有 \begin 和 \end 的处理)
+        {include: "commands"}
+        
+        // 可选参数和必需参数
+        {include: "optionalArg"}
+        {include: "requiredArg"}
+        
+        // 特殊字符
+        {include: "specialChars"}
+    ]
+}

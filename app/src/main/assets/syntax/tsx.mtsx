@@ -1,0 +1,55 @@
+{
+    name: ["TypeScript JSX", ".tsx"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    styles: [
+        "decorator", #AF00DB, #C586C0
+        "interface", #267F99, #4EC9B0
+        "enum", #267F99, #4EC9B0
+        "function" > "keyword2"
+    ]
+    contains: [
+        // Strings
+        {builtin: #JAVA_QUOTED_STRING#}
+        // Template strings
+        {
+            style: "string"
+            start: {match: /`/}
+            end: {match: /`/}
+            contains: [
+                {match: /\$\{[^}]*\}/, 0: "variable"}
+                {match: /\\./}
+            ]
+        }
+        // Numbers
+        {number: "2|8|10|16|F|E|P|_"}
+        // Decorators
+        {match: /@[a-zA-Z_$][\w$]*/, 0: "decorator"}
+        // Keywords
+        {match: keywordsToRegex(
+            "abstract as async await break case catch class const continue debugger default delete do else enum export extends false finally for from function get if implements import in instanceof interface let new null of package private protected public return set static super switch this throw true try typeof var void while with yield"
+        ), 0: "keyword"}
+        // Types and interfaces
+        {match: /\b(type|interface)\s+([a-zA-Z_$][\w$]*)/, 1: "keyword", 2: "type"}
+        // Classes
+        {match: /\b(class)\s+([a-zA-Z_$][\w$]*)/, 1: "keyword", 2: "type"}
+        // Namespaces
+        {match: /\b(namespace)\s+([a-zA-Z_$][\w$]*)/, 1: "keyword", 2: "namespace"}
+        // Enumerations
+        {match: /\b(enum)\s+([a-zA-Z_$][\w$]*)/, 1: "keyword", 2: "enum"}
+        // Operators
+        {match: /(?:<|>|=|\+|-|\*|\/|%|&|\||\^|~|!|\?|:|\.|,|;)/, 0: "operator"}
+        // Highlighting for method calls
+        {match: /\b([a-zA-Z_$][\w$]*)(?=\s*\()/, 1: "function"}
+        // Functions
+        {match: /\b([a-zA-Z_$][\w$]*)\s*(?=\()/, 1: "funName"}
+        // Built-in types
+        {match: keywordsToRegex(
+            "any boolean never number string void symbol object undefined null bigint"
+        ), 0: "type"}
+        // Built-in objects
+        {match: keywordsToRegex(
+            "Array Date Error Map Math Object Promise RegExp Set String Symbol"
+        ), 0: "type"}
+    ]
+}

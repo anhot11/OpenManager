@@ -1,0 +1,11 @@
+{
+    name: ["NinePatchRegion"]
+    hide: true
+    contains: [
+        {match: keywordsToRegex("stretch content optical") + /(?=[ \t]*:)/, 0: "keyword"}
+        {match: keywordsToRegex("x y") + /(?=[ \t]*:)/, 0: "propKey"}
+        {match: keywordsToRegex("none auto full"), 0: "constant"}
+        {number: "10", style: "number"}
+        {match: /[:,\-]/, 0: "operator"}
+    ]
+}

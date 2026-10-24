@@ -1,0 +1,64 @@
+{
+    name: ["Java", ".java", ".jsp"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    contains: [
+        // ========== 字符串（最高优先级）==========
+        // 文本块 (Java 15+)，必须在普通字符串之前
+        {
+            style: "string"
+            start: {match: /"""/}
+            end: {match: /"""/}
+        }
+        // 单双引号字符串（复用内置 Java 字符串匹配器，含转义处理）
+        {builtin: #JAVA_QUOTED_STRING#}
+
+        // ========== 数字 ==========
+        // 支持: 二进制、十进制、十六进制、下划线分隔、L/F/D 后缀
+        {builtin: #JAVA_NUMBER#}
+
+        // ========== 注解 ==========
+        // 匹配 @Annotation 和 @package.Annotation
+        {match: /@\w+(?:\.\w+)*/, 0: "meta"}
+
+        // ========== 常量 ==========
+        // 全大写下划线分隔常量: MAX_VALUE, HTTP_OK
+        {match: /\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b(?!\s*\()/, 0: "constant"}
+        // 全大写缩写常量: TAG, API (排除 CRC32, URL 等特殊情况)
+        {match: /\b(?!(?:CRC32|URL|URI|XML|HTML|JSON|HTTP|HTTPS|UUID)\b)[A-Z][A-Z0-9]+\b(?!\.)(?!\s*\()/, 0: "constant"}
+
+        // ========== 关键字 ==========
+        {match: keywordsToRegex(
+                // 控制流
+                "if else switch case default for while do break continue return"
+                // 异常处理
+                "try catch finally throw throws"
+                // 类与接口
+                "class interface enum extends implements"
+                // 访问修饰符
+                "public protected private"
+                // 非访问修饰符
+                "static final abstract synchronized volatile transient native strictfp"
+                // 类型关键字
+                "void boolean byte char short int long float double"
+                // 变量与实例
+                "new this super instanceof"
+                // 包与导入
+                "package import"
+                // 其他
+                "assert goto const"
+                // Java 10+ var
+                "var"
+                // Java 14+ record
+                "record"
+                // Java 17+ sealed/permits
+                "sealed non-sealed permits yield when"
+                // 字面量
+                "true false null"
+            ), 0: "keyword"
+        }
+    ]
+
+    codeFormatter: #BUILT_IN_JAVA_FORMATTER#
+}

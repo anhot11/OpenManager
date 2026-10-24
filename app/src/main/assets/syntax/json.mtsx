@@ -1,0 +1,43 @@
+{
+    // @author: A4-Tacks
+    // @email: wdsjxhno1001@163.com
+    name: ["JSON", ".json", ".json5", ".hjson", ".jsonl"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    comment: {startsWith: "#"} // hjson comments
+    defines: [
+        "escapedChar": [
+            {match: /\\([btnfr"'\/\\]|([0-3]?[0-7])?[0-7]|[uU][0-9a-fA-F]{4}|[xX][0-9a-fA-F]{2})/, 0: "strEscape"}
+            {match: /\\./, 0: "error"}
+        ]
+    ]
+    contains: [
+        {match: /@?(?:\$|\b[A-Za-z_])[$A-Za-z_\d]*+(?!::)\s*+(?=:)/ 0: "type"}
+        {
+            match: /"(?:[^"\\]++|\\.)*+"\s*+(?=:)/
+            0: "type"
+            0: {include: "escapedChar"}
+        }
+        {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {include: "escapedChar"}
+            ]
+        }
+        {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /(?m)'|$/}
+            contains: [
+                {include: "escapedChar"}
+            ]
+        }
+        {builtin: #JAVA_NUMBER#}
+        {match: /[+-]?Infinity|NaN/, 0: "number"}
+        {match: keywordsToRegex("true false null"), 0: "keyword"}
+    ]
+    codeFormatter: #BUILT_IN_JSON_FORMATTER#
+    codeShrinker: #BUILT_IN_JSON_SHRINKER#
+}

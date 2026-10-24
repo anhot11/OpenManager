@@ -1,0 +1,495 @@
+{
+    name: ["Markdown", ".md"]
+    styles: [
+        "operator", #1F42BC, #C59172
+        "operatorB" > "operator", @B
+        "operatorBI" > "operator", @BI
+        "operatorI" > "operator", @I
+        "operatorS" > "operator", @S
+        "escape" > "meta"
+        "heading", #7C1E8F, #BD80B8, @B
+        "img", #1232AC#F0FCEE, #6BA6EF#2D3B3F
+        "imgBrackets", #067D17#F0FCEE, #79A978#2D3B3F
+        "urlI" #2E6BC5, #6CA8F1, @I
+        "urlU" > "urlI", @U
+        "lang" > "heading", @I
+        "quote", #57606A, #8895A4
+        "note", #2D65D1, #326FE5, @B
+        "tip", #3D7D3C, #51A750, @B
+        "important", #7B53D9, #8F63F6, @B
+        "warning", #956B23, #C08727, @B
+        "caution", #BD3436, #DF3D3F, @B
+        "divider", #888888, #A5A56B, @B
+        "frontMatter", #NULL$F0FCEE, #NULL$2D3B3F
+        "code", #009688, #00897B
+        "codeBlockMatched", #000000$F6FFF4, #A9B7C6$2D3B3F
+        "codeBlockMissing", #067D17$F0FCEE, #79A978$2D3B3F
+        "string", #067D17, #79A978
+        "B", @B
+        "I", @I
+        "BI", @BI
+        "S", @S
+        "U", @U
+    ]
+    comment: {startsWith: "<!--", endsWith: "-->", addToContains: false}
+    defines: [
+        "blankLine": {match: /(?m)^\s*?$/}
+        "styleBI": {
+            start: {match: /\*\*\*/, 0: "operatorBI"}
+            end: {match: /\*\*\*/, 0: "operatorBI"}
+            childrenStyle: "BI"
+            matchEndFirst: true
+            contains: [
+                {include: "blankLine"} => FAIL
+                {include: "inlineStyle"}
+            ]
+        }
+        "styleB1": {
+            start: {match: /\*\*/, 0: "operatorB"}
+            end: {match: /\*\*/, 0: "operatorB"}
+            childrenStyle: "B"
+            mustMatchEnd: true
+            contains: [
+                {include: "blankLine"} => FAIL
+                {include: "inlineStyle"}
+            ]
+        }
+        "styleB2": {
+            start: {match: /__/, 0: "operatorB"}
+            end: {match: /__/, 0: "operatorB"}
+            childrenStyle: "B"
+            mustMatchEnd: true
+            contains: [
+                {include: "blankLine"} => FAIL
+                {include: "inlineStyle"}
+            ]
+        }
+        "styleI1": {
+            start: {match: /\*/, 0: "operatorI"}
+            end: {match: /\*/, 0: "operatorI"}
+            childrenStyle: "I"
+            mustMatchEnd: true
+            contains: [
+                {include: "blankLine"} => FAIL
+                {include: "styleBI"}
+                {include: "styleB1"}
+                {include: "styleB2"}
+                {include: "styleS"}
+                {include: "styleCode"}
+                {include: "img"}
+                {include: "urlMatchers"}
+                {include: "footnote"}
+                {include: "linkRefDef"}
+                {include: "specialMark"}
+                {match: /(?s)\\./, 0: "escape"}
+                <EndMatcher>
+            ]
+        }
+        "styleI2": {
+            start: {match: /_/, 0: "operatorI"}
+            end: {match: /_/, 0: "operatorI"}
+            childrenStyle: "I"
+            mustMatchEnd: true
+            contains: [
+                {include: "blankLine"} => FAIL
+                {include: "styleBI"}
+                {include: "styleB1"}
+                {include: "styleB2"}
+                {include: "styleS"}
+                {include: "styleCode"}
+                {include: "img"}
+                {include: "urlMatchers"}
+                {include: "footnote"}
+                {include: "linkRefDef"}
+                {include: "specialMark"}
+                {match: /(?s)\\./, 0: "escape"}
+                <EndMatcher>
+            ]
+        }
+        "styleS": {
+            start: {match: /~~/, 0: "operatorS"}
+            end: {match: /~~/, 0: "operatorS"}
+            childrenStyle: "S"
+            mustMatchEnd: true
+            contains: [
+                {include: "blankLine"} => FAIL
+                {include: "inlineStyle"}
+            ]
+        }
+        "styleCode": {
+            start: {match: /(?<![\\`])((?:\\.)*)/ + /(`)/ + /(?!`)/, 1: "escape", 2: "operator"}
+            end: {match: /(?<![\\`])((?:\\.)*)/ + /(`)/ + /(?!`)/, 1: "escape", 2: "operator"}
+            childrenStyle: "code"
+            matchEndFirst: true
+            mustMatchEnd: true
+            contains: [
+                {include: "blankLine"} => FAIL
+            ]
+        }
+        // 有 scheme（http/https/ftp）：匹配尽量宽松，只要 :// 后面跟一串非空白即可（用 ++ 防回溯卡死）
+        // 没 scheme：只认“更像 URL 的域名/IPv4”，域名 TLD 严格（常见 gTLD + 任意 2 位国家域 + punycode）
+        // 域名后不能紧跟标识符字符，避免把 rel.plt 等文本的前缀识别为链接
+        "urlRegex": "(?i)(?<!@)\\b(?:(?:https?|ftp)://[^\\s<>\\\"']++|(?:(?:www\\d{0,3}\\.)?(?:(?>(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+)(?:com|net|org|edu|gov|mil|int|info|biz|name|pro|app|dev|xyz|top|site|online|store|shop|cloud|[a-z]{2}|xn--[a-z0-9-]{2,59})(?![a-z0-9_-])|(?:\\d{1,3}\\.){3}\\d{1,3})(?::\\d{2,5})?(?:[/?#][^\\s<>\\\"']*+)?))"
+        "img": {
+            group: linkAll
+            style: "img"
+            contains: [
+                {
+                    start: {match: /(?<![\\!])((?:\\.)*)/ + /!(\[)/, 1: "escape", 2: "urlU"}
+                    end: {match: /(?<![\\\]])((?:\\.)*)/ + /(\])/, 1: "escape", 2: "urlU"}
+                    childrenStyle: "urlU"
+                    mustMatchEnd: true
+                    contains: [
+                        {include: "blankLine"} => FAIL
+                        {include: "inlineStyle"}
+                    ]
+                }
+                {
+                    start: {match: /\(/, 0: "imgBrackets"}
+                    end: {match: /\)/, 0: "imgBrackets"}
+                    childrenStyle: "urlI"
+                    matchEndFirst: true
+                    contains: [
+                        {match: /\n/} => FAIL
+                        {match: include("urlRegex"), 0: "U"}
+                    ]
+                }
+            ]
+        }
+        "urlMatchers": [
+            {match: include("urlRegex"), 0: "urlU"}
+            {
+                group: linkAll
+                contains: [
+                    {
+                        start: {match: /(?<![\\\[])((?:\\.)*)/ + /(\[)/, 1: "escape", 2: "urlU"}
+                        end: {match: /(?<![\\\]])((?:\\.)*)/ + /(\])/, 1: "escape", 2: "urlU"}
+                        childrenStyle: "urlU"
+                        mustMatchEnd: true
+                        contains: [
+                            {include: "blankLine"} => FAIL
+                            {include: "inlineStyle"}
+                        ]
+                    }
+                    {
+                        start: {match: /\(/, 0: "string"} // 括号不需要加下划线
+                        end: {match: /\)/, 0: "string"}
+                        childrenStyle: "urlI"
+                        matchEndFirst: true
+                        contains: [
+                            {match: /\n/} => FAIL
+                            {match: include("urlRegex"), 0: "U"}
+                        ]
+                    }
+                ]
+            }
+        ]
+        "footnote": {
+            match: /(\[\^[^\]\n\r]+\])/ + /(:([^\n\r]*(?:\n[ \t]*\S[^\n\r]*)*))?/
+            1: "operator"
+            3: "string"
+        }
+        "linkRefDef": {
+            match: /(?m)^ {0,3}/
+                 + /(\[/ + /[^\[\n]+?/ + /\])/
+                 // /.*?(?:\n[ \t]*\S.*?)*/ 可匹配多行文本，且不能有空行
+                 + /: ?(<.*?>|\S+)/ + /( ?(".*?(?:\n[ \t]*\S.*?)*"|'.*?(?:\n[ \t]*\S.*?)*'))?/
+            1: "operator"
+            2: "urlI"
+            3: "string"
+        }
+        "specialMark": {
+            match: /\[/ + /[^\[\n]+?/ + /\]/
+            0: "operatorB"
+        }
+        "colors": [
+            {match: /(?i)#([a-f0-9]{3,6})\b/, 0: "parseColor(auto,1,HEX)"}
+            {match: /(?i)\bRGB *\(/ + / *(\d+ *, *\d+ *, *\d+) */ + /\)/, 0: "parseColor(auto,1,RGB)"}
+            {match: /(?i)\bRGBA *\(/ + / *(\d+ *, *\d+ *, *\d+ *, *\d+(?:\.\d+)?) */ + /\)/, 0: "parseColor(auto,1,RGBA)"}
+            {match: /(?i)\bHSL *\(/ + / *(\d+ *, *\d+% *, *\d+%) */ + /\)/, 0: "parseColor(auto,1,HSL)"}
+            {match: /(?i)\bHSLA *\(/ + / *(\d+ *, *\d+% *, *\d+% *, *\d+(?:\.\d+)?) */ + /\)/, 0: "parseColor(auto,1,HSLA)"}
+        ]
+        "startTagContains": [
+            {match: /(?:([^='"<\/>\s]+)(:))?([^='"<\/>\s]+)/, 1: "namespace", 2: "attrName", 3: "attrName"}
+            {
+                group: link
+                contains: [
+                    {match: /=\s*/, 0: "string"}
+                    {match: /(?s)(["']).*?\1/, 0: "string"}
+                ]
+            }
+        ]
+        "htmlMatchers": [
+            {match: /(?sm)^ {0,3}<!--.*?-->/, 0: "comment"}
+            {
+                start:  {
+                    start: {match: /<\s*(script)\b/, 1: "tagName"}
+                    end: {match: ">|$"}
+                    contains: [ {include: "startTagContains"} ]
+                }
+                end: {match: "</\\s*(script)\\s*>", 1: "tagName"}
+            }
+            {
+                start:  {
+                    start: {match: /<\s*(style)\b/, 1: "tagName"}
+                    end: {match: ">|$"}
+                    contains: [ {include: "startTagContains"} ]
+                }
+                end: {match: "</\\s*(style)\\s*>", 1: "tagName"}
+                contains: [
+                    {include: "colors"}
+                ]
+            }
+            {
+                start:  {
+                    start: {match: /<\s*(pre)\b/, 1: "tagName"}
+                    end: {match: ">|$"}
+                    contains: [ {include: "startTagContains"} ]
+                }
+                end: {match: "</\\s*(pre)\\s*>", 1: "tagName"}
+            }
+            {
+                start: {match: "<\\??([^/>\\s]+)", 1: "tagName"}
+                end: {match: "[?/]?>|$"}
+                contains: [ {include: "startTagContains"} ]
+            }
+            {
+                match: "</\\s*([^>\\s]+)\\s*>", 1: "tagName"
+            }
+        ]
+        "inlineStyle": [
+            {include: "styleBI"}
+            {include: "styleB1"}
+            {include: "styleB2"}
+            {include: "styleI1"}
+            {include: "styleI2"}
+            {include: "styleS"}
+            {include: "styleCode"}
+            {include: "img"}
+            {include: "urlMatchers"}
+            {include: "footnote"}
+            {include: "linkRefDef"}
+            {include: "specialMark"}
+            {match: /(?s)\\./, 0: "escape"}
+        ]
+        // 引用文本末尾需要至少空一行
+        "quoteEnd": {
+            match: /\n *\n|$/
+        }
+        "quotes": [
+            {
+                start: {match: /(?m)^ {0,3}> *\[!NOTE\]/, 0: "note"}
+                end: {include: "quoteEnd"}
+                style: "quote"
+                contains: [
+                    {match: /(?m)^ {0,3}>/, 0: "note"}
+                    {include: "inlineStyle"}
+                    {include: "htmlMatchers"}
+                ]
+            }
+            {
+                start: {match: /(?m)^ {0,3}> *\[!TIP\]/, 0: "tip"}
+                end: {include: "quoteEnd"}
+                style: "quote"
+                contains: [
+                    {match: /(?m)^ {0,3}>/, 0: "tip"}
+                    {include: "inlineStyle"}
+                    {include: "htmlMatchers"}
+                ]
+            }
+            {
+                start: {match: /(?m)^ {0,3}> *\[!IMPORTANT\]/, 0: "important"}
+                end: {include: "quoteEnd"}
+                style: "quote"
+                contains: [
+                    {match: /(?m)^ {0,3}>/, 0: "important"}
+                    {include: "inlineStyle"}
+                    {include: "htmlMatchers"}
+                ]
+            }
+            {
+                start: {match: /(?m)^ {0,3}> *\[!WARNING\]/, 0: "warning"}
+                end: {include: "quoteEnd"}
+                style: "quote"
+                contains: [
+                    {match: /(?m)^ {0,3}>/, 0: "warning"}
+                    {include: "inlineStyle"}
+                    {include: "htmlMatchers"}
+                ]
+            }
+            {
+                start: {match: /(?m)^ {0,3}> *\[!CAUTION\]/, 0: "caution"}
+                end: {include: "quoteEnd"}
+                style: "quote"
+                contains: [
+                    {match: /(?m)^ {0,3}>/, 0: "caution"}
+                    {include: "inlineStyle"}
+                    {include: "htmlMatchers"}
+                ]
+            }
+            {
+                start: {match: /(?m)^ {0,3}>/}
+                end: {include: "quoteEnd"}
+                style: "string"
+                contains: [
+                    {include: "inlineStyle"}
+                    {include: "htmlMatchers"}
+                ]
+            }
+        ]
+        "codeFenceLanguages": {
+            "c" => ".c"
+            "cpp" => ".cpp"
+            "c++" => ".cpp"
+            "cc" => ".cpp"
+            "cxx" => ".cpp"
+            "csharp" => ".cs"
+            "cs" => ".cs"
+            "c#" => ".cs"
+            "java" => ".java"
+            "jsp" => ".java"
+            "kotlin" => ".kt"
+            "kt" => ".kt"
+            "kts" => ".kt"
+            "groovy" => ".groovy"
+            "gradle" => ".groovy"
+            "javascript" => ".js"
+            "js" => ".js"
+            "jsx" => ".js"
+            "typescript" => ".ts"
+            "ts" => ".ts"
+            "tsx" => ".tsx"
+            "html" => ".html"
+            "css" => ".css"
+            "xml" => ".xml"
+            "svg" => ".svg"
+            "json" => ".json"
+            "json5" => ".json"
+            "jsonl" => ".json"
+            "yaml" => ".yaml"
+            "yml" => ".yaml"
+            "toml" => ".toml"
+            "python" => ".py"
+            "py" => ".py"
+            "shell" => ".sh"
+            "sh" => ".sh"
+            "bash" => ".sh"
+            "zsh" => ".sh"
+            "powershell" => ".ps1"
+            "ps1" => ".ps1"
+            "batch" => ".bat"
+            "bat" => ".bat"
+            "cmd" => ".bat"
+            "php" => "PHP-Snippet"
+            "lua" => ".lua"
+            "sql" => ".sql"
+            "go" => ".go"
+            "golang" => ".go"
+            "rust" => ".rs"
+            "rs" => ".rs"
+            "swift" => ".swift"
+            "dart" => ".dart"
+            "zig" => ".zig"
+            "nix" => ".nix"
+            "asm" => ".asm"
+            "nasm" => ".asm"
+            "masm" => ".asm"
+            "smali" => ".smali"
+            "diff" => ".diff"
+            "patch" => ".diff"
+            "latex" => ".tex"
+            "tex" => ".tex"
+        }
+    ]
+    contains: [
+        // Front Matter
+        {
+            start: {match: /^---\n/, 0: "!!operator"}
+            end: {match: /(?m)^---$/, 0: "!!operator"}
+            mustMatchEnd: true
+            style: "frontMatter"
+            contains: [
+                {match: /(?m)^(.*?):/, 1: "propKey"}
+            ]
+        }
+
+        // 注释
+        {match: /(?m)^\[\/\/\]: # .*$/, 0: "comment"}
+        {match: /(?m)^\[\^_\^\]: # .*$/, 0: "comment"}
+        {match: /(?m)^\[\/\/\]: <> .*$/, 0: "comment"}
+        {match: /(?m)^\[comment\]: <> .*$/, 0: "comment"}
+
+        // 分隔线：3个及以上的*或-或_，前面最多3个空格，中间可以有空格
+        {match: /(?m)^ {0,3}(\* *\* *\* *[* ]*|- *- *- *[- ]*|_ *_ *_ *[_ ]*)$/, 0: "divider"}
+
+        // 列表，优先级低于分隔符
+        {match: /(?m)^[ \t]*([-+*]|\d+\.) /, 1: "operator"}
+
+        // 隔离代码块：捕获 opener 长度，确保较短的同类围栏不能提前结束子语法
+        {
+            start: {
+                match: /(?m)^ {0,3}(`{3,}+)([ \t]*+([^`\s]*+)[^`\r\n]*+)(?:\r\n|[\r\n]|\z)/
+                export: 1 => "fence"
+                1: "operator"
+                2: "lang"
+            }
+            end: {match: /(?m)^ {0,3}/ + var("fence") + /`*+[ \t]*+(?=\r\n|[\r\n]|\z)/, 0: "operator"}
+            childrenStyle: "codeBlockMatched"
+            missingStyle: "codeBlockMissing"
+            childrenSyntax: {
+                capture: 3
+                ignoreCase: true
+                include: "codeFenceLanguages"
+            }
+        }
+        {
+            start: {
+                match: /(?m)^ {0,3}(~{3,}+)([ \t]*+(\S*+)[^\r\n]*+)(?:\r\n|[\r\n]|\z)/
+                export: 1 => "fence"
+                1: "operator"
+                2: "lang"
+            }
+            end: {match: /(?m)^ {0,3}/ + var("fence") + /~*+[ \t]*+(?=\r\n|[\r\n]|\z)/, 0: "operator"}
+            childrenStyle: "codeBlockMatched"
+            missingStyle: "codeBlockMissing"
+            childrenSyntax: {
+                capture: 3
+                ignoreCase: true
+                include: "codeFenceLanguages"
+            }
+        }
+
+        // 缩进代码块，优先级低于列表
+        {
+            match: /(?m)^( {4,}| *\t)\S.*\n/ + /(\s*(^( {4,}| *\t)\S.*(\n|$))+)*/
+            0: "codeBlockMissing"
+        }
+
+        // 引用
+        {include: "quotes"}
+
+        // # 标题
+        {
+            start: {match: /(?m)^ {0,3}#{1,6}(?!#)/, 0: "operator"}
+            end: {match: /(?m)( #+ *)?$/, 1: "operator"}
+            style: "heading"
+            contains: [
+                {include: "inlineStyle"}
+            ]
+        }
+
+        // Setext 标题（前面要空一行）
+        {
+            match: /(?m)(?:^(?:[^\S\n]*\n)+|\A)( {0,3}+(\S.*+)\n {0,3}+(-++|=++)$)/
+            1: "heading"
+            2: {include: "inlineStyle"}
+            3: "operator"
+        }
+
+        // 内联风格
+        {include: "inlineStyle"}
+
+        // HTML
+        {include: "htmlMatchers"}
+    ]
+}

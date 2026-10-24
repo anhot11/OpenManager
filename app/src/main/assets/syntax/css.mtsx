@@ -1,0 +1,525 @@
+{
+    name: ["CSS", ".css"]
+
+    comment: {startsWith: "/*", endsWith: "*/", insertSpace: false}
+
+    ignoreCase: true
+
+    styles: [
+        "tagName" > "keyword2"
+        "className" > "constant"
+        "idSelector" > "operator"
+        "pseudoSelector" > "operator"
+        "propertyName" > "keyword"
+        "propertyValue" > "label"
+        "atRule" > "meta"
+        "customProperty" > "variable"
+    ]
+
+    defines: [
+        // HTML 标签选择器
+        "htmlTags": keywordsToRegex(
+            "html body head title meta link script style"
+            "div span section article aside nav header footer main figure figcaption"
+            "h1 h2 h3 h4 h5 h6 p blockquote pre code kbd samp var"
+            "a abbr b i strong em small mark del ins sub sup"
+            "ul ol li dl dt dd"
+            "table thead tbody tfoot tr th td caption colgroup col"
+            "form input button select option optgroup textarea label fieldset legend"
+            "img picture source video audio track canvas svg"
+            "iframe embed object param"
+            "address time progress meter details summary dialog"
+        )
+
+        // 仅用于声明片段与未完成 Web Component 选择器的消歧，不限制合法属性集合
+        "pseudoSelectorNames": keywordsToRegex(
+            "active any-link autofill checked default defined disabled empty enabled"
+            "first-child first-of-type focus focus-visible focus-within fullscreen hover"
+            "indeterminate in-range invalid last-child last-of-type link only-child only-of-type"
+            "optional out-of-range placeholder-shown read-only read-write required root target"
+            "valid visited after backdrop before file-selector-button first-letter first-line"
+            "marker placeholder selection dir has host host-context is lang not nth-child"
+            "nth-last-child nth-last-of-type nth-of-type state where"
+        )
+
+        // CSS 属性名
+        "propertyNames": keywordsToRegex(
+            // 布局相关
+            "display position top right bottom left float clear"
+            "width height min-width min-height max-width max-height"
+            "margin margin-top margin-right margin-bottom margin-left"
+            "padding padding-top padding-right padding-bottom padding-left"
+            "box-sizing overflow overflow-x overflow-y"
+            "z-index visibility opacity"
+
+            // Flexbox
+            "flex flex-direction flex-wrap flex-flow flex-grow flex-shrink flex-basis"
+            "justify-content align-items align-self align-content"
+            "order gap row-gap column-gap"
+
+            // Grid
+            "grid grid-template grid-template-rows grid-template-columns grid-template-areas"
+            "grid-auto-rows grid-auto-columns grid-auto-flow"
+            "grid-row grid-row-start grid-row-end"
+            "grid-column grid-column-start grid-column-end"
+            "grid-area place-items place-content place-self"
+
+            // 文本相关
+            "color font font-family font-size font-weight font-style font-variant"
+            "line-height letter-spacing word-spacing text-align text-decoration"
+            "text-indent text-transform text-shadow text-overflow"
+            "white-space word-break word-wrap overflow-wrap hyphens"
+            "direction unicode-bidi writing-mode vertical-align"
+
+            // 背景相关
+            "background background-color background-image background-repeat"
+            "background-position background-position-x background-position-y"
+            "background-size background-attachment background-origin background-clip"
+            "background-blend-mode"
+
+            // 边框相关
+            "border border-width border-style border-color border-radius"
+            "border-top border-right border-bottom border-left"
+            "border-top-width border-right-width border-bottom-width border-left-width"
+            "border-top-style border-right-style border-bottom-style border-left-style"
+            "border-top-color border-right-color border-bottom-color border-left-color"
+            "border-top-left-radius border-top-right-radius"
+            "border-bottom-left-radius border-bottom-right-radius"
+            "border-image border-image-source border-image-slice"
+            "border-image-width border-image-outset border-image-repeat"
+            "outline outline-width outline-style outline-color outline-offset"
+            "box-shadow"
+
+            // 列表相关
+            "list-style list-style-type list-style-position list-style-image"
+
+            // 表格相关
+            "border-collapse border-spacing caption-side empty-cells table-layout"
+
+            // 变换和动画
+            "transform transform-origin transform-style perspective perspective-origin"
+            "backface-visibility"
+            "transition transition-property transition-duration transition-timing-function transition-delay"
+            "animation animation-name animation-duration animation-timing-function"
+            "animation-delay animation-iteration-count animation-direction"
+            "animation-fill-mode animation-play-state"
+
+            // 滤镜和混合
+            "filter backdrop-filter mix-blend-mode isolation"
+
+            // 其他
+            "cursor pointer-events resize user-select appearance"
+            "content quotes counter-reset counter-increment"
+            "clip clip-path mask mask-image mask-size mask-repeat mask-position"
+            "object-fit object-position"
+            "scroll-behavior scroll-snap-type scroll-snap-align"
+            "will-change contain"
+
+            // 旧版和供应商前缀（常见的）
+            "zoom accelerator behavior ime-mode"
+            "scrollbar-width scrollbar-color"
+            "scrollbar-base-color scrollbar-face-color scrollbar-track-color"
+            "scrollbar-arrow-color scrollbar-shadow-color"
+            "scrollbar-highlight-color scrollbar-3d-light-color scrollbar-dark-shadow-color"
+            "text-align-last text-justify text-kashida-space text-autospace"
+            "text-underline-position word-break line-break"
+            "ruby-align ruby-overhang ruby-position"
+            "layout-flow layout-grid layout-grid-char layout-grid-line layout-grid-mode layout-grid-type"
+            "layout-grid-char-spacing include-source layer-background-color layer-background-image"
+            "page page-break-before page-break-after page-break-inside"
+            "marks orphans widows"
+            "size volume stress richness"
+            "speak speak-header speak-numeral speak-punctuation speech-rate"
+            "voice-family pitch pitch-range elevation azimuth"
+            "play-during pause pause-before pause-after cue cue-before cue-after"
+        )
+
+        // CSS 属性值（关键字）
+        "propertyValues": keywordsToRegex(
+            // 通用值
+            "inherit initial unset revert auto none"
+
+            // display
+            "block inline inline-block inline-table table table-row table-cell"
+            "flex inline-flex grid inline-grid"
+            "flow-root contents list-item run-in"
+
+            // position
+            "static relative absolute fixed sticky"
+
+            // float/clear
+            "left right both"
+
+            // overflow
+            "visible hidden scroll clip"
+
+            // 颜色关键字
+            "transparent currentcolor"
+            "black white gray silver"
+            "red green blue yellow cyan magenta"
+            "maroon navy olive purple teal fuchsia lime aqua orange"
+
+            // font-weight
+            "normal bold bolder lighter"
+
+            // font-style
+            "italic oblique"
+
+            // font-variant
+            "small-caps"
+
+            // text-align
+            "center justify"
+
+            // text-decoration
+            "underline overline line-through blink"
+
+            // text-transform
+            "uppercase lowercase capitalize"
+
+            // white-space
+            "nowrap pre pre-wrap pre-line break-spaces"
+
+            // word-break
+            "break-all keep-all break-word"
+
+            // vertical-align
+            "baseline top middle bottom sub super text-top text-bottom"
+
+            // background-repeat
+            "repeat repeat-x repeat-y no-repeat space round"
+
+            // background-attachment
+            "scroll fixed local"
+
+            // background-size
+            "cover contain"
+
+            // background-origin/clip
+            "border-box padding-box content-box"
+
+            // border-style
+            "solid dashed dotted double groove ridge inset outset"
+
+            // list-style-type
+            "disc circle square decimal decimal-leading-zero"
+            "lower-roman upper-roman lower-alpha upper-alpha"
+            "lower-greek lower-latin upper-latin armenian georgian"
+
+            // list-style-position
+            "inside outside"
+
+            // cursor
+            "pointer default move text wait help crosshair progress"
+            "not-allowed no-drop grab grabbing zoom-in zoom-out"
+            "e-resize ne-resize nw-resize n-resize se-resize sw-resize s-resize w-resize"
+            "ew-resize ns-resize nesw-resize nwse-resize col-resize row-resize all-scroll"
+
+            // pointer-events
+            "all"
+
+            // resize
+            "horizontal vertical"
+
+            // user-select
+            "text all"
+
+            // justify-content/align-items/align-content
+            "flex-start flex-end center space-between space-around space-evenly stretch"
+            "start end"
+
+            // flex-direction
+            "row row-reverse column column-reverse"
+
+            // flex-wrap
+            "wrap wrap-reverse"
+
+            // align-self
+            "self-start self-end"
+
+            // grid-auto-flow
+            "dense"
+
+            // transform-style
+            "flat preserve-3d"
+
+            // backface-visibility
+            "visible hidden"
+
+            // animation-direction
+            "reverse alternate alternate-reverse"
+
+            // animation-fill-mode
+            "forwards backwards"
+
+            // animation-play-state
+            "running paused"
+
+            // animation-iteration-count
+            "infinite"
+
+            // timing functions
+            "ease ease-in ease-out ease-in-out linear step-start step-end"
+
+            // mix-blend-mode
+            "multiply screen overlay darken lighten color-dodge color-burn"
+            "hard-light soft-light difference exclusion hue saturation color luminosity"
+
+            // box-sizing
+            "border-box content-box"
+
+            // object-fit
+            "fill contain cover scale-down"
+
+            // 旧版值
+            "above below higher lower show hide open-quote close-quote no-open-quote no-close-quote"
+            "leftwards rightwards far-left far-right left-side right-side behind"
+            "x-slow slow medium fast x-fast faster slower"
+            "x-soft soft loud x-loud silent spell-out digits continuous once"
+            "xx-small x-small small large x-large xx-large smaller larger"
+            "ultra-condensed extra-condensed condensed semi-condensed"
+            "semi-expanded expanded extra-expanded ultra-expanded"
+            "wider narrower"
+            "ltr rtl bidi-override embed isolate isolate-override plaintext"
+            "separate collapse avoid always page column"
+            "print screen tv tty projection handheld braille embossed aural speech"
+            "landscape portrait format mix"
+            "menu message-box small-caption status-bar"
+            "serif sans-serif monospace cursive fantasy"
+            "caption icon small-caption"
+            "male female child code"
+            "spell-out"
+        )
+
+        // 字符串（单引号和双引号）
+        "strings": [
+            {
+                start: {match: /"/}
+                end: {match: /(?m)"|$/}
+                style: "string"
+                contains: [
+                    {match: /\\./, 0: "strEscape"}
+                ]
+            }
+            {
+                start: {match: /'/}
+                end: {match: /(?m)'|$/}
+                style: "string"
+                contains: [
+                    {match: /\\./, 0: "strEscape"}
+                ]
+            }
+        ]
+
+        // 数字和单位
+        "numbers": [
+            // 十六进制颜色
+            {match: /#([0-9a-fA-F]{3,8})\b/, 0: "parseColor(auto,1,HEX)"}
+
+            // 数字 + 百分号（百分号后面不是单词字符）
+            {match: /\b\d+(\.\d+)?%/, 0: "number"}
+
+            // 数字 + 单位（单位都是字母，可以用 \b）
+            {match: /\b\d+(\.\d+)?(ch|cm|deg|dpcm|dpi|dppx|em|ex|fr|grad|hz|in|khz|mm|ms|pc|pt|px|q|rad|rem|s|turn|vh|vmax|vmin|vw)\b/, 0: "number"}
+
+            // 纯数字
+            {match: /\b\d+(\.\d+)?\b/, 0: "number"}
+        ]
+
+        // url() 函数
+        "urlFunction": {
+            start: {match: /\b(url)\s*\(/, 1: "keyword"}
+            end: {match: /\)|$/}
+            contains: [
+                {include: "strings"}
+                {match: /[^\s)]+/, 0: "string"}
+            ]
+        }
+
+        // var() 函数 - 单独处理以高亮 CSS 变量
+        "varFunction": {
+            start: {match: /\b(var)\s*\(/, 1: "keyword"}
+            end: {match: /\)|$/}
+            contains: [
+                // CSS 自定义属性名
+                {match: /--[\w-]+/, 0: "customProperty"}
+                // 逗号和回退值
+                {match: /,/, 0: "operator"}
+                {include: "strings"}
+                {include: "numbers"}
+                {match: include("propertyValues"), 0: "propertyValue"}
+            ]
+        }
+
+        // 其他 CSS 函数
+        "functions": {
+            start: {match: /\b(calc|rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color|linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient|conic-gradient|repeating-conic-gradient|min|max|clamp|attr|counter|counters|cubic-bezier|steps|translate|translateX|translateY|translateZ|translate3d|scale|scaleX|scaleY|scaleZ|scale3d|rotate|rotateX|rotateY|rotateZ|rotate3d|skew|skewX|skewY|matrix|matrix3d|perspective|blur|brightness|contrast|drop-shadow|grayscale|hue-rotate|invert|opacity|saturate|sepia)\s*\(/, 1: "keyword"}
+            end: {match: /\)|$/}
+            contains: [
+                {include: "strings"}
+                {include: "numbers"}
+                {match: include("propertyValues"), 0: "propertyValue"}
+                {match: /\//, 0: "operator"}
+                {match: /,/, 0: "operator"}
+            ]
+        }
+
+        // 块注释在规则块和属性值中复用；根级注释仍由 comment 元数据自动生成
+        "blockComment": {
+            start: {match: /\/\*/}
+            end: {match: /\*\/|$/}
+            style: "comment"
+        }
+
+        // 属性值子规则由普通规则块和独立声明片段共用，避免两种入口产生不同高亮
+        "propertyValueParts": [
+            {include: "blockComment"}
+            {include: "urlFunction"}
+            {include: "varFunction"}
+            {include: "functions"}
+            {include: "strings"}
+            {include: "numbers"}
+            {match: include("propertyValues"), 0: "propertyValue"}
+            {match: /!important\b/, 0: "meta"}
+            {match: /\//, 0: "operator"}
+            {match: /,/, 0: "operator"}
+        ]
+
+        // 声明片段接受任意合法属性名；根级候选顺序负责让已知标签选择器优先决胜
+        "inlineDeclaration": {
+            start: {
+                match: /(?:\A|(?<=;)|(?<=\*\/))[ \t\r\n]*(?!(?!/ + include("propertyNames") + /\s*:)[a-zA-Z][\w-]*-[\w-]+\s*::?/ + include("pseudoSelectorNames") + /)(?:(--[\w-]+)|(-?[a-zA-Z][\w-]*))\s*:/
+                1: "customProperty"
+                2: "propertyName"
+            }
+            end: {match: /;|$/}
+            contains: [
+                {match: /[{}]/} => FAIL
+                {include: "propertyValueParts"}
+            ]
+        }
+
+        // @media 规则的特性查询（用于 contains）
+        "mediaFeatures": [
+            // 媒体特性
+            {
+                start: {match: /\(/}
+                end: {match: /\)/}
+                contains: [
+                    // 属性名
+                    {match: include("propertyNames"), 0: "propertyName"}
+                    {match: /\b([a-z][\w-]*)\s*(?=:)/, 1: "propertyName"}
+                    // 运算符
+                    {match: /[:<>=]/, 0: "operator"}
+                    // 数值
+                    {include: "numbers"}
+                    // 关键字值
+                    {match: include("propertyValues"), 0: "propertyValue"}
+                ]
+            }
+        ]
+    ]
+
+    contains: [
+        // @ 规则（支持括号和花括号两种形式）
+        {
+            start: {match: /(@(?:charset|import|namespace))\b/, 1: "atRule"}
+            end: {match: /;/}
+            contains: [
+                {include: "strings"}
+                {include: "urlFunction"}
+                {match: include("propertyValues"), 0: "propertyValue"}
+            ]
+        }
+
+        // @media, @supports 等带条件的 @ 规则
+        {
+            start: {match: /(@(?:media|supports|document))\b/, 1: "atRule"}
+            end: {match: /(?=\{)/}
+            contains: [
+                {include: "strings"}
+                {match: /\b(and|or|not|only)\b/, 0: "keyword"}
+                {match: include("propertyValues"), 0: "propertyValue"}
+                {include: "mediaFeatures"}
+            ]
+        }
+
+        // @keyframes, @font-face, @page 等
+        {
+            start: {match: /(@(?:keyframes|-webkit-keyframes|-moz-keyframes|font-face|page|counter-style|font-feature-values|property|layer))\b/, 1: "atRule"}
+            end: {match: /(?=\{)/}
+            contains: [
+                {include: "strings"}
+                {match: /\b[a-zA-Z][\w-]*/, 0: "constant"}
+            ]
+        }
+
+        // 已知标签先于声明片段决胜，但不能截断 object-fit 等以标签名开头的属性
+        {match: include("htmlTags") + /(?![\w-])/, 0: "tagName"}
+
+        // 其余声明仍先于后续选择器竞争；花括号会触发 FAIL 并回退到正常规则
+        {include: "inlineDeclaration"}
+
+        // 通配符选择器
+        {match: /\*/, 0: "operator"}
+
+        // ID 选择器
+        {match: /#[a-zA-Z][\w-]*/, 0: "idSelector"}
+
+        // 类选择器
+        {match: /\.[a-zA-Z][\w-]*/, 0: "className"}
+
+        // 伪类和伪元素
+        {match: /::?[a-zA-Z][\w-]*/, 0: "pseudoSelector"}
+
+        // 属性选择器
+        {
+            start: {match: /\[/}
+            end: {match: /\]/}
+            contains: [
+                {match: /[~|^$*]?=/, 0: "operator"}
+                {include: "strings"}
+                {match: /\b[a-zA-Z][\w-]*/, 0: "propertyName"}
+            ]
+        }
+
+        // 选择器运算符
+        {match: /[>+~]/, 0: "operator"}
+
+        // !important
+        {match: /!important\b/, 0: "meta"}
+
+        // 规则块
+        {
+            start: {match: /\{/}
+            end: {match: /\}/}
+            contains: [
+                // 注释（需要显式添加）
+                {include: "blockComment"}
+
+                // 嵌套规则（用于 CSS 嵌套或预处理器）
+                {match: /&/, 0: "operator"}
+
+                // CSS 自定义属性（CSS 变量）定义
+                {match: /(--[\w-]+)\s*(?=:)/, 1: "customProperty"}
+
+                // 属性名
+                {match: /\b([a-zA-Z][\w-]*)\s*(?=:)/, 1: "propertyName"}
+                {match: include("propertyNames") + /(?=\s*:)/, 0: "propertyName"}
+
+                // 属性值
+                {
+                    start: {match: /:/}
+                    end: {match: /;|(?=\})/}
+                    contains: [{include: "propertyValueParts"}]
+                }
+            ]
+        }
+
+        // 数字（用于选择器中的数字，如 :nth-child(2n+1)）
+        {include: "numbers"}
+    ]
+
+    codeFormatter: #BUILT_IN_CSS_FORMATTER#
+    codeShrinker: #BUILT_IN_CSS_SHRINKER#
+}

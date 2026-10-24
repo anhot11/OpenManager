@@ -1,0 +1,19 @@
+{
+    name: ["YAML", ".yml", ".yaml"]
+    comment: {startsWith: "#"}
+    contains: [
+        {
+            style: "string"
+            start: {match: /'/}
+            end: {match: /(?m)('(?!')|$)/}
+            contains: [
+                {match: /''/, 0: "strEscape"}
+            ]
+        }
+        {builtin: #DOUBLE_QUOTED_STRING#}
+        {number: "2|10|16|F|E|_"}
+        {match: /(?m)^ *(?:- *)?([^\s:]+ *:)( *!![a-z]+)?/, 1: "propKey", 2: "type"}
+        {match: keywordsToRegex("true false null ~"), 0: "keyword"}
+        {match: /[&*]\w+/, 0: "label"}
+    ]
+}

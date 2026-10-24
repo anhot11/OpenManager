@@ -1,0 +1,11 @@
+// 文件夹 | ZIP | APK 对比结果
+{
+    name: ["FolderComparison"]
+    styles: [
+        "header", #067D17$EFEAEA, #6A8759$303A3F
+    ]
+    hide: true
+    contains: [
+        {match: /(?<=\n\n).*\n={30}(?=\n)/, 0: "header"}
+    ]
+}

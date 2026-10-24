@@ -1,0 +1,183 @@
+{
+    name: ["DTS", ".dts", ".dtsi"]
+
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    bracketPairs: ["{}", "[]", "()", "<>"]
+
+    styles: [
+        "preprocessor" > "meta"
+        "nodeLabel" > "label"
+        "nodeName", #2B91AF, #78A8C8
+        "refPath" > "variable"
+        "cellArray" > "default"
+    ]
+
+    defines: [
+        // 预处理指令关键字
+        "ppKeywords": keywordsToRegex(
+            "include define undef if ifdef ifndef elif else endif"
+        )
+
+        // 转义字符（字符串内）
+        "stringEscape": [
+            {match: /\\([nrtv\\'"0]|x[0-9a-fA-F]{2})/, 0: "strEscape"}
+            {match: /\\./, 0: "error"}
+        ]
+
+        // 字符串（双引号）
+        "doubleQuotedString": {
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            style: "string"
+            contains: [{include: "stringEscape"}]
+        }
+
+        // 属性值的各种形式
+        "propertyValue": [
+            // 引用路径 &label 或 &{/path/to/node}
+            {match: /&\{[^}]+\}/, 0: "refPath"}
+            {match: /&[a-zA-Z_][a-zA-Z0-9_-]*/, 0: "refPath"}
+
+            // Cell数组 <...>
+            {
+                start: {match: /</}
+                end: {match: />/}
+                style: "cellArray"
+                contains: [
+                    // 引用 &phandle
+                    {match: /&[a-zA-Z_][a-zA-Z0-9_-]*/, 0: "refPath"}
+                    // 十六进制数
+                    {match: /\b0x[0-9a-fA-F]+\b/, 0: "number"}
+                    // 十进制数
+                    {match: /\b\d+\b/, 0: "number"}
+                ]
+            }
+
+            // 字节数组 [...]
+            {
+                start: {match: /\[/}
+                end: {match: /\]/}
+                style: "string"
+                contains: [
+                    {match: /\b[0-9a-fA-F]{2}\b/, 0: "number"}
+                ]
+            }
+
+            // 字符串
+            {include: "doubleQuotedString"}
+
+            // 数字
+            {match: /\b0x[0-9a-fA-F]+\b/, 0: "number"}
+            {match: /\b\d+\b/, 0: "number"}
+        ]
+    ]
+
+    contains: [
+        // 预处理指令 #include, #define 等
+        {
+            start: {match: /(?m)^\s*(#)\s*/, 1: "preprocessor"}
+            end: {match: /(?m)(?<!\\)$/}
+            style: "preprocessor"
+            contains: [
+                {match: /\/\/[^\r\n]*/, 0: "comment"}
+                {
+                    style: "comment"
+                    start: {match: /\/\*/}
+                    end: {match: /\*\//}
+                }
+                // 预处理关键字
+                {match: include("ppKeywords"), 0: "preprocessor"}
+                // 包含的文件名
+                {match: /<[^>]+>/, 0: "string"}
+                {include: "doubleQuotedString"}
+                // 宏参数
+                {match: /\b[A-Z_][A-Z0-9_]*\b/, 0: "constant"}
+            ]
+        }
+
+        // /dts-v1/ 声明
+        {match: /\/dts-v1\/\s*;/, 0: "keyword"}
+
+        // /plugin/ 声明
+        {match: /\/plugin\/\s*;/, 0: "keyword"}
+
+        // /memreserve/ 内存保留声明
+        {
+            start: {match: /\/memreserve\//, 0: "keyword"}
+            end: {match: /;/}
+            contains: [
+                {match: /\b0x[0-9a-fA-F]+\b/, 0: "number"}
+                {match: /\b\d+\b/, 0: "number"}
+            ]
+        }
+
+        // /delete-node/ 删除节点语句
+        {
+            match: /(\/delete-node\/)\s+([a-zA-Z0-9_,-]+|&[a-zA-Z_][a-zA-Z0-9_-]*)/
+            1: "keyword"
+            2: "nodeName"
+        }
+
+        // /delete-property/ 删除属性语句
+        {
+            match: /(\/delete-property\/)\s+([a-zA-Z0-9_,-]+)/
+            1: "keyword"
+            2: "propKey"
+        }
+
+        // 节点定义：label: node@address {
+        {
+            group: link
+            contains: [
+                // 节点标签（可选）
+                {match: /([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*/, 1: "nodeLabel"}
+                // 节点名称
+                {
+                    start: {match: /([a-zA-Z0-9_,-]+(?:@[0-9a-fA-F]+)?)\s*/, 1: "nodeName"}
+                    end: {match: /(?=\{)/}
+                }
+            ]
+        }
+
+        // 节点引用修改：&label { ... } 或 &{/path} { ... }
+        {
+            group: link
+            contains: [
+                {match: /(&)(\{[^}]+\}|[a-zA-Z_][a-zA-Z0-9_-]*)\s*/, 1: "operator", 2: "refPath"}
+                {match: /(?=\{)/}
+            ]
+        }
+
+        // 属性定义：property-name = <value>;
+        {
+            group: link
+            contains: [
+                // 属性名
+                {match: /([a-zA-Z0-9_,#-]+)\s*/, 1: "propKey"}
+                // 等号（可选，布尔属性没有值）
+                {match: /=\s*/}
+                // 属性值
+                {
+                    start: {match: /(?=[<\["&0-9a-zA-Z])/}
+                    end: {match: /(?=;)/}
+                    contains: [{include: "propertyValue"}]
+                }
+                // 分号
+                {match: /;/}
+            ]
+        }
+
+        // 字符串（独立出现）
+        {include: "doubleQuotedString"}
+
+        // 数字（独立出现）
+        {match: /\b0x[0-9a-fA-F]+\b/, 0: "number"}
+        {match: /\b\d+\b/, 0: "number"}
+
+        // 引用（独立出现）
+        {match: /&\{[^}]+\}/, 0: "refPath"}
+        {match: /&[a-zA-Z_][a-zA-Z0-9_-]*/, 0: "refPath"}
+    ]
+}

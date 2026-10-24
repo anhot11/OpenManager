@@ -1,0 +1,21 @@
+//   colorName      dayColor   nightColor  flags    //
+//  ----------------------------------------------  //
+    "default"       #000000     #A9B7C6
+    "string"        #067D17     #6A8759
+    "strEscape"     #0037A6     #CC7832
+    "comment"       #8C8C8C     #808080     @I
+    "meta"          #9E880D     #BBB529
+    "number"        #1750EB     #6897BB
+    "keyword"       #0033B3     #CC7832
+    "keyword2"      #800000     #AE8ABE
+    "constant"      #871094     #9876AA
+    "type"          #808000     #808000
+    "label"         #7050E0     #6080B0
+    "variable"      #1750EB     #58908A
+    "operator"      #205060     #508090
+    "propKey"       #083080     #CC7832
+    "propVal"       #067D17     #6A8759
+    "tagName"       #0030B3     #E8BF6A
+    "attrName"      #174AD4     #BABABA
+    "namespace"     #871094     #9876AA
+    "error"         #F50000     #BC3F3C

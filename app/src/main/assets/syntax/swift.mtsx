@@ -1,0 +1,199 @@
+{
+    name: ["Swift", ".swift"]
+    styles: [
+        "mark", #F0F0F8, #373740
+        "typeName", #F5871F, #E8BF6A
+        "preprocessor", #ED7099, #269E9E
+    ]
+    comment: { startsWith: "//" }
+    comment: { startsWith: "/*", endsWith: "*/", addToContains: false }
+    lineBackground: {match: /\s*\/\/\s*(MARK|TODO|FIXME):\s*-.*/, style: "mark"}
+    defines: [
+        // 扩展字符串分隔符最多支持3个
+        "escape": [
+            {match: /(?i)\\u\{[0-9a-f]{1,8}\}|\\[0tnr"'\\]/, 0: "strEscape"}
+            {include: "string-interpolation"}
+            {match: /\\./, 0: "error"}
+        ]
+        "escape1": [
+            {match: /(?i)\\#u\{[0-9a-f]{1,8}\}|\\#[0tnr"'\\]/, 0: "strEscape"}
+            {include: "string-interpolation1"}
+            {match: /\\#./, 0: "error"}
+        ]
+        "escape2": [
+            {match: /(?i)\\##u\{[0-9a-f]{1,8}\}|\\##[0tnr"'\\]/, 0: "strEscape"}
+            {include: "string-interpolation2"}
+            {match: /\\##./, 0: "error"}
+        ]
+        "escape3": [
+            {match: /(?i)\\###u\{[0-9a-f]{1,8}\}|\\###[0tnr"'\\]/, 0: "strEscape"}
+            {include: "string-interpolation3"}
+            {match: /\\###./, 0: "error"}
+        ]
+        "string": {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /(?m)"|$/}
+            contains: [
+                {include: "escape"}
+            ]
+        }
+        "string1": {
+            style: "string"
+            start: {match: /#"/}
+            end: {match: /(?m)"#|$/}
+            contains: [
+                {include: "escape1"}
+            ]
+        }
+        "string2": {
+            style: "string"
+            start: {match: /##"/}
+            end: {match: /(?m)"##|$/}
+            contains: [
+                {include: "escape2"}
+            ]
+        }
+        "string3": {
+            style: "string"
+            start: {match: /###"/}
+            end: {match: /(?m)"###|$/}
+            contains: [
+                {include: "escape3"}
+            ]
+        }
+        "blockString": {
+            style: "string"
+            start: {match: /"""/}
+            end: {match: /"""/}
+            contains: [
+                {match: /\\\n/, 0: "strEscape"}
+                {include: "escape"}
+            ]
+        }
+        "blockString1": {
+            style: "string"
+            start: {match: /#"""/}
+            end: {match: /"""#|$/}
+            contains: [
+                {match: /\\#\n/, 0: "strEscape"}
+                {include: "escape1"}
+            ]
+        }
+        "blockString2": {
+            style: "string"
+            start: {match: /##"""/}
+            end: {match: /"""##|$/}
+            contains: [
+                {match: /\\##\n/, 0: "strEscape"}
+                {include: "escape2"}
+            ]
+        }
+        "blockString3": {
+            style: "string"
+            start: {match: /###"""/}
+            end: {match: /"""###|$/}
+            contains: [
+                {match: /\\###\n/, 0: "strEscape"}
+                {include: "escape3"}
+            ]
+        }
+        "string-interpolation-contains": [
+            {include: "strings"}
+            {include: "number"}
+            {include: "keywords"}
+            {
+                start: {match: /\(/}
+                end: {match: /\)/}
+                contains: [
+                    {include: "string-interpolation-contains"}
+                ]
+            }
+        ]
+        "string-interpolation": {
+            style: "default"
+            start: {match: /\\\(/}
+            end: {match: /\)/}
+            contains: [
+                {include: "string-interpolation-contains"}
+            ]
+        }
+        "string-interpolation1": {
+            style: "default"
+            start: {match: /\\#\(/}
+            end: {match: /\)/}
+            contains: [
+                {include: "string-interpolation-contains"}
+            ]
+        }
+        "string-interpolation2": {
+            style: "default"
+            start: {match: /\\##\(/}
+            end: {match: /\)/}
+            contains: [
+                {include: "string-interpolation-contains"}
+            ]
+        }
+        "string-interpolation3": {
+            style: "default"
+            start: {match: /\\###\(/}
+            end: {match: /\)/}
+            contains: [
+                {include: "string-interpolation-contains"}
+            ]
+        }
+        "strings": [
+            {include: "blockString"}
+            {include: "blockString1"}
+            {include: "blockString2"}
+            {include: "blockString3"}
+            {include: "string"}
+            {include: "string1"}
+            {include: "string2"}
+            {include: "string3"}
+        ]
+        "number": {
+            number: "2|8|10|16|F|E|P|_"
+        }
+        "blockComment": {
+            start: {match: "/\\*"}
+            end: {match: "\\*/"}
+            style: "comment"
+            contains: [
+                {include: "blockComment"}
+            ]
+        }
+        "keywords": [
+            {match: keywordsToRegex(
+                    "associatedtype class deinit enum extension fileprivate func import init inout"
+                    "internal let open operator private precedencegroup protocol public rethrows static"
+                    "struct subscript typealias actor var break case catch continue default defer do"
+                    "else fallthrough for guard if in repeat return throw switch where while each Any"
+                    "as await async catch false is nil rethrows self Self super throw throws true try"
+                    "associativity convenience didSet dynamic final get indirect infix lazy left"
+                    "mutating none nonmutating optional override postfix precedence prefix Protocol"
+                    "required right set some any Type unowned weak and willSet isolated nonisolated"
+                    "consuming borrowing distributed dynamicType"
+                    "#available #colorLiteral #column #dsohandle"
+                ), 0: "keyword"
+            }
+            {match: keywordsToRegex(
+                    "Int Int8 Int16 Int32 Int64 UInt UInt8 UInt16 UInt32 UInt64 Double Float Bool"
+                    "String Character Dictionary Array Set"
+                ), 0: "typeName"
+            }
+            {match: keywordsToRegex(
+                    "#endif #fileLiteral #if #else #elseif #imageLiteral #keyPath #selector #line"
+                    "#sourceLocation #unavailable #error #fileID #filePath #file #function #warning"
+                ), 0: "preprocessor"
+            }
+        ]
+    ]
+    contains: [
+        {include: "blockComment"}
+        {include: "strings"}
+        {include: "number"}
+        {include: "keywords"}
+        {match: /@\w+(?:\.\w+)*/, 0: "meta"}
+    ]
+}

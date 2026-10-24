@@ -1,0 +1,56 @@
+{
+    // @author: A4-Tacks
+    // @email: wdsjxhno1001@163.com
+    name: ["Diff", ".diff", ".rej", ".patch"]
+    styles: [
+        "added",    #008000, #5FD75F
+        "removed" > "error"
+        "changed" > "keyword"
+        "info"    > "constant"
+    ]
+    defines: [
+        "info-en": [
+            {match: /(?:^|\n)Only in .*/, 0: "info"}
+            {match: /(?:^|\n)Files .* and .* (?:are identical|differ)(?=\r?\n|$)/, 0: "info"}
+            {match: /(?:^|\n)Binary files .* and .* differ(?=\r?\n|$)/, 0: "info"}
+            {match: /(?:^|\n)File .* is a .* while file .* is a .*/, 0: "info"}
+            {match: /(?:^|\n)Common subdirectories: .*/, 0: "info"}
+            {match: /(?:^|\n)\\ No newline at end of file.*/, 0: "info"}
+        ]
+        "info-zh": [
+            {match: /(?:^|\n)只在 .*/, 0: "info"}
+            {match: /(?:^|\n)文件 .* 和 .* (?:相同|不同)(?=\r?\n|$)/, 0: "info"}
+            {match: /(?:^|\n)二进制文件 .* 和 .* 不同(?=\r?\n|$)/, 0: "info"}
+            {match: /(?:^|\n)文件 .* 是.*而文件 .* 是.*/, 0: "info"}
+            {match: /(?:^|\n)共同的子目录：.*/, 0: "info"}
+            {match: /(?:^|\n)\\ 文件末尾没有换行符.*/, 0: "info"}
+        ]
+    ]
+    contains: [
+        {include: "info-en"}
+        {include: "info-zh"}
+
+        {match: /(?:^|\n)@.*?(?: @@(.+))?(?=\r?\n|$)/, 0: "label", 1: "meta"}
+        {match: /(?:^|\n)\d+\b.*/, 0: "meta"}
+        {match: /(?:^|\n)\d+(?:,\d+)?[acd]\d+\b.*/, 0: "meta"}
+        {match: /(?:^|\n)\*\*\*\*.*/, 0: "meta"}
+        {match: /(?:^|\n)---(?=\r?\n|$)/, 0: "meta"}
+
+        {match: /(?:^|\n)diff\b.*/, 0: "type"}
+        {match: /(?:^|\n)Index: .*/, 0: "type"}
+        {match: /(?:^|\n)==== .*/, 0: "type"}
+        {match: /(?:^|\n)index [0-9a-fA-F]{4}.*/, 0: "type"}
+
+        {match: /(?:^|\n)#.*/, 0: "comment"}
+
+        {match: /(?:^|\n)--- .*/,    0: "type"}
+        {match: /(?:^|\n)\+\+\+ .*/, 0: "type"}
+        {match: /(?:^|\n)\*\*\* .*/, 0: "type"}
+
+        {match: /(?:^|\n)-.*/,  0: "removed"}
+        {match: /(?:^|\n)<.*/,  0: "removed"}
+        {match: /(?:^|\n)\+.*/, 0: "added"}
+        {match: /(?:^|\n)>.*/,  0: "added"}
+        {match: /(?:^|\n)! .*/, 0: "changed"}
+    ]
+}

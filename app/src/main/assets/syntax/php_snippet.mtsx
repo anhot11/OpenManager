@@ -1,0 +1,18 @@
+// require MT >= 2.26.10
+{
+    name: ["PHP-Snippet"]
+    hide: true
+    // Markdown 中以标签开头的示例按文档解析（排除 heredoc/nowdoc），其他示例允许省略 PHP 标签。
+    contains: [
+        {
+            start: {match: /\A(?=\ufeff?\s*<(?!<))/}
+            end: {match: /\z/}
+            childrenSyntax: "PHP"
+        }
+        {
+            start: {match: /\A/}
+            end: {match: /\z/}
+            childrenSyntax: "PHP-Code"
+        }
+    ]
+}

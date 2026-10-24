@@ -1,0 +1,146 @@
+{
+    name: ["Shell", ".sh", ".rc", ".bash", ".bashrc", ".ash", ".zsh", ".zshrc"]
+    styles: [
+        "keyword", #1033AC, #C17C41
+        "funDefName", #C57633, #F6C87B
+        "funName", #3071B9, #C17C41
+        "variable", #466D7B, #8195B7
+    ]
+    comment: {startsWith: "#"}
+    defines: [
+        "funNameRegex": /[.\-\/@#:\w]+/
+        "funNameRegexOrEmpty": /(?:/ + include("funNameRegex") + /)?/
+        "arithmeticExpChildren": [
+            {include: "arithmeticExpGroup"}
+            {match: /(?i)\b(0x[0-9A-F]+|0[0-7]+|[1-9][0-9]*#[0-9a-z]+|[0-9]+)\b/, 0: "number"}
+        ]
+        "arithmeticExpGroup": {
+            start: {match: /\(/}
+            end: {match: /\)/}
+            contains: [
+                {include: "arithmeticExpChildren"}
+            ]
+        }
+        "exp": [
+            // 匹配常规的$开头的变量名
+            {match: /\$(?:[a-zA-Z_]\w*|[0-9#*@?$!\-])/, 0: "variable"}
+            // 匹配${}
+            {
+                 style: "variable"
+                 start: {match: /(\$)\{/, 1: "keyword"}
+                 end: {match: /\}/}
+                 contains: [
+                     {include: "exp"}
+                     {include: "str"}
+                     {include: "num"}
+                 ]
+            }
+            // 匹配$(()) 算术扩展语法
+            {
+                style: "default"
+                start: {match: /\$\(\(/, 0: "keyword"}
+                end: {match: /\)\)/, 0: "keyword"}
+                contains: [
+                    {include: "arithmeticExpGroup"}
+                ]
+            }
+            // 匹配$()
+            {
+                style: "default"
+                start: {match: /(\$)(\(/ + include("funNameRegexOrEmpty") + /)/, 1: "keyword", 2: "funName"}
+                end: {match: /\)/, 0: "funName"}
+                contains: [
+                    {include: "exp"}
+                    {include: "str"}
+                    {include: "num"}
+                    {match: /(?m)(?<=[;\{\|])[ \t]*(/ + include("funNameRegex") + /)\b(?![ \t]*\+?=)/, 1: "funName"}
+                ]
+            }
+            // 匹配``
+            {
+                style: "default"
+                start: {match: /`/ + include("funNameRegexOrEmpty"), 0: "funName"}
+                end: {match: /`/, 0: "funName"}
+                contains: [
+                    {include: "exp"}
+                    {include: "str"}
+                    {include: "num"}
+                    {match: /(?m)(?<=[;\{\|])[ \t]*(/ + include("funNameRegex") + /)\b(?![ \t]*\+?=)/, 1: "funName"}
+                ]
+            }
+        ]
+        "str": [
+            {match: /\\./}
+            {
+                style: "string"
+                start: {match: /"/}
+                end: {match: /"/}
+                contains: [
+                    {match: /\\./}
+                    {include: "exp"}
+                ]
+            }
+            {
+                style: "string"
+                start: {match: /\$'/}
+                end: {match: /'/}
+                contains: [
+                    {match: /\\(?:[abeEfnrtv\\'"?]|[0-7]{1,3}|u[\da-fA-F]{1,4}|U[\da-fA-F]{1,8}|c[^'])/, 0: "strEscape"}
+                    {match: /\\./, 0: "error"}
+                ]
+            }
+            {
+                style: "string"
+                start: {match: /'/}
+                end: {match: /'/}
+            }
+        ]
+        "num": {match: /(?<![.+*%@\/\-])\b\d+\b(?![.+*%@\/\-])/, 0: "number"}
+        "hereDoc": [ // 匹配 hereDoc 的各种形式
+            // 无引号界定符正则：[^\s'"`$\\|&;<>(){}\[\]]+
+            {
+                match: /(?s) <<[ \t]*(?:-[ \t]*)?/ +                // 匹配 << 后面可选 -
+                       /(?:\\\R[ \t]*)?/ +                          // 如果第一行以 \ 结尾，则 MARKER 在下一行
+                       /\\([^\s'"`$\\|&;<>(){}\[\]]+)[ \t]*\R/ +    // 匹配 \MARKER + 换行
+                       /(.{0,10000}?)/ +                            // 匹配文本内容，预防性能问题限制1W字符
+                       /\R(\1)(?m)(?=$)/                            // 匹配 MARKER，要求必须单独一行
+                1: "keyword"
+                2: "string"
+                3: "keyword"
+            }
+            {
+                match: /(?s) <<[ \t]*(?:-[ \t]*)?/ +                // 匹配 << 后面可选 -
+                       /(?:\\\R[ \t]*)?/ +                          // 如果第一行以 \ 结尾，则 MARKER 在下一行
+                       /(['"])(.+?)\1[ \t]*\R/ +                    // 匹配 'MARKER' 或 "MARKER" + 换行
+                       /(.{0,10000}?)/ +                            // 匹配文本内容，预防性能问题限制1W字符
+                       /\R(\2)(?m)(?=$)/                            // 匹配 MARKER，要求必须单独一行
+                2: "keyword"
+                3: "string"
+                4: "keyword"
+            }
+            {
+                match: /(?s) <<[ \t]*(?:-[ \t]*)?/ +                // 匹配 << 后面可选 -
+                       /(?:\\\R[ \t]*)?/ +                          // 如果第一行以 \ 结尾，则 MARKER 在下一行
+                       /([^\s'"`$\\|&;<>(){}\[\]]+)[ \t]*\R/ +      // 匹配 MARKER + 换行
+                       /(.{0,10000}?)/ +                            // 匹配文本内容，预防性能问题限制1W字符
+                       /\R(\1)(?m)(?=$)/                            // 匹配 MARKER，要求必须单独一行
+                1: "keyword"
+                2: "string"
+                2: {include: "exp"}
+                3: "keyword"
+            }
+        ]
+    ]
+    contains: [
+        {match: /(?s)^\u007fELF.+$/, 0: "default"} // 有些sh是ELF格式，使用sh语法匹配可能导致很卡
+        {match: /(?m)^[ \t]*#.*$/, 0: "comment"}
+        {include: "exp"}
+        {include: "str"}
+        {include: "num"}
+        {include: "hereDoc"}
+        {match: /(?sm)^[ \t]*:[ \t]*<<\s*-?\s*(/ + include("funNameRegex") + /)\b(.+?)(?-m)(\b\1\b|$)/, 0: "comment"}
+        {match: "(?<![.,/~@%=])" + keywordsToRegex("if then else elif fi for while in do done case esac") + "(?<![.,/~@%=])", 0: "keyword"}
+        {match: /(?m)^[ \t]*(function[ \t]+)?([\w\-]+)[ \t]*\(/, 1: "keyword", 2: "funDefName"}
+        {match: /(?m)(?<=(?:[;&\{\|]|(?<!\\\n)^))[ \t]*(/ + include("funNameRegex") + /)\b(?![ \t]*\+?=)/, 1: "funName"}
+    ]
+}

@@ -1,0 +1,93 @@
+// require MT >= 2.26.10
+{
+    name: ["PHP-Code"]
+    hide: true
+    comment: {startsWith: "//", addToContains: false}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    styles: ["variable", #871094, #909000]
+    defines: [
+        "identifier": /[a-zA-Z_\u0080-\uffff][a-zA-Z_0-9\u0080-\uffff]*/
+        "variable": {match: /\$/ + include("identifier"), 0: "variable"}
+        "interpolation": [
+            {match: /\\[\s\S]/, 0: "strEscape"}
+            // 花括号插值允许数组键使用与外层相同的引号。
+            {
+                start: {match: /\{(?=\$)/}
+                end: {match: /\}/}
+                style: "strEscape"
+                contains: [
+                    {include: "strings"}
+                    {include: "variable"}
+                ]
+            }
+            {include: "variable"}
+        ]
+        "strings": [
+            {
+                start: {match: /'/}
+                end: {match: /'/}
+                style: "string"
+                contains: [{match: /\\['\\]/, 0: "strEscape"}]
+            }
+            {
+                start: {match: /"/}
+                end: {match: /"/}
+                style: "string"
+                contains: [{include: "interpolation"}]
+            }
+            {
+                start: {match: /`/}
+                end: {match: /`/}
+                style: "string"
+                contains: [{include: "interpolation"}]
+            }
+        ]
+    ]
+    contains: [
+        // 单行注释在 PHP 关闭标签前结束，块注释和字符串则可以包含 ?>。
+        {
+            start: {match: /\/\/|#(?!\[)/}
+            end: {match: /(?=\?>|[\r\n])/}
+            style: "comment"
+        }
+        // 属性只标记开头，参数继续使用 PHP 词法，避免字符串中的 ] 提前截断。
+        {match: /#\[/, 0: "meta"}
+        {
+            start: {
+                match: /<<<[ \t]*'(/ + include("identifier") + /)'[ \t]*(?:\r\n|[\r\n])/
+                export: 1 => "label"
+            }
+            // PHP 仅按 CR/LF 分行，Unicode 分隔字符不能暴露正文中的关闭标签。
+            end: {match: /(?<![^\r\n])[ \t]*/ + var("label") + /(?![a-zA-Z_0-9\u0080-\uffff])/}
+            style: "string"
+        }
+        {
+            start: {
+                match: /<<<[ \t]*("?)(/ + include("identifier") + /)\1[ \t]*(?:\r\n|[\r\n])/
+                export: 2 => "label"
+            }
+            end: {match: /(?<![^\r\n])[ \t]*/ + var("label") + /(?![a-zA-Z_0-9\u0080-\uffff])/}
+            style: "string"
+            contains: [{include: "interpolation"}]
+        }
+        {include: "strings"}
+        {number: "2|8|10|16|F|E|_"}
+        {include: "variable"}
+        {match: /(?i)/ + keywordsToRegex(
+                "abstract and as break callable case catch class clone const continue declare"
+                "default do echo else elseif enddeclare endfor endforeach endif endswitch"
+                "endwhile enum extends final finally fn for foreach function global goto if match"
+                "implements include include_once instanceof insteadof interface namespace"
+                "new or print private protected public readonly require xor require_once"
+                "return static switch throw trait try use var while yield"
+            ), 0: "keyword"
+        }
+        {match: /(?i)/ + keywordsToRegex("true false null"), 0: "constant"}
+        {match: /(?i)/ + keywordsToRegex(
+                "__halt_compiler array die empty eval exit isset list unset print_r sort"
+                "htmlentities mkdir fopen fread rewind fwrite fclose opendir readdir closedir"
+                "is_dir is_link readlink"
+            ), 0: "keyword2"
+        }
+    ]
+}

@@ -1,0 +1,181 @@
+{
+    name: ["SQL", ".sql", ".ddl", ".dml"]
+
+    ignoreCase: true
+
+    comment: {startsWith: "--"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    bracketPairs: ["()", "[]"]
+
+    styles: [
+        "sqlFunction" > "keyword2"
+        "sqlOperator" > "operator"
+        "sqlIdentifier" > "variable"
+        "sqlLabel" > "label"
+    ]
+
+    defines: [
+        // SQL 关键字 - 核心语句
+        "coreKeywords": keywordsToRegex(
+            "SELECT INSERT UPDATE DELETE FROM WHERE JOIN INNER LEFT RIGHT FULL OUTER CROSS"
+            "ON AS GROUP BY HAVING ORDER ASC DESC LIMIT OFFSET UNION INTERSECT EXCEPT"
+            "CREATE ALTER DROP TRUNCATE TABLE VIEW INDEX DATABASE SCHEMA PROCEDURE FUNCTION"
+            "TRIGGER CONSTRAINT PRIMARY FOREIGN KEY REFERENCES CHECK DEFAULT UNIQUE NOT NULL"
+            "SET VALUES INTO DISTINCT ALL ANY SOME EXISTS IN BETWEEN LIKE ESCAPE"
+            "AND OR NOT IS CASE WHEN THEN ELSE END WITH RECURSIVE"
+        )
+
+        // 数据类型关键字
+        "typeKeywords": keywordsToRegex(
+            "INT INTEGER BIGINT SMALLINT TINYINT DECIMAL NUMERIC FLOAT REAL DOUBLE PRECISION"
+            "CHAR VARCHAR NCHAR NVARCHAR TEXT NTEXT CLOB"
+            "DATE TIME DATETIME TIMESTAMP YEAR INTERVAL"
+            "BOOLEAN BOOL BIT BINARY VARBINARY BLOB"
+            "JSON JSONB XML UUID ARRAY"
+        )
+
+        // 事务和权限控制
+        "transactionKeywords": keywordsToRegex(
+            "BEGIN COMMIT ROLLBACK SAVEPOINT TRANSACTION WORK"
+            "GRANT REVOKE DENY EXECUTE USAGE CONNECT"
+            "START LOCK UNLOCK"
+        )
+
+        // 内置函数
+        "builtinFunctions": keywordsToRegex(
+            "COUNT SUM AVG MAX MIN"
+            "UPPER LOWER SUBSTRING TRIM LTRIM RTRIM LENGTH CONCAT REPLACE"
+            "NOW CURRENT_DATE CURRENT_TIME CURRENT_TIMESTAMP DATEADD DATEDIFF"
+            "CAST CONVERT COALESCE NULLIF IFNULL NVL"
+            "ROW_NUMBER RANK DENSE_RANK NTILE LEAD LAG"
+            "FIRST_VALUE LAST_VALUE OVER PARTITION"
+        )
+
+        // 字符串内部的转义序列
+        "stringEscape": [
+            {match: /''/, 0: "strEscape"}                    // 单引号转义
+            {match: /\\[nrtv\\'"0]/, 0: "strEscape"}         // 标准转义
+            {match: /\\x[0-9a-fA-F]{2}/, 0: "strEscape"}     // 十六进制转义
+            {match: /\\u[0-9a-fA-F]{4}/, 0: "strEscape"}     // Unicode 转义
+        ]
+
+        // 标识符(带引号)
+        "quotedIdentifier": [
+            // 双引号标识符 (SQL 标准)
+            {
+                start: {match: /"/}
+                end: {match: /(?m)"|$/}
+                style: "sqlIdentifier"
+                contains: [
+                    {match: /""/, 0: "strEscape"}            // 双引号转义
+                ]
+            }
+            // 反引号标识符 (MySQL)
+            {
+                start: {match: /`/}
+                end: {match: /(?m)`|$/}
+                style: "sqlIdentifier"
+                contains: [
+                    {match: /``/, 0: "strEscape"}            // 反引号转义
+                ]
+            }
+            // 方括号标识符 (SQL Server)
+            {
+                start: {match: /\[/}
+                end: {match: /(?m)\]|$/}
+                style: "sqlIdentifier"
+            }
+        ]
+
+        // 变量
+        "variables": [
+            // @variable (MySQL, SQL Server)
+            {match: /@[@\w]+/, 0: "variable"}
+            // :variable (Oracle)
+            {match: /:\w+/, 0: "variable"}
+            // $1, $2 (PostgreSQL)
+            {match: /\$\d+/, 0: "variable"}
+        ]
+    ]
+
+    contains: [
+        // === 字符串 ===
+        // 单引号字符串
+        {
+            start: {match: /'/}
+            end: {match: /(?m)'|$/}
+            style: "string"
+            contains: [{include: "stringEscape"}]
+        }
+
+        // === 标识符 ===
+        {include: "quotedIdentifier"}
+
+        // === 变量 ===
+        {include: "variables"}
+
+        // === 数字 ===
+        // 十六进制数字 (0x 前缀)
+        {match: /\b0x[0-9a-fA-F]+\b/, 0: "number"}
+        // 科学计数法和普通数字
+        {number: "10|F|E"}
+
+        // === 标签 (用于 GOTO 语句等) ===
+        // <<label>>
+        {match: /<<(\w+)>>/, 1: "sqlLabel"}
+
+        // === 核心关键字 ===
+        {match: include("coreKeywords"), 0: "keyword"}
+
+        // === 数据类型 ===
+        {match: include("typeKeywords"), 0: "type"}
+
+        // === 事务和权限关键字 ===
+        {match: include("transactionKeywords"), 0: "keyword"}
+
+        // === 内置函数 ===
+        // 函数调用: function_name(
+        {
+            group: link
+            contains: [
+                {match: /\b(/ + include("builtinFunctions") + /)(?=\s*\()/, 1: "sqlFunction"}
+            ]
+        }
+
+        // === 常量 ===
+        // NULL, TRUE, FALSE
+        {match: keywordsToRegex("NULL TRUE FALSE"), 0: "constant"}
+
+        // === 运算符 ===
+        // 比较和逻辑运算符
+        {match: /[<>=!]+|<>/, 0: "sqlOperator"}
+        // 算术运算符
+        {match: /[+\-*\/%]/, 0: "sqlOperator"}
+        // 连接符
+        {match: /\|\|/, 0: "sqlOperator"}
+
+        // === 特殊结构 ===
+        // 数组/列表: ARRAY[1,2,3]
+        {
+            group: link
+            contains: [
+                {match: /\bARRAY\s*/, 0: "keyword"}
+                {
+                    start: {match: /\[/}
+                    end: {match: /\]/}
+                    contains: [{include: "variables"}, {number: "10|F|E"}]
+                }
+            ]
+        }
+
+        // JSON/JSONB 字面量前缀
+        {match: /\b(JSON|JSONB)\s*(?=')/, 1: "keyword"}
+
+        // 类型转换: ::type (PostgreSQL)
+        {match: /::(\w+)/, 1: "type"}
+
+        // 通配符标识符
+        {match: /\*/, 0: "keyword"}
+    ]
+}

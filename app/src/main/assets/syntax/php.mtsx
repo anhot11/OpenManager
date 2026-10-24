@@ -1,0 +1,12 @@
+// require MT >= 2.26.10
+{
+    name: ["PHP", ".php"]
+    // PHP 文件从 HTML 模式开始；只有显式 PHP 标签才切入代码。
+    contains: [
+        {
+            start: {match: /\A/}
+            end: {match: /\z/}
+            childrenSyntax: "HTML"
+        }
+    ]
+}

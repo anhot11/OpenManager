@@ -1,0 +1,68 @@
+{
+    name: ["C#", ".cs"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    contains: [
+        {
+            number: "2|8|10|16|F|E|P|_"
+            iSuffixes: "l|u|lu|ul"
+            fSuffixes: "f|d|m"
+        }
+        {
+            start: {match: /@"/}
+            end: {match: /"/}
+            style: "string"
+            contains: [
+                {match: /""/, 0: "strEscape"}
+                <EndMatcher>
+            ]
+        }
+        {
+            start: {match: /\$"/}
+            end: {match: /(?m)"|$/}
+            style: "string"
+            contains: [
+                {match: /\{\{/, 0: "strEscape"}
+                {match: /\}\}/, 0: "strEscape"}
+                {match: /\{[^}]*\}/, 0: "variable"}
+            ]
+        }
+        {
+            start: {match: /\$@"/}
+            end: {match: /"/}
+            style: "string"
+            contains: [
+                {match: /""/, 0: "strEscape"}
+                <EndMatcher>
+                {match: /\{\{/, 0: "strEscape"}
+                {match: /\}\}/, 0: "strEscape"}
+                {match: /\{[^}]*\}/, 0: "variable"}
+            ]
+        }
+        {builtin: #C_QUOTED_STRING#}
+        {match: keywordsToRegex(
+                "abstract as base bool break byte case catch char checked class const continue"
+                "decimal default delegate do double else enum event explicit extern false finally"
+                "fixed float for foreach goto if implicit in int interface internal is lock long"
+                "namespace new null object operator out override params private protected public"
+                "readonly ref return sbyte sealed short sizeof stackalloc static string struct"
+                "switch this throw true try typeof uint ulong unchecked unsafe ushort using virtual"
+                "void volatile while add alias ascending descending dynamic from get global group"
+                "into join let orderby partial partial remove select yield where var async"
+              ), 0: "keyword"}
+        {
+            start: {match: /(?m)^[ \t]*#[ \t]*\S+/, 0: "meta"}
+            end: {match: /(?m)$/}
+            style: "meta"
+            contains: [
+                {builtin: #C_QUOTED_STRING#}
+                {match: /\/\/[^\r\n]*/, 0: "comment"}
+                {
+                    style: "comment"
+                    start: {match: /\/\*/}
+                    end: {match: /\*\//}
+                }
+            ]
+        }
+    ]
+}

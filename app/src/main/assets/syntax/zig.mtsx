@@ -1,0 +1,101 @@
+{
+    // @author: A4-Tacks
+    // @email: wdsjxhno1001@163.com
+    name: ["Zig", ".zig", ".zon"]
+    styles: [
+        "todo"          > "default",        @B
+        "character"     > "string",         @B
+        "docComment"    > "namespace"
+        "macro"         > "namespace"
+        "dummy",        #8C8C8C, #808080,   @B
+    ]
+    comment: {startsWith: "//",  addToContains: false}
+    comment: {startsWith: "///", addToContains: false}
+    defines: [
+        "todo": {match: keywordsToRegex("TODO FIXME XXX NOTE"), 0: "todo"}
+        "hexEscapes": /(?:x[a-fA-F\d]{2}|u[a-fA-F\d]{4}|U[a-fA-F\d]{6})/
+    ]
+    contains: [
+        {match: "//(?![/!]).*", 0: "comment", 0: {include: "todo"}}
+        {match: "//[/!].*",  0: "docComment", 0: {include: "todo"}}
+        {match: /\b_\b/, 0: "dummy"}
+        {match: "->|[-+/*=^&?|!<>%~]" 0: "operator"}
+        {number: "2|8|10|16|F|E|P|_"}
+        { // character
+            match: /b?'(?:[^'\\]|(\\(?:/+include("hexEscapes")+/|.)))'/
+            0: "character"
+            1: "strEscape"
+        }
+        { // hard multiline string
+            match: /(c?\\\\).*/
+            0: "string"
+            1: "strEscape"
+        }
+        { // string
+            start: {match: /c?"/}
+            end: {match: /"/}
+            style: "string"
+            contains: [
+                {match: /\\(?:[nrt\\'"]|/+include("hexEscapes")+/)/, 0: "strEscape"}
+                {match: /(?s)\\./, 0: "error"}
+            ]
+        }
+        {match: keywordsToRegex("true false null") 0: "constant"}
+        {match: keywordsToRegex("undefined unreachable") 0: "constant"}
+        {match: keywordsToRegex("undefined unreachable") 0: "keyword"}
+        {match: keywordsToRegex("var const comptime threadlocal") 0: "meta"}
+        {
+            match: keywordsToRegex(
+                "if else switch while for and or orelse"
+                "error fn try test pub usingnamespace"
+                "return break continue"
+            )
+            0: "keyword"
+        }
+        {
+            match: keywordsToRegex("struct enum union error packed opaque")
+            0: "keyword2"
+        }
+        {
+            match: keywordsToRegex(
+                "defer errdefer async nosuspend await suspend resume export extern"
+                "catch inline noinline asm callconv noalias"
+            )
+            0: "macro"
+        }
+        { // types
+            match: /\b[iu][1-9]\d*\b|/ + keywordsToRegex(
+                "allowzero anyerror anyframe anyopaque anytype bool"
+                "c_char c_int c_long c_longdouble c_longlong c_short c_uint"
+                "c_ulong c_ulonglong c_ushort"
+                "comptime_float comptime_int"
+                "f128 f16 f32 f64 f80 i0 u0 isize linksection noreturn"
+                "type usize void volatile"
+            )
+            0: "type"
+        }
+        { // builtins
+            match: /\b(?:align)\b|@/ + keywordsToRegex(
+                "Frame OpaqueType TagType This Type TypeOf Vector abs"
+                "addWithOverflow alignCast alignOf as asyncCall atomicLoad"
+                "atomicRmw atomicStore bitCast bitOffsetOf bitReverse bitSizeOf"
+                "breakpoint byteOffsetOf byteSwap cDefine cImport cInclude"
+                "cUndef call ceil clz cmpxchgStrong cmpxchgWeak compileError"
+                "compileLog constCast cos ctz divExact divFloor divTrunc"
+                "embedFile enumFromInt errorCast errorFromInt errorName"
+                "errorReturnTrace exp exp2 export extern fence field"
+                "fieldParentPtr floatCast floatFromInt floor frame frameAddress"
+                "frameSize hasDecl hasField import inComptime intCast"
+                "intFromBool intFromEnum intFromError intFromFloat intFromPtr"
+                "log log10 log2 max memcpy memset min mod mulAdd mulWithOverflow"
+                "newStackCall offsetOf panic popCount prefetch ptrCast"
+                "ptrFromInt reduce rem returnAddress round select setAlignStack"
+                "setCold setEvalBranchQuota setFloatMode setRuntimeSafety"
+                "shlExact shlWithOverflow shrExact shuffle sin sizeOf splat sqrt"
+                "src subWithOverflow tagName tan trap trunc truncate typeInfo"
+                "typeName unionInit volatileCast wasmMemoryGrow wasmMemorySize"
+            )
+            0: "keyword"
+        }
+    ]
+}

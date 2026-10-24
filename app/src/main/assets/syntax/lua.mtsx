@@ -1,0 +1,64 @@
+{
+    name: ["Lua", ".lua"]
+    codeFormatter: #BUILT_IN_LUA_FORMATTER#
+    comment: {startsWith: "--", addToContains: false}
+    defines: [
+        "localName": /(?!function\b)[_a-zA-Z][_a-zA-Z0-9]*(?:[ \t\f\x0B\r\n]*<[ \t\f\x0B\r\n]*(?:const|close)[ \t\f\x0B\r\n]*>)?/
+    ]
+    contains: [
+        // loadfile 忽略任意 # 首行，直到 LF；文件头内的分隔符不能开启其他作用域。
+        {match: /\A#[^\n]*/, 0: "comment"}
+        // 动态 end 有 4096 字符上限；超长分隔符回退到必达闭合处或 EOF 的单次匹配。
+        {match: /--\[(={4000,})\[(?:(?!\]\1\])[\s\S])*(?:\]\1\]|\z)/, 0: "comment"}
+        // 长括号按起始等号数闭合；编辑中的未闭合正文仍保留注释作用域。
+        {
+            start: {match: /--\[(=*)\[/, export: 1 => "level"}
+            end: {match: /\]/ + var("level") + /\]/}
+            style: "comment"
+        }
+        {match: /--(?!\[=*\[)[^\r\n]*/, 0: "comment"}
+        {match: /::[ \t\f\x0B\r\n]*[_a-zA-Z][_a-zA-Z\d]*[ \t\f\x0B\r\n]*::/, 0: "label"}
+        {match: /\b__[_a-zA-Z\d]+\b/, 0: "keyword2"}
+        // 转义必须先于行尾结束匹配，允许反斜杠换行和 \z 吞掉跨行空白。
+        {
+            start: {match: /(["'])/, export: 1 => "quote"}
+            end: {match: var("quote") + /|(?=[\r\n])/}
+            style: "string"
+            contains: [
+                {match: /\\(?:z[ \t\f\x0B\r\n]*+|\r\n|\n\r|[\r\n])/, 0: "strEscape"}
+                {match: /\\(?:[abfnrtv\\"']|x[0-9a-fA-F]{2}|u\{0*(?:[0-9a-fA-F]{1,7}|[0-7][0-9a-fA-F]{7})\}|25[0-5]|2[0-4][0-9]|[01][0-9]{2}|[0-9]{1,2}(?![0-9]))/, 0: "strEscape"}
+                {match: /\\(?:[0-9]{1,3}|[^\r\n])/, 0: "error"}
+            ]
+        }
+        {match: /\[(={4000,})\[(?:(?!\]\1\])[\s\S])*(?:\]\1\]|\z)/, 0: "string"}
+        {
+            start: {match: /\[(=*)\[/, export: 1 => "level"}
+            end: {match: /\]/ + var("level") + /\]/}
+            style: "string"
+        }
+        // 关键字可紧贴点开头的小数；单独匹配以保留关键字配色和标识符边界。
+        {
+            match: /(/ + keywordsToRegex("return if elseif while until in and or not") + /)(\.[0-9]+(?:[eE][+-]?[0-9]+)?)(?![\w.])/
+            1: "keyword"
+            2: "number"
+        }
+        // Lua 的连接符可紧贴数字；单个点和省略号不能充当数字的左边界。
+        {match: /(?:(?<![\w.])|(?<=\.\.)(?<!\.\.\.)(?!\.))(?:0[xX](?:[0-9a-fA-F]+(?:\.[0-9a-fA-F]*)?|\.[0-9a-fA-F]+)(?:[pP][+-]?[0-9]+)?|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)(?![\w.])/, 0: "number"}
+        // 只在 local 的变量列表中识别属性，止于赋值或注释，不尝试解析表达式。
+        {
+            match: /\b(local)\b([ \t\f\x0B\r\n]+/ + include("localName") + /(?:[ \t\f\x0B\r\n]*,[ \t\f\x0B\r\n]*/ + include("localName") + /)*)/
+            1: "type"
+            // 变量列表仍沿用既有名字配色。
+            2: {match: /\b__[_a-zA-Z\d]+\b/, 0: "keyword2"}
+            2: {match: keywordsToRegex("global boolean number userdata"), 0: "type"}
+            2: {match: keywordsToRegex("thread table"), 0: "keyword"}
+            2: {match: /<[ \t\f\x0B\r\n]*(const|close)[ \t\f\x0B\r\n]*>/, 1: "keyword2"}
+        }
+        {match: keywordsToRegex("local global boolean number userdata"), 0: "type"}
+        {match: keywordsToRegex("true false nil"), 0: "constant"}
+        {match: keywordsToRegex("return then while and break goto do else elseif end for function if in not or repeat until thread table"), 0: "keyword"}
+        {match: /(?<!\.)\.(?=[_a-zA-Z])/, 0: "namespace"}
+        {match: /(?<!:):[_a-zA-Z][_a-zA-Z0-9]*\b/, 0: "variable"}
+        {match: /#(?=[_a-zA-Z])/, 0: "operator"}
+    ]
+}

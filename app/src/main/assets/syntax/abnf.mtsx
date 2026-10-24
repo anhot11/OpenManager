@@ -1,0 +1,20 @@
+{
+    name: ["ABNF", ".abnf"]
+    styles: [
+        "repeat" > "constant"
+        "option" > "keyword"
+        "prose"  > "string"
+    ]
+    ignoreCase: true
+    comment: {startsWith: ";"}
+    contains: [
+        {match: /[\[\]\/]/, 0: "option"}
+        {match: /(?:(?:\b(?<!-)\d+)?\*\d*|\b(?<!-)\d+) ?(?![ \t\r\n0-9*\/)\]])/, 0: "repeat"}
+        {match: /%b[01]+(?:(?:\.[01]+)+|-[01]+)?\b/, 0: "number"}
+        {match: /%d\d+(?:(?:\.\d+)+|-\d+)?\b/, 0: "number"}
+        {match: /%x[0-9a-f]+(?:(?:\.[0-9a-f]+)+|-[0-9a-f]+)?\b/, 0: "number"}
+        {match: /<[^>\r\n]*>/, 0: "prose"}
+        {match: /(?:%[si])?"[^"\r\n]*"/, 0: "string"}
+        {match: /[<>"]/, 0: "error"}
+    ]
+}

@@ -1,0 +1,113 @@
+{
+    name: ["Dart", ".dart"]
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+    defines: [
+        "identifier": /[a-zA-Z_$][\w$]*/
+    ]
+    contains: [
+        // Strings with interpolation
+        {
+            style: "string"
+            start: {match: /(?<!r)"""/}
+            end: {match: /"""/}
+            contains: [
+                {match: /\$\{[^}]+\}/, 0: "variable"}
+                {match: /\$/ + include("identifier"), 0: "variable"}
+            ]
+        }
+        {
+            style: "string"
+            start: {match: /(?<!r)'''/}
+            end: {match: /'''/}
+            contains: [
+                {match: /\$\{[^}]+\}/, 0: "variable"}
+                {match: /\$/ + include("identifier"), 0: "variable"}
+            ]
+        }
+        {
+            style: "string"
+            start: {match: /(?<!r)"/}
+            end: {match: /"|$/}
+            contains: [
+                {match: /\$\{[^}]+\}/, 0: "variable"}
+                {match: /\$/ + include("identifier"), 0: "variable"}
+                {builtin: #JAVA_ESCAPED_CHAR#}
+            ]
+        }
+        {
+            style: "string"
+            start: {match: /(?<!r)'/}
+            end: {match: /'|$/}
+            contains: [
+                {match: /\$\{[^}]+\}/, 0: "variable"}
+                {match: /\$/ + include("identifier"), 0: "variable"}
+                {builtin: #JAVA_ESCAPED_CHAR#}
+            ]
+        }
+        // Raw strings
+        {
+            style: "string"
+            start: {match: /r'''/}
+            end: {match: /'''/}
+        }
+        {
+            style: "string"
+            start: {match: /r"""/}
+            end: {match: /"""/}
+        }
+        {
+            style: "string"
+            start: {match: /r"/}
+            end: {match: /"|$/}
+        }
+        {
+            style: "string"
+            start: {match: /r'/}
+            end: {match: /'|$/}
+        }
+        // Numbers
+        {number: "2|8|10|16|F|E|P|_"}
+        // Annotations
+        {match: /@\w+(?:\.\w+)*/, 0: "meta"}
+        // Constants
+        {match: /\b[A-Z][A-Z0-9_]+\b/, 0: "constant"}
+        // Keywords
+        {match: keywordsToRegex(
+            "abstract as assert async await break case catch class const continue covariant default deferred do dynamic else"
+            "enum export extends external factory false final finally for Function get if implements import in interface is"
+            "library mixin new null on operator part rethrow return set static super switch sync this throw true try typedef"
+            "var void while with yield late required"
+        ), 0: "keyword"}
+        // Built-in types
+        {match: keywordsToRegex(
+            "bool double int List Map Never Null Object String Symbol void Future Stream Iterable Set"
+            "DateTime Duration RegExp Uri Runes Comparable Matcher Pattern Stopwatch"
+        ), 0: "type"}
+        // Functions and methods
+        {match: /\b[a-z]\w*(?=\s*\()/, 0: "funName"}
+        // Classes and user-defined types
+        {match: /\b[A-Z]\w*\b/, 0: "className"}
+        // Cascade notations
+        {match: /\.\.(?!\.)/, 0: "operator"}
+        // Arrow functions
+        {match: /=>/, 0: "operator"}
+        // Operators
+        {match: /[-+*\/%<>=!&|^~?:]|[<>]=?|==?|&&|\|\||\.\.[.<]|\?\?/, 0: "operator"}
+        // Brackets and separators
+        {match: /[(){}\[\]]/, 0: "bracket"}
+        {match: /[,;]/, 0: "separator"}
+        // Metadata
+        {match: /@\w+/, 0: "meta"}
+        // Special identifiers
+        {match: /\b(?:true|false|null)\b/, 0: "keyword"}
+        {match: /\bthis\b/, 0: "keyword"}
+        {match: /\bsuper\b/, 0: "keyword"}
+        // Asynchronous functions
+        {match: /\basync\b\s*(?=\{)/, 0: "keyword"}
+        {match: /\bawait\b/, 0: "keyword"}
+        // Generators
+        {match: /\b(?:sync|async)\s*\*/, 0: "keyword"}
+        {match: /\byield\b(?:\s*\*)/, 0: "keyword"}
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    name: ["RegexReplacement"]
+    styles: [
+        "default", #EE000000, #EED0D0D0
+        "caseOp", #9E880D, #BBB529
+        "ignored", @S
+        "escape", #067D17, #6A8759
+        "keyword", #1750EB, #6897BB
+    ]
+    bracketPairs: ["[]", "()"]
+    hide: true
+    contains: [
+        {match: /\\[^lLuU]/, 0: "escape"}
+        {match: /\$(?:\d|\{\d+\}|\{[a-zA-Z][a-zA-Z0-9]*\})/, 0: "keyword"}
+        {match: /(?:\\[lu])*(?:\\[LU]((?:\\[lLuU])+)?)?/ + /\$(?:\d|\{\d+\}|\{[a-zA-Z][a-zA-Z0-9]*\})/, 0: "caseOp", 1: "ignored"}
+        {match: /\\$/, 0: "error"} // 末尾的\
+        {match: /\$/, 0: "error"}  // 孤单的$
+        {match: /(\\[lLuU])+/, 0: "error"}  // 没有跟随$的\l\L\u\U
+    ]
+}

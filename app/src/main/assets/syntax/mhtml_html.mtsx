@@ -1,0 +1,173 @@
+// require MT >= 2.26.9
+// 基于 html.mtsx 维护；仅供 MHTML 使用，兼容编码赋值符与软换行。
+{
+    name: ["MHTML-HTML"]
+    hide: true
+    ignoreCase: true
+
+    comment: {startsWith: "<!--", endsWith: "-->"}
+
+    bracketPairs: ["<>", "{}", "[]", "()"]
+
+    defines: [
+        // 动态选择器使用不回溯的逐字符前缀；停止条件只在引号外识别真实属性名
+        "tagAttributeBeforeType": /(?:(?:"[^"]*+"|'[^']*+'|(?!(?:[ \t\r\n]+type[ \t\r\n]*=))[^"'<>]))*+/
+        // 完整属性区无需寻找中间停止点，按互斥的引号块和普通文本块一次消费
+        "tagAttributeText": /(?:"[^"]*+"|'[^']*+'|[^"'<>]++)*+/
+
+        // 标签属性的匹配规则
+        "tagAttributes": [
+            // HTML 注释（可以出现在标签内）
+            {match: /(?s)<!--.*?(-->|$)/, 0: "comment"}
+
+            // style 属性正文交给 CSS；两种引号分别声明，避免子语法吞掉宿主边界
+            {
+                start: {match: /(?<!\S)(style)\s*(=(?:3D)?(?:[ \t\r\n]|=\r?\n)*+)(")/, 1: "attrName", 2: "operator", 3: "string"}
+                end: {match: /"/, 0: "string"}
+                mustMatchEnd: true
+                childrenSyntax: "MHTML-CSS"
+            }
+            {
+                start: {match: /(?<!\S)(style)\s*(=(?:3D)?(?:[ \t\r\n]|=\r?\n)*+)(')/, 1: "attrName", 2: "operator", 3: "string"}
+                end: {match: /'/, 0: "string"}
+                mustMatchEnd: true
+                childrenSyntax: "MHTML-CSS"
+            }
+
+            // xmlns 命名空间声明：xmlns:prefix="uri"
+            {match: /(xmlns:)([^='"\s]+)/, 1: "attrName", 2: "namespace"}
+
+            // 普通属性名（支持命名空间）：namespace:attrName 或 attrName
+            {match: /(?:([^='"<\/>\s]+)(:))?([^='"<\/>\s]+)/, 1: "namespace", 2: "attrName", 3: "attrName"}
+
+            // =3D 仅在后续为引号时消费，未引号值仍按原规则匹配。
+            {
+                group: link
+                contains: [
+                    {match: /=(?:3D(?:[ \t\r\n]|=\r?\n)*+(?=["'])|\s*)/, 0: "operator"}
+                    {match: /(?s)(["']).*?\1/, 0: "string"}
+                ]
+            }
+        ]
+
+        // HTML 实体引用
+        "entityReferences": [
+            // 常见命名实体
+            {match: /&(?:amp|gt|lt|quot|apos|nbsp|copy|reg|trade|euro|cent|pound|yen|deg|plusmn|times|divide|hellip|mdash|ndash|lsquo|rsquo|ldquo|rdquo|bull|middot|sect|para|dagger|Dagger|permil|prime|Prime|lsaquo|rsaquo|oline|frasl|weierp|image|real|alefsym|larr|uarr|rarr|darr|harr|crarr|lArr|uArr|rArr|dArr|hArr|forall|part|exist|empty|nabla|isin|notin|ni|prod|sum|minus|lowast|radic|prop|infin|ang|and|or|cap|cup|int|there4|sim|cong|asymp|ne|equiv|le|ge|sub|sup|nsub|sube|supe|oplus|otimes|perp|sdot|lceil|rceil|lfloor|rfloor|lang|rang|loz|spades|clubs|hearts|diams);/, 0: "strEscape"}
+
+            // 数字实体（十进制）
+            {match: /&#\d+;/, 0: "strEscape"}
+
+            // 数字实体（十六进制）
+            {match: /&#x[0-9a-fA-F]+;/, 0: "strEscape"}
+
+            // 错误的实体引用（缺少分号或不存在的实体名）
+            {match: /&[a-zA-Z0-9#]*;?/, 0: "error"}
+        ]
+    ]
+
+    contains: [
+        // HTML 注释
+        {
+            start: {match: /<!--/}
+            end: {match: /-->|$/}
+            style: "comment"
+        }
+
+        // DOCTYPE 声明
+        {
+            start: {match: /<!(DOCTYPE|doctype)\b/, 1: "keyword"}
+            end: {match: />|$/}
+            style: "meta"
+            contains: [
+                {match: /(PUBLIC|SYSTEM|"[^"]*"|'[^']*')/, 0: "string"}
+            ]
+        }
+
+        // CDATA 区块
+        {
+            start: {match: /<!\[CDATA\[/}
+            end: {match: /\]\]>|$/}
+            style: "string"
+        }
+
+        // 常见 script type 按真实 HTML 用法选择语言；未知值保持缺失回退
+        {
+            start: {
+                match: /<\s*(script)(?=[\s\/>])(/ + include("tagAttributeBeforeType") + /[ \t\r\n]+type[ \t\r\n]*=(?:3D)?(?:[ \t\r\n]|=\r?\n)*+(["']?)([^"'<>]*?)\3(?=[ \t\r\n>]|\/>)/ + include("tagAttributeText") + /)(?<!\/)>/
+                1: "tagName"
+                2: {include: "tagAttributes"}
+            }
+            end: {match: /<\/\s*(script)\s*>/, 1: "tagName"}
+            childrenSyntax: {
+                capture: 4
+                "" => ".js"
+                "text/javascript" => ".js"
+                "application/javascript" => ".js"
+                "module" => ".js"
+                "application/json" => ".json"
+                "application/ld+json" => ".json"
+                "importmap" => ".json"
+            }
+        }
+
+        // 未声明动态选择器的 script 正文使用 JavaScript
+        {
+            start: {
+                match: /<\s*(script)(?=[\s\/>])(/ + include("tagAttributeText") + /)(?<!\/)>/
+                1: "tagName"
+                2: {include: "tagAttributes"}
+            }
+            end: {match: /<\/\s*(script)\s*>/, 1: "tagName"}
+            childrenSyntax: ".js"
+        }
+
+        // style 正文固定使用 CSS
+        {
+            start: {
+                match: /<\s*(style)(?=[\s\/>])(/ + include("tagAttributeText") + /)(?<!\/)>/
+                1: "tagName"
+                2: {include: "tagAttributes"}
+            }
+            end: {match: /<\/\s*(style)\s*>/, 1: "tagName"}
+            childrenSyntax: "MHTML-CSS"
+        }
+
+        // pre 标签（预格式化文本）
+        {
+            start: {
+                start: {match: /<\s*(pre)\b/, 1: "tagName"}
+                end: {match: />|$/}
+                contains: [{include: "tagAttributes"}]
+            }
+            end: {match: /<\/\s*(pre)\s*>/, 1: "tagName"}
+            contains: [{include: "entityReferences"}]
+        }
+
+        // XML 处理指令：<?xml ... ?>
+        {
+            start: {match: /<\?([^\s\/>]+)/, 1: "keyword"}
+            end: {match: /\?>|$/}
+            style: "meta"
+            contains: [{include: "tagAttributes"}]
+        }
+
+        // 自闭合标签和开始标签：<tagName ... /> 或 <tagName ... >
+        // 允许 < 和标签名之间有空格，支持命名空间
+        {
+            start: {match: /<\s*([^\s\/>]+)/, 1: "tagName"}
+            end: {match: /\/?>|$/}
+            contains: [{include: "tagAttributes"}]
+        }
+
+        // 结束标签：</tagName>
+        // 允许 </ 和标签名之间有空格，以及标签名和 > 之间有空格
+        {match: /<\/\s*([^\s>]+)\s*>/, 1: "tagName"}
+
+        // HTML 实体引用
+        {include: "entityReferences"}
+    ]
+
+    codeFormatter: #BUILT_IN_HTML_FORMATTER#
+    codeShrinker: #BUILT_IN_HTML_SHRINKER#
+}
