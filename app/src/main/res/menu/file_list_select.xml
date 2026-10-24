@@ -12,6 +12,18 @@
     tools:ignore="AlwaysShowAction">
 
     <item
+        android:id="@+id/action_copy_opposite"
+        android:orderInCategory="90"
+        android:title="Copiar al otro panel ➔"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_move_opposite"
+        android:orderInCategory="91"
+        android:title="Mover al otro panel ➔"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_cut"
         android:alphabeticShortcut="x"
         android:icon="@drawable/cut_icon_control_normal_24dp"

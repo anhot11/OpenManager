@@ -182,6 +182,11 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     private lateinit var adapter: FileListAdapter
 
+    var onPathOrStatsChanged: ((path: Path, stats: String) -> Unit)? = null
+    var onSelectionChanged: ((fragment: FileListFragment, hasSelection: Boolean, count: Int) -> Unit)? = null
+    var currentStatsSubtitle: String = ""
+        private set
+
     private var navigateUpCallback: OnBackPressedCallback? = null
 
     private val debouncedSearchRunnable = DebouncedRunnable(Handler(Looper.getMainLooper()), 1000) {
@@ -223,8 +228,11 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         navigationFragment.listener = this
         val activity = requireActivity() as AppCompatActivity
         activity.setTitle(R.string.file_list_title)
-        if (activity.supportActionBar == null) {
+        if (activity !is FileListActivity && activity.supportActionBar == null) {
             activity.setSupportActionBar(binding.toolbar)
+        }
+        if (activity is FileListActivity) {
+            setDualPaneUiMode(true)
         }
         binding.toolbar.setNavigationOnClickListener {
             binding.drawerLayout?.openDrawer(GravityCompat.START)
@@ -396,6 +404,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        val flActivity = activity as? FileListActivity
+        if (flActivity != null && flActivity.activeFragment != this) {
+            return
+        }
         super.onCreateOptionsMenu(menu, inflater)
 
         menuBinding = MenuBinding.inflate(menu, inflater)
@@ -594,6 +606,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private fun onCurrentPathChanged(path: Path) {
         updateOverlayToolbar()
         updateBottomToolbar()
+        onPathOrStatsChanged?.invoke(path, currentStatsSubtitle)
     }
 
     private fun onSearchViewExpandedChanged(expanded: Boolean) {
@@ -603,11 +616,14 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private fun onFileListChanged(stateful: Stateful<List<FileItem>>) {
         val files = stateful.value
         val isSearching = viewModel.searchState.isSearching
-        when {
-            stateful is Failure -> binding.toolbar.setSubtitle(R.string.error)
-            stateful is Loading && !isSearching -> binding.toolbar.setSubtitle(R.string.loading)
-            else -> binding.toolbar.subtitle = getSubtitle(files!!)
+        val subtitle = when {
+            stateful is Failure -> getString(R.string.error)
+            stateful is Loading && !isSearching -> getString(R.string.loading)
+            else -> getSubtitle(files!!)
         }
+        binding.toolbar.subtitle = subtitle
+        currentStatsSubtitle = subtitle
+        onPathOrStatsChanged?.invoke(currentPath, subtitle)
         val hasFiles = !files.isNullOrEmpty()
         binding.swipeRefreshLayout.isRefreshing = stateful is Loading && (hasFiles || isSearching)
         binding.progress.fadeToVisibilityUnsafe(stateful is Loading && !(hasFiles || isSearching))
@@ -719,7 +735,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         menuBinding.viewSortPathSpecificItem.isChecked = viewModel.isViewSortPathSpecific
     }
 
-    private fun navigateUp() {
+    fun navigateUp() {
         collapseSearchView()
         viewModel.navigateUp()
     }
@@ -859,6 +875,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private fun onSelectedFilesChanged(files: FileItemSet) {
         updateOverlayToolbar()
         adapter.replaceSelectedFiles(files)
+        onSelectionChanged?.invoke(this, files.isNotEmpty(), files.size)
     }
 
     private fun updateOverlayToolbar() {
@@ -935,6 +952,20 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
             R.id.action_create -> {
                 confirmReplaceFile(viewModel.selectedFiles.single())
+                true
+            }
+            R.id.action_copy_opposite -> {
+                val opposite = (activity as? FileListActivity)?.getOppositeFragment(this)
+                if (opposite != null) {
+                    copyFilesTo(viewModel.selectedFiles, opposite.currentPath)
+                }
+                true
+            }
+            R.id.action_move_opposite -> {
+                val opposite = (activity as? FileListActivity)?.getOppositeFragment(this)
+                if (opposite != null) {
+                    moveFilesTo(viewModel.selectedFiles, opposite.currentPath)
+                }
                 true
             }
             R.id.action_cut -> {
@@ -1034,7 +1065,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         viewModel.selectFiles(files, false)
     }
 
-    private fun selectAllFiles() {
+    fun selectAllFiles() {
         adapter.selectAllFiles()
     }
 
@@ -1339,6 +1370,20 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         copyFiles(fileItemSetOf(file))
     }
 
+    override fun copyFileToOppositePanel(file: FileItem) {
+        val opposite = (activity as? FileListActivity)?.getOppositeFragment(this)
+        if (opposite != null) {
+            copyFilesTo(fileItemSetOf(file), opposite.currentPath)
+        }
+    }
+
+    override fun moveFileToOppositePanel(file: FileItem) {
+        val opposite = (activity as? FileListActivity)?.getOppositeFragment(this)
+        if (opposite != null) {
+            moveFilesTo(fileItemSetOf(file), opposite.currentPath)
+        }
+    }
+
     override fun confirmDeleteFile(file: FileItem) {
         confirmDeleteFiles(fileItemSetOf(file))
     }
@@ -1443,7 +1488,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         FilePropertiesDialogFragment.show(file, this)
     }
 
-    private fun showCreateFileDialog() {
+    fun showCreateFileDialog() {
         CreateFileDialogFragment.show(this)
     }
 
@@ -1452,13 +1497,57 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         FileJobService.create(path, false, requireContext())
     }
 
-    private fun showCreateDirectoryDialog() {
+    fun showCreateDirectoryDialog() {
         CreateDirectoryDialogFragment.show(this)
     }
 
     override fun createDirectory(name: String) {
         val path = currentPath.resolve(name)
         FileJobService.create(path, true, requireContext())
+    }
+
+    fun copyFilesTo(files: FileItemSet, targetDirectory: Path) {
+        FileJobService.copy(makePathListForJob(files), targetDirectory, requireContext())
+        viewModel.selectFiles(files, false)
+    }
+
+    fun moveFilesTo(files: FileItemSet, targetDirectory: Path) {
+        FileJobService.move(makePathListForJob(files), targetDirectory, requireContext())
+        viewModel.selectFiles(files, false)
+    }
+
+    fun deleteSelectedFiles() {
+        confirmDeleteFiles(viewModel.selectedFiles)
+    }
+
+    fun searchFiles(query: String) {
+        viewModel.search(query)
+    }
+
+    fun stopSearching() {
+        viewModel.stopSearching()
+    }
+
+    fun openDrawer() {
+        binding.drawerLayout?.openDrawer(GravityCompat.START)
+    }
+
+    fun isDrawerOpen(): Boolean = binding.drawerLayout?.isDrawerOpen(GravityCompat.START) == true
+
+    fun closeDrawer() {
+        binding.drawerLayout?.closeDrawer(GravityCompat.START)
+    }
+
+    val selectedFiles: FileItemSet
+        get() = viewModel.selectedFiles
+
+    val canNavigateUp: Boolean
+        get() = viewModel.canNavigateUpBreadcrumb
+
+    fun setDualPaneUiMode(enabled: Boolean) {
+        if (!this::binding.isInitialized) return
+        binding.toolbar.isVisible = !enabled
+        binding.speedDialView.isVisible = !enabled
     }
 
     override val currentPath: Path

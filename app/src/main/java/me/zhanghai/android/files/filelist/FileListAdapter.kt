@@ -200,7 +200,7 @@ class FileListAdapter(
                     )
                 }
             }
-            popupMenu = PopupMenu(menuButton.context, menuButton)
+            popupMenu = PopupMenu(itemLayout.context, itemLayout)
                 .apply { inflate(R.menu.file_item) }
             menuButton.setOnClickListener { popupMenu.show() }
         }
@@ -215,7 +215,7 @@ class FileListAdapter(
         val isDirectory = file.attributes.isDirectory
         val isEnabled = isFileSelectable(file) || isDirectory
         holder.itemLayout.isEnabled = isEnabled
-        holder.menuButton.isEnabled = isEnabled
+        holder.menuButton.isVisible = false
         val menu = holder.popupMenu.menu
         val path = file.path
         val hasPickOptions = pickOptions != null
@@ -245,9 +245,9 @@ class FileListAdapter(
             }
             setOnLongClickListener {
                 if (selectedFiles.isEmpty()) {
-                    selectFile(file)
+                    holder.popupMenu.show()
                 } else {
-                    listener.openFile(file)
+                    selectFile(file)
                 }
                 true
             }
@@ -335,10 +335,20 @@ class FileListAdapter(
         menu.findItem(R.id.action_extract).isVisible = file.isArchiveFile
         menu.findItem(R.id.action_archive).isVisible = !isArchivePath
         menu.findItem(R.id.action_add_bookmark).isVisible = isDirectory
+        menu.findItem(R.id.action_copy_opposite)?.isVisible = !hasPickOptions
+        menu.findItem(R.id.action_move_opposite)?.isVisible = !hasPickOptions && !isReadOnly
         holder.popupMenu.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_open_with -> {
                     listener.openFileWith(file)
+                    true
+                }
+                R.id.action_copy_opposite -> {
+                    listener.copyFileToOppositePanel(file)
+                    true
+                }
+                R.id.action_move_opposite -> {
+                    listener.moveFileToOppositePanel(file)
                     true
                 }
                 R.id.action_cut -> {
@@ -474,6 +484,8 @@ class FileListAdapter(
         fun openFileWith(file: FileItem)
         fun cutFile(file: FileItem)
         fun copyFile(file: FileItem)
+        fun copyFileToOppositePanel(file: FileItem)
+        fun moveFileToOppositePanel(file: FileItem)
         fun confirmDeleteFile(file: FileItem)
         fun showRenameFileDialog(file: FileItem)
         fun extractFile(file: FileItem)

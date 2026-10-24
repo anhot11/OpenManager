@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ OpenManager - MT-Style Dual Pane Activity Layout
-  ~ Supports simultaneous side-by-side Panel A and Panel B or quick tab switching.
+  ~ Unified Top Toolbar, Pill Navigation Tabs, Split Panels, and MT-Style Bottom Bar.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,11 +11,51 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
-    <!-- MT-Style Panel Control Bar -->
+    <!-- 1. Top Unified MT-Style Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/mainToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?colorAppBarSurface"
+        app:navigationIcon="@drawable/menu_icon_control_normal_24dp"
+        app:navigationContentDescription="@string/open_navigation_drawer"
+        app:popupTheme="?actionBarPopupTheme">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:id="@+id/tvPathTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="middle"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="?android:textColorPrimary"
+                android:text="/storage/emulated/0" />
+
+            <TextView
+                android:id="@+id/tvStatsSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textSize="11sp"
+                android:textColor="?android:textColorSecondary"
+                android:text="Cargando..." />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- 2. MT-Style Panel Tab Control Bar -->
     <LinearLayout
         android:id="@+id/dualPaneHeader"
         android:layout_width="match_parent"
-        android:layout_height="42dp"
+        android:layout_height="36dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="?colorAppBarSurface"
@@ -27,7 +67,7 @@
             android:id="@+id/btnPanelA"
             style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="0dp"
-            android:layout_height="34dp"
+            android:layout_height="30dp"
             android:layout_weight="1"
             android:text="Panel A"
             android:textSize="11sp"
@@ -35,40 +75,40 @@
             android:ellipsize="middle"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            app:cornerRadius="17dp"
+            app:cornerRadius="15dp"
             app:icon="@drawable/file_directory_icon"
-            app:iconSize="14dp" />
+            app:iconSize="13dp" />
 
         <!-- Swap / Synchronize Button (⇄) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSwap"
             style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="38dp"
-            android:layout_height="34dp"
+            android:layout_width="36dp"
+            android:layout_height="30dp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:contentDescription="Intercambiar Paneles"
             app:icon="@drawable/reset_icon_white_24dp"
-            app:iconSize="16dp" />
+            app:iconSize="15dp" />
 
         <!-- Dual Pane Toggle Button (◫ Dual A|B) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDual"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
-            android:layout_height="34dp"
+            android:layout_height="30dp"
             android:text="◫ Dual"
             android:textSize="11sp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            app:cornerRadius="17dp" />
+            app:cornerRadius="15dp" />
 
         <!-- Panel B Button / Tab -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPanelB"
             style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="0dp"
-            android:layout_height="34dp"
+            android:layout_height="30dp"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
             android:text="Panel B"
@@ -77,13 +117,12 @@
             android:ellipsize="middle"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            app:cornerRadius="17dp"
+            app:cornerRadius="15dp"
             app:icon="@drawable/file_directory_icon"
-            app:iconSize="14dp" />
-
+            app:iconSize="13dp" />
     </LinearLayout>
 
-    <!-- Panels Container (Horizontal Split for Dual Pane) -->
+    <!-- 3. Panels Container (Horizontal Split for Dual Pane) -->
     <LinearLayout
         android:id="@+id/panelsContainer"
         android:layout_width="match_parent"
@@ -109,7 +148,133 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1" />
+    </LinearLayout>
 
+    <!-- 4. MT-Style Bottom Bar -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="?colorAppBarSurface">
+
+        <!-- Normal Mode: [<] [⇄] [+] [🔍] [↑] -->
+        <LinearLayout
+            android:id="@+id/bottomBarNormal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/btnBottomBack"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/arrow_back_icon_white_24dp"
+                android:contentDescription="Atrás"
+                app:tint="?android:textColorPrimary" />
+
+            <ImageButton
+                android:id="@+id/btnBottomSwap"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/reset_icon_white_24dp"
+                android:contentDescription="Intercambiar Paneles"
+                app:tint="?android:textColorPrimary" />
+
+            <ImageButton
+                android:id="@+id/btnBottomAdd"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/add_icon_white_24dp"
+                android:contentDescription="Nuevo"
+                app:tint="?colorPrimary" />
+
+            <ImageButton
+                android:id="@+id/btnBottomSearch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/search_icon_control_normal_24dp"
+                android:contentDescription="Buscar"
+                app:tint="?android:textColorPrimary" />
+
+            <ImageButton
+                android:id="@+id/btnBottomUp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/arrow_up_icon_white_24dp"
+                android:contentDescription="Subir Carpeta"
+                app:tint="?android:textColorPrimary" />
+        </LinearLayout>
+
+        <!-- Selection Mode: [Todo] [Copiar ->] [Mover ->] [Eliminar] [Más] -->
+        <LinearLayout
+            android:id="@+id/bottomBarSelection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectAll"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Todo"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCopyOpposite"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.2"
+                android:text="Copiar ➔"
+                android:textColor="?colorPrimary"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMoveOpposite"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.2"
+                android:text="Mover ➔"
+                android:textColor="?colorPrimary"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteSelection"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Eliminar"
+                android:textColor="@color/material_red_500"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMoreSelection"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Más..."
+                android:textSize="11sp" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

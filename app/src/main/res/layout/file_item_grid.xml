@@ -136,6 +136,7 @@
             android:background="@null"
             android:foreground="@drawable/selectable_item_background_oval"
             android:src="@drawable/more_vertical_icon_white_24dp"
+            android:visibility="gone"
             app:tint="?colorControlNormal" />
     </LinearLayout>
 </me.zhanghai.android.files.ui.CheckableForegroundLinearLayout>

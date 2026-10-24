@@ -12,6 +12,14 @@
         android:title="@string/file_item_action_open_with" />
 
     <item
+        android:id="@+id/action_copy_opposite"
+        android:title="Copiar al otro panel ➔" />
+
+    <item
+        android:id="@+id/action_move_opposite"
+        android:title="Mover al otro panel ➔" />
+
+    <item
         android:id="@+id/action_cut"
         android:title="@string/cut" />
 

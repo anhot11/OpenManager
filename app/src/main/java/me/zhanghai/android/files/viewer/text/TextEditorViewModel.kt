@@ -32,6 +32,7 @@ import me.zhanghai.android.files.util.isFinished
 import me.zhanghai.android.files.util.isReady
 import me.zhanghai.android.files.util.toError
 import me.zhanghai.android.files.util.toLoading
+import me.zhanghai.android.files.file.AxmlDecoder
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
@@ -106,7 +107,16 @@ class TextEditorViewModel(file: Path) : ViewModel() {
                             _textState.value = _textState.value.toLoading()
                             try {
                                 val text = withContext(Dispatchers.Default) {
-                                    String(bytesState.data, encoding)
+                                    if (AxmlDecoder.isAxml(bytesState.data)) {
+                                        try {
+                                            AxmlDecoder.decode(bytesState.data)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                            String(bytesState.data, encoding)
+                                        }
+                                    } else {
+                                        String(bytesState.data, encoding)
+                                    }
                                 }
                                 currentCoroutineContext().ensureActive()
                                 _textState.value = DataState.Success(text)
