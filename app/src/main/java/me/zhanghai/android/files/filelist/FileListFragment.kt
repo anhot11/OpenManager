@@ -1084,11 +1084,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     override fun deleteFiles(files: FileItemSet) {
         if (Settings.ENABLE_RECYCLE_BIN.valueCompat && Settings.MOVE_TO_RECYCLE_BIN_DEFAULT.valueCompat) {
-            val baseDir = Settings.CUSTOM_OPENMANAGER_DIR.valueCompat.ifEmpty {
-                @Suppress("DEPRECATION")
-                Environment.getExternalStorageDirectory().absolutePath + "/OpenManager"
-            }
-            val recyclePath = Paths.get(baseDir, ".recycle")
+            val recyclePath = Settings.recycleBinDirectory
             try {
                 val dirFile = java.io.File(recyclePath.toString())
                 if (!dirFile.exists()) {

@@ -59,13 +59,8 @@ val navigationItems: List<NavigationItem?>
                 addAll(bookmarkDirectoryItems)
             }
             if (Settings.ENABLE_RECYCLE_BIN.valueCompat) {
-                val baseDir = Settings.CUSTOM_OPENMANAGER_DIR.valueCompat.ifEmpty {
-                    @Suppress("DEPRECATION")
-                    Environment.getExternalStorageDirectory().absolutePath + "/OpenManager"
-                }
-                val recyclePath = Paths.get(baseDir, ".recycle")
                 add(null)
-                add(RecycleBinItem(recyclePath))
+                add(RecycleBinItem(Settings.recycleBinDirectory))
             }
             add(null)
             addAll(menuItems)

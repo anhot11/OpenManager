@@ -254,4 +254,18 @@ object Settings {
             R.string.pref_key_custom_openmanager_dir,
             R.string.pref_default_value_custom_openmanager_dir
         )
+
+    val recycleBinDirectory: Path
+        get() {
+            val base = CUSTOM_OPENMANAGER_DIR.valueCompat.let {
+                if (it.startsWith("/sdcard")) {
+                    @Suppress("DEPRECATION")
+                    it.replaceFirst("/sdcard", Environment.getExternalStorageDirectory().absolutePath)
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.ifEmpty { Environment.getExternalStorageDirectory().absolutePath + "/OpenManager" }
+                }
+            }
+            return Paths.get(base, ".recycle")
+        }
 }

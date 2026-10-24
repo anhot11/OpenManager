@@ -324,11 +324,7 @@ class FileListActivity : AppActivity() {
         val drawerItemRecycleBin = findViewById<View>(R.id.drawerItemRecycleBin)
         drawerItemRecycleBin?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            val baseDir = Settings.CUSTOM_OPENMANAGER_DIR.valueCompat.ifEmpty {
-                @Suppress("DEPRECATION")
-                Environment.getExternalStorageDirectory().absolutePath + "/OpenManager"
-            }
-            val recyclePath = Paths.get(baseDir, ".recycle")
+            val recyclePath = Settings.recycleBinDirectory
             val recycleDir = java.io.File(recyclePath.toString())
             if (!recycleDir.exists()) {
                 recycleDir.mkdirs()
