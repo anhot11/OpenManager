@@ -275,7 +275,7 @@ class FileListActivity : AppActivity() {
                 }
                 R.id.mt_menu_hidden_files -> {
                     val current = Settings.FILE_LIST_SHOW_HIDDEN_FILES.valueCompat
-                    Settings.FILE_LIST_SHOW_HIDDEN_FILES.putValue(!current, this)
+                    Settings.FILE_LIST_SHOW_HIDDEN_FILES.putValue(!current)
                     true
                 }
                 R.id.mt_menu_add_bookmark -> {
