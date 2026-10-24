@@ -233,7 +233,7 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
         val btn = MaterialButton(
             requireContext(),
             null,
-            com.google.android.material.R.attr.borderlessButtonStyle
+            androidx.appcompat.R.attr.borderlessButtonStyle
         ).apply {
             this.text = text
             minWidth = 0
@@ -271,7 +271,7 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
         val end = binding.textEdit.selectionEnd.coerceAtLeast(0)
         val min = minOf(start, end)
         val max = maxOf(start, end)
-        binding.textEdit.text.replace(min, max, insert)
+        binding.textEdit.text?.replace(min, max, insert)
         binding.textEdit.setSelection(min + insert.length)
     }
 
@@ -367,7 +367,7 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
     }
 
     private fun highlightSearchMatches() {
-        val editable = binding.textEdit.text
+        val editable = binding.textEdit.text ?: return
         clearSearchSpans()
 
         for (i in searchMatches.indices) {
@@ -388,7 +388,7 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
     }
 
     private fun clearSearchSpans() {
-        val editable = binding.textEdit.text
+        val editable = binding.textEdit.text ?: return
         val searchSpans = editable.getSpans(0, editable.length, SearchMatchSpan::class.java)
         for (span in searchSpans) {
             editable.removeSpan(span)
@@ -436,7 +436,7 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
         val range = searchMatches[currentMatchIndex]
         val replacement = binding.replaceEdit.text.toString()
 
-        binding.textEdit.text.replace(range.first, range.last + 1, replacement)
+        binding.textEdit.text?.replace(range.first, range.last + 1, replacement)
         performSearch(resetCurrent = false)
     }
 
@@ -448,7 +448,7 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
         // Replace backwards to maintain valid indices
         for (i in searchMatches.indices.reversed()) {
             val range = searchMatches[i]
-            binding.textEdit.text.replace(range.first, range.last + 1, replacement)
+            binding.textEdit.text?.replace(range.first, range.last + 1, replacement)
         }
 
         showToast(getString(R.string.text_editor_replaced_count, count))

@@ -42,7 +42,8 @@ object SyntaxHighlighter {
     class SyntaxSpan(val color: Int) : ForegroundColorSpan(color)
     class SyntaxItalicSpan : StyleSpan(Typeface.ITALIC)
 
-    fun highlight(editable: Editable, language: SyntaxLanguage) {
+    fun highlight(editable: Editable?, language: SyntaxLanguage) {
+        if (editable == null) return
         if (language == SyntaxLanguage.PLAIN_TEXT || editable.length > 200_000) {
             clearSpans(editable)
             return

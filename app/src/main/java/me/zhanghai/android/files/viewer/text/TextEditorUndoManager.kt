@@ -86,7 +86,7 @@ class TextEditorUndoManager(
         val edit = undoStack.removeLast()
         isUndoingOrRedoing = true
         try {
-            val editable = editText.text
+            val editable = editText.text ?: return
             editable.replace(edit.start, edit.start + edit.afterText.length, edit.beforeText)
             val newCursor = (edit.start + edit.beforeText.length).coerceIn(0, editable.length)
             editText.setSelection(newCursor)
@@ -102,7 +102,7 @@ class TextEditorUndoManager(
         val edit = redoStack.removeLast()
         isUndoingOrRedoing = true
         try {
-            val editable = editText.text
+            val editable = editText.text ?: return
             editable.replace(edit.start, edit.start + edit.beforeText.length, edit.afterText)
             val newCursor = (edit.start + edit.afterText.length).coerceIn(0, editable.length)
             editText.setSelection(newCursor)
