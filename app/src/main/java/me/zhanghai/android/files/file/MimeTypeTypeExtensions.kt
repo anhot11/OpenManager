@@ -58,10 +58,10 @@ val MimeType.isPdf: Boolean
 val MimeType.isText: Boolean
     get() = icon == MimeTypeIcon.DOCUMENT
         || value.startsWith("text/")
-        || value in textMimeTypes
+        || this in textMimeTypes
 
 val MimeType.isSqlite: Boolean
-    get() = value in sqliteMimeTypes
+    get() = this in sqliteMimeTypes
 
 val MimeType.isDex: Boolean
     get() = value == "application/vnd.android.dex"

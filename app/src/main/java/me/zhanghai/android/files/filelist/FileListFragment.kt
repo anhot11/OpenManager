@@ -69,6 +69,7 @@ import me.zhanghai.android.files.file.FileItem
 import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.file.asMimeTypeOrNull
 import me.zhanghai.android.files.file.extension
+import me.zhanghai.android.files.file.fileProviderUri
 import me.zhanghai.android.files.file.isApk
 import me.zhanghai.android.files.file.isAudio
 import me.zhanghai.android.files.file.isVideo
@@ -78,6 +79,7 @@ import me.zhanghai.android.files.file.isDex
 import me.zhanghai.android.files.file.isArsc
 import me.zhanghai.android.files.file.isSharedLibrary
 import me.zhanghai.android.files.file.isImage
+import me.zhanghai.android.files.file.isPdf
 import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.viewer.audio.AudioPlayerDialogFragment
 import me.zhanghai.android.files.viewer.binary.ArscInfoDialogFragment
