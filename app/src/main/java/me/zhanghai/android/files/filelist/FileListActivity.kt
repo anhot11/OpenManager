@@ -123,6 +123,9 @@ class FileListActivity : AppActivity() {
 
         tvPathTitle = findViewById(R.id.tvPathTitle)
         tvStatsSubtitle = findViewById(R.id.tvStatsSubtitle)
+        findViewById<View>(R.id.layoutPathTitle)?.setOnClickListener {
+            showJumpToPathDialog()
+        }
 
         containerA = findViewById(R.id.containerPanelA)
         containerB = findViewById(R.id.containerPanelB)
@@ -656,6 +659,64 @@ class FileListActivity : AppActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun showJumpToPathDialog() {
+        if (!::fragmentA.isInitialized || !::fragmentB.isInitialized) return
+        val currentPath = activeFragment.currentPath.toString()
+        val context = this
+        val editText = androidx.appcompat.widget.AppCompatEditText(context).apply {
+            setText(currentPath)
+            setSingleLine(true)
+            selectAll()
+            setTextColor(android.graphics.Color.WHITE)
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
+            supportBackgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#2196F3"))
+            val paddingPx = (16 * resources.displayMetrics.density).toInt()
+            setPadding(paddingPx, paddingPx / 2, paddingPx, paddingPx / 2)
+        }
+        val container = android.widget.FrameLayout(context).apply {
+            addView(editText)
+            setPadding((16 * resources.displayMetrics.density).toInt(), 0, (16 * resources.displayMetrics.density).toInt(), 0)
+        }
+
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.jump_to_path)
+            .setView(container)
+            .setNeutralButton(R.string.paste, null)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                var target = editText.text?.toString()?.trim() ?: ""
+                if (target.isNotEmpty()) {
+                    if (target.startsWith("/sdcard")) {
+                        target = "/storage/emulated/0" + target.removePrefix("/sdcard")
+                    }
+                    try {
+                        val path = java8.nio.file.Paths.get(target)
+                        activeFragment.navigateTo(path)
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(context, "Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .create()
+
+        dialog.setOnShowListener {
+            val neutralBtn = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL)
+            neutralBtn.setOnClickListener {
+                val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                val clipText = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
+                if (!clipText.isNullOrEmpty()) {
+                    editText.setText(clipText)
+                    editText.setSelection(clipText.length)
+                }
+            }
+            editText.requestFocus()
+            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+            imm?.showSoftInput(editText, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        }
+
+        dialog.show()
     }
 
     private fun syncBottomBarSelectionState() {

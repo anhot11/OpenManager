@@ -29,7 +29,12 @@ enum class MimeTypeIcon(val resourceId: Int) {
     VIDEO(R.drawable.file_video_icon),
     WORD(R.drawable.file_word_icon),
     EXCEL(R.drawable.file_excel_icon),
-    POWERPOINT(R.drawable.file_powerpoint_icon)
+    POWERPOINT(R.drawable.file_powerpoint_icon),
+    DEX(R.drawable.file_dex_icon),
+    ARSC(R.drawable.file_arsc_icon),
+    XML(R.drawable.file_xml_mt_icon),
+    SO(R.drawable.file_so_icon),
+    SHELL(R.drawable.file_sh_icon)
 }
 
 // See also https://android.googlesource.com/platform/frameworks/base.git/+/master/core/java/com/android/internal/util/MimeIconUtils.java
@@ -44,6 +49,9 @@ val MimeType.icon: MimeTypeIcon
 // See also https://mimesniff.spec.whatwg.org/#mime-type-groups
 private val mimeTypeToIconMap = mapOf(
     "application/vnd.android.package-archive" to MimeTypeIcon.APK,
+    "application/vnd.android.dex" to MimeTypeIcon.DEX,
+    "application/vnd.android.arsc" to MimeTypeIcon.ARSC,
+    "application/x-sharedlib" to MimeTypeIcon.SO,
     "application/gzip" to MimeTypeIcon.ARCHIVE,
     // Not in IANA list, but Mozilla and Wikipedia say so.
     "application/java-archive" to MimeTypeIcon.ARCHIVE,
@@ -97,7 +105,7 @@ private val mimeTypeToIconMap = mapOf(
     "application/javascript" to MimeTypeIcon.CODE,
     "application/json" to MimeTypeIcon.CODE,
     "application/typescript" to MimeTypeIcon.CODE,
-    "application/xml" to MimeTypeIcon.CODE,
+    "application/xml" to MimeTypeIcon.XML,
     "application/yaml" to MimeTypeIcon.CODE,
     "application/x-csh" to MimeTypeIcon.CODE,
     "application/x-ecmascript" to MimeTypeIcon.CODE,
@@ -106,8 +114,8 @@ private val mimeTypeToIconMap = mapOf(
     "application/x-perl" to MimeTypeIcon.CODE,
     "application/x-python" to MimeTypeIcon.CODE,
     "application/x-ruby" to MimeTypeIcon.CODE,
-    "application/x-sh" to MimeTypeIcon.CODE,
-    "application/x-shellscript" to MimeTypeIcon.CODE,
+    "application/x-sh" to MimeTypeIcon.SHELL,
+    "application/x-shellscript" to MimeTypeIcon.SHELL,
     "application/x-texinfo" to MimeTypeIcon.CODE,
     "application/x-yaml" to MimeTypeIcon.CODE,
     "text/css" to MimeTypeIcon.CODE,
@@ -116,7 +124,7 @@ private val mimeTypeToIconMap = mapOf(
     "text/javascript" to MimeTypeIcon.CODE,
     "text/jscript" to MimeTypeIcon.CODE,
     "text/livescript" to MimeTypeIcon.CODE,
-    "text/xml" to MimeTypeIcon.CODE,
+    "text/xml" to MimeTypeIcon.XML,
     "text/x-asm" to MimeTypeIcon.CODE,
     "text/x-c++hdr" to MimeTypeIcon.CODE,
     "text/x-c++src" to MimeTypeIcon.CODE,
@@ -134,7 +142,7 @@ private val mimeTypeToIconMap = mapOf(
     "text/x-perl" to MimeTypeIcon.CODE,
     "text/x-python" to MimeTypeIcon.CODE,
     "text/x-ruby" to MimeTypeIcon.CODE,
-    "text/x-shellscript" to MimeTypeIcon.CODE,
+    "text/x-shellscript" to MimeTypeIcon.SHELL,
     "text/x-tcl" to MimeTypeIcon.CODE,
     "text/x-tex" to MimeTypeIcon.CODE,
     "text/x-yaml" to MimeTypeIcon.CODE,
@@ -227,7 +235,7 @@ private val typeToIconMap = mapOf(
 
 private val suffixToIconMap = mapOf(
     "json" to MimeTypeIcon.CODE,
-    "xml" to MimeTypeIcon.CODE,
+    "xml" to MimeTypeIcon.XML,
     "zip" to MimeTypeIcon.ARCHIVE
 )
 

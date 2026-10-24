@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MT Manager Style DEX Icon (classes.dex) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Teal rounded rectangle background -->
+    <path
+        android:fillColor="#267876"
+        android:pathData="M5,2 h14 c1.66,0 3,1.34 3,3 v14 c0,1.66 -1.34,3 -3,3 H5 c-1.66,0 -3,-1.34 -3,-3 V5 c0,-1.66 1.34,-3 3,-3 z" />
+
+    <!-- White folded document body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7,5.5 h6.5 l3.5,3.5 v9 c0,0.55 -0.45,1 -1,1 H7 c-0.55,0 -1,-0.45 -1,-1 v-11.5 c0,-0.55 0.45,-1 1,-1 z" />
+
+    <!-- Document fold flap -->
+    <path
+        android:fillColor="#B2DFDB"
+        android:pathData="M13.5,5.5 v3 c0,0.28 0.22,0.5 0.5,0.5 h3 z" />
+
+    <!-- Inner '0' glyph in teal -->
+    <path
+        android:fillColor="#267876"
+        android:pathData="M8.2,11.5 h2.4 c0.44,0 0.8,0.36 0.8,0.8 v3.4 c0,0.44 -0.36,0.8 -0.8,0.8 H8.2 c-0.44,0 -0.8,-0.36 -0.8,-0.8 v-3.4 c0,-0.44 0.36,-0.8 0.8,-0.8 z M8.6,12.5 v3 h1.6 v-3 H8.6 z" />
+
+    <!-- Inner '1' glyph in teal -->
+    <path
+        android:fillColor="#267876"
+        android:pathData="M12.6,12.4 l1.2,-0.9 h0.8 v5 H13.6 v-3.7 l-0.8,0.4 z" />
+</vector>

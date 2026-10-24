@@ -32,6 +32,11 @@ private val extensionToMimeTypeOverrideMap = mapOf(
     // Fixes
     "csv" to "text/csv", // Was "text/comma-separated-values"
     "sh" to "application/x-sh", // Was "text/x-sh"
+    "dex" to "application/vnd.android.dex",
+    "arsc" to "application/vnd.android.arsc",
+    "so" to "application/x-sharedlib",
+    "apks" to "application/vnd.android.package-archive",
+    "xapk" to "application/vnd.android.package-archive",
     // Addition
     "bz" to "application/x-bzip",
     "bz2" to "application/x-bzip2",

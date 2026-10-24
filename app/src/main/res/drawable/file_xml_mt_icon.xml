@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MT Manager Style XML Icon (AndroidManifest.xml, *.xml) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Royal blue rounded rectangle background -->
+    <path
+        android:fillColor="#2E54A6"
+        android:pathData="M5,2 h14 c1.66,0 3,1.34 3,3 v14 c0,1.66 -1.34,3 -3,3 H5 c-1.66,0 -3,-1.34 -3,-3 V5 c0,-1.66 1.34,-3 3,-3 z" />
+
+    <!-- White folded document body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7,5.5 h6.5 l3.5,3.5 v9 c0,0.55 -0.45,1 -1,1 H7 c-0.55,0 -1,-0.45 -1,-1 v-11.5 c0,-0.55 0.45,-1 1,-1 z" />
+
+    <!-- Document fold flap -->
+    <path
+        android:fillColor="#C5CAE9"
+        android:pathData="M13.5,5.5 v3 c0,0.28 0.22,0.5 0.5,0.5 h3 z" />
+
+    <!-- Left angle bracket '<' in royal blue -->
+    <path
+        android:fillColor="#2E54A6"
+        android:pathData="M10.8,11.5 L9.1,13.5 L10.8,15.5 H9.8 L8.1,13.5 L9.8,11.5 Z" />
+
+    <!-- Right angle bracket '>' in royal blue -->
+    <path
+        android:fillColor="#2E54A6"
+        android:pathData="M13.2,11.5 L14.9,13.5 L13.2,15.5 H14.2 L15.9,13.5 L14.2,11.5 Z" />
+</vector>

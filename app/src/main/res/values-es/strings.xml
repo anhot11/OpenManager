@@ -861,4 +861,10 @@
     <string name="settings_acknowledgement_summary">Personas y proyectos de código abierto que ayudaron al desarrollo de OpenManager.</string>
     <string name="settings_user_agreement_title">Acuerdo de usuario y Política de privacidad</string>
     <string name="settings_user_agreement_summary">Ya leído y aceptado. 100% Libre y Código Abierto (GPLv3).</string>
+    <string name="jump_to_path">Ir a la ruta</string>
+    <string name="apk_function">FUNCIÓN</string>
+    <string name="apk_sign">Firmar APK</string>
+    <string name="apk_clone">Clonar APK</string>
+    <string name="apk_optimize">Optimizar (zipalign)</string>
+    <string name="apk_convert_apks">Convertir APKS a APK</string>
 </resources>

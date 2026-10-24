@@ -327,7 +327,30 @@ class FileListAdapter(
             }
         }
         holder.iconLayout.setOnClickListener { selectFile(file) }
-        val iconRes = file.mimeType.iconRes
+        val isSymlink = file.attributesNoFollowLinks.isSymbolicLink
+        if (isSymlink) {
+            holder.nameText.text = "${file.name} ->"
+        } else {
+            holder.nameText.text = file.name
+        }
+
+        val appDirectoryPackageName = file.appDirectoryPackageName
+        val appLabel = if (isDirectory && appDirectoryPackageName != null) {
+            AppMetadataCache.getAppLabel(holder.itemView.context, appDirectoryPackageName)
+        } else {
+            null
+        }
+
+        holder.descriptionText?.isVisible = true
+        val lastModificationTime = attributes.lastModifiedTime().toInstant().formatMtDate()
+        holder.descriptionText?.text = if (isDirectory) {
+            if (appLabel != null) "$lastModificationTime  $appLabel" else lastModificationTime
+        } else {
+            val size = attributes.fileSize.formatHumanReadable(holder.itemView.context)
+            "$lastModificationTime  $size"
+        }
+
+        val iconRes = FileIconHelper.getIconRes(file)
         holder.iconImage.apply {
             isVisible = true
             setImageResource(iconRes)
@@ -337,7 +360,6 @@ class FileListAdapter(
         val supportsThumbnail = file.supportsThumbnail
         val shouldLoadThumbnailIcon = supportsThumbnail && holder.thumbnailIconImage != null &&
             file.mimeType.isApk
-        val attributes = file.attributes
         holder.thumbnailIconImage?.apply {
             dispose()
             isVisible = !isDirectory
@@ -349,13 +371,26 @@ class FileListAdapter(
         holder.thumbnailImage.apply {
             dispose()
             setImageDrawable(null)
-            val shouldLoadThumbnail = supportsThumbnail && !shouldLoadThumbnailIcon
-            isVisible = shouldLoadThumbnail
-            if (shouldLoadThumbnail) {
-                load(path to attributes) {
-                    listener { _, _ ->
-                        val iconImage = holder.thumbnailIconImage ?: holder.iconImage
-                        iconImage.isVisible = false
+            if (isDirectory && appLabel != null && appDirectoryPackageName != null) {
+                isVisible = true
+                load(AppIconPackageName(appDirectoryPackageName)) {
+                    listener(
+                        onSuccess = { _, _ -> holder.iconImage.isVisible = false },
+                        onError = { _, _ ->
+                            holder.iconImage.isVisible = true
+                            holder.iconImage.setImageResource(R.drawable.file_directory_icon)
+                        }
+                    )
+                }
+            } else {
+                val shouldLoadThumbnail = supportsThumbnail && !shouldLoadThumbnailIcon
+                isVisible = shouldLoadThumbnail
+                if (shouldLoadThumbnail) {
+                    load(path to attributes) {
+                        listener { _, _ ->
+                            val iconImage = holder.thumbnailIconImage ?: holder.iconImage
+                            iconImage.isVisible = false
+                        }
                     }
                 }
             }
@@ -363,8 +398,7 @@ class FileListAdapter(
         holder.appIconBadgeImage.apply {
             dispose()
             setImageDrawable(null)
-            val appDirectoryPackageName = file.appDirectoryPackageName
-            val hasAppIconBadge = appDirectoryPackageName != null
+            val hasAppIconBadge = !isDirectory && appDirectoryPackageName != null
             isVisible = hasAppIconBadge
             if (hasAppIconBadge) {
                 load(AppIconPackageName(appDirectoryPackageName!!))
@@ -389,15 +423,6 @@ class FileListAdapter(
             } else {
                 setImageDrawable(null)
             }
-        }
-        holder.nameText.text = file.name
-        holder.descriptionText?.isVisible = true
-        holder.descriptionText?.text = if (isDirectory) {
-            attributes.lastModifiedTime().toInstant().formatMtDate()
-        } else {
-            val lastModificationTime = attributes.lastModifiedTime().toInstant().formatMtDate()
-            val size = attributes.fileSize.formatHumanReadable(holder.itemView.context)
-            "$lastModificationTime  $size"
         }
         val isArchivePath = path.isArchivePath
         menu.findItem(R.id.action_copy)

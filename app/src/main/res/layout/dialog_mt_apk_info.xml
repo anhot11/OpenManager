@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MT Manager Style APK Information Dialog View -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#303030">
+
+    <!-- Header: App Icon + Title & Version -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <ImageView
+                android:id="@+id/ivApkIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:padding="4dp" />
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvApkLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tvApkVersion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginTop="2dp"
+                android:singleLine="true"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#424242"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Details Table -->
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1">
+
+        <!-- Package Name -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:layout_width="120dp"
+                android:text="Package name"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkPackage"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:ellipsize="middle" />
+        </TableRow>
+
+        <!-- Version Code -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="Version code"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkVersionCode"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- File Size -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="File size"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkSize"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- Signature -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="Signature"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkSignature"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:ellipsize="end" />
+        </TableRow>
+
+        <!-- Protection -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="Protection"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkProtection"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- Target SDK -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="Target SDK"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkTargetSdk"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- Minimum SDK -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="Minimum SDK"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkMinSdk"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- Installed -->
+        <TableRow android:paddingVertical="3dp">
+            <TextView
+                android:text="Installed"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkInstalled"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+    </TableLayout>
+
+    <!-- Bottom Buttons Bar: FUNCTION, VIEW, INSTALL -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:paddingTop="20dp">
+
+        <Button
+            android:id="@+id/btnApkFunction"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/apk_function"
+            android:textColor="#2196F3"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btnApkView"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/view"
+            android:textColor="#2196F3"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnApkInstall"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/install"
+            android:textColor="#2196F3"
+            android:textStyle="bold"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+</LinearLayout>

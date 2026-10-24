@@ -37,7 +37,10 @@
             android:id="@+id/thumbnailImage"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:layout_gravity="center"
             android:duplicateParentState="true"
+            android:background="@drawable/thumbnail_rounded_outline"
+            android:clipToOutline="true"
             android:scaleType="centerCrop" />
 
         <me.zhanghai.android.files.ui.DisabledAlphaImageView
