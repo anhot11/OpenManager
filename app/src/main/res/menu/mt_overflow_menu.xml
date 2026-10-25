@@ -52,6 +52,11 @@
         android:title="Intercambiar paneles" />
 
     <item
+        android:id="@+id/mt_menu_export_file_list"
+        android:icon="@drawable/file_document_icon"
+        android:title="@string/action_export_file_list" />
+
+    <item
         android:id="@+id/mt_menu_preferences"
         android:icon="@drawable/settings_icon_white_24dp"
         android:title="Ajustes" />

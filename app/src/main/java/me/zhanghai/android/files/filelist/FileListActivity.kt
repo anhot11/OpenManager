@@ -491,6 +491,13 @@ class FileListActivity : AppActivity() {
                     btnBottomSwap.performClick()
                     true
                 }
+                R.id.mt_menu_export_file_list -> {
+                    val allFiles = activeFragment.viewModel.fileListStateful.value ?: emptyList()
+                    ExportFileListHelper.showDialog(this, activeFragment.currentPath, allFiles, activeFragment.selectedFiles) {
+                        activeFragment.clearSelectedFiles()
+                    }
+                    true
+                }
                 R.id.mt_menu_preferences -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
                     true
@@ -824,11 +831,32 @@ class FileListActivity : AppActivity() {
         val popup = PopupMenu(this, anchor)
         popup.menu.apply {
             add(0, 1, 0, "Desmarcar todo")
+            add(0, 2, 0, getString(R.string.action_export_file_list))
+            if (activeFragment.selectedFiles.size == 2) {
+                add(0, 3, 0, getString(R.string.action_swap_file_names))
+            }
         }
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 1 -> {
                     activeFragment.clearSelectedFiles()
+                    true
+                }
+                2 -> {
+                    val allFiles = activeFragment.viewModel.fileListStateful.value ?: emptyList()
+                    ExportFileListHelper.showDialog(this, activeFragment.currentPath, allFiles, activeFragment.selectedFiles) {
+                        activeFragment.clearSelectedFiles()
+                    }
+                    true
+                }
+                3 -> {
+                    val files = activeFragment.selectedFiles.toList()
+                    if (files.size == 2) {
+                        FileSwapNamesHelper.swap(this, files[0].path, files[1].path) {
+                            activeFragment.clearSelectedFiles()
+                            activeFragment.reload()
+                        }
+                    }
                     true
                 }
                 else -> false
