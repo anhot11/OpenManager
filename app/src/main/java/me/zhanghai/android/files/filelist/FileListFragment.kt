@@ -183,7 +183,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     private val args by args<Args>()
     private val argsPath by lazy { args.intent.extraPath }
 
-    private val viewModel by viewModels { { FileListViewModel() } }
+    internal val viewModel by viewModels { { FileListViewModel() } }
 
     private lateinit var binding: Binding
 
