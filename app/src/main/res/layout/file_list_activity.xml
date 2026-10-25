@@ -527,6 +527,38 @@
                     android:textSize="11.5sp"
                     android:textStyle="bold" />
 
+                <!-- Installed Apps (MT Manager Extractor) -->
+                <LinearLayout
+                    android:id="@+id/drawerItemInstalledApps"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_apps_white_24dp"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="@string/navigation_installed_apps"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13.5sp" />
+                </LinearLayout>
+
                 <!-- Text Editor -->
                 <LinearLayout
                     android:id="@+id/drawerItemTextEditor"

@@ -288,6 +288,7 @@
 
         <activity
             android:name="me.zhanghai.android.files.appmanager.InstalledAppsActivity"
+            android:exported="true"
             android:label="@string/navigation_installed_apps"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MaterialFiles" />
