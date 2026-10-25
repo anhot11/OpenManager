@@ -1,107 +1,270 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
-  ~ Copyright (c) 2019 Hai Zhang <dreaming.in.code.zh@gmail.com>
+  ~ Copyright (c) 2026 OpenManager
   ~ All Rights Reserved.
   -->
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingTop="@dimen/abc_dialog_title_divider_material">
+    android:layout_height="wrap_content">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="vertical"
-        android:scrollIndicators="top|bottom">
+        android:scrollbars="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="?dialogPreferredPadding"
-            android:paddingEnd="?dialogPreferredPadding"
-            android:paddingTop="8dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
             android:clipToPadding="false"
             android:orientation="vertical">
 
-            <me.zhanghai.android.files.ui.ReadOnlyTextInputLayout
+            <!-- Permissions 3x3 Table Layout matching MT Manager -->
+            <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/file_properties_permission_owner">
+                android:stretchColumns="1,2,3">
 
-                <me.zhanghai.android.files.ui.ReadOnlyTextInputEditText
-                    android:id="@+id/ownerText"
+                <!-- Header Row -->
+                <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
-                <me.zhanghai.android.files.ui.DropDownView
-                    android:id="@+id/ownerDropDown"
+                    <TextView
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/file_properties_permission_set_mode_read"
+                        android:textAppearance="?textAppearanceSubtitle2"
+                        android:textColor="?android:textColorSecondary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/file_properties_permission_set_mode_write"
+                        android:textAppearance="?textAppearanceSubtitle2"
+                        android:textColor="?android:textColorSecondary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/file_properties_permission_set_mode_exec"
+                        android:textAppearance="?textAppearanceSubtitle2"
+                        android:textColor="?android:textColorSecondary" />
+                </TableRow>
+
+                <!-- Owner Row -->
+                <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-            </me.zhanghai.android.files.ui.ReadOnlyTextInputLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical">
 
-            <me.zhanghai.android.files.ui.ReadOnlyTextInputLayout
+                    <TextView
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/file_properties_permission_owner"
+                        android:textAppearance="?textAppearanceSubtitle1" />
+
+                    <CheckBox
+                        android:id="@+id/ownerReadCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <CheckBox
+                        android:id="@+id/ownerWriteCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <CheckBox
+                        android:id="@+id/ownerExecCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+                </TableRow>
+
+                <!-- Group Row -->
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/file_properties_permission_group"
+                        android:textAppearance="?textAppearanceSubtitle1" />
+
+                    <CheckBox
+                        android:id="@+id/groupReadCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <CheckBox
+                        android:id="@+id/groupWriteCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <CheckBox
+                        android:id="@+id/groupExecCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+                </TableRow>
+
+                <!-- Other Row -->
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/file_properties_permission_set_mode_others"
+                        android:textAppearance="?textAppearanceSubtitle1" />
+
+                    <CheckBox
+                        android:id="@+id/otherReadCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <CheckBox
+                        android:id="@+id/otherWriteCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <CheckBox
+                        android:id="@+id/otherExecCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+                </TableRow>
+            </TableLayout>
+
+            <!-- Special Permissions Section Header -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="@string/file_properties_permission_group">
+                android:gravity="center"
+                android:text="@string/file_properties_permission_special_header"
+                android:textAppearance="?textAppearanceCaption"
+                android:textColor="?android:textColorSecondary" />
 
-                <me.zhanghai.android.files.ui.ReadOnlyTextInputEditText
-                    android:id="@+id/groupText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+            <!-- Special Permissions Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-                <me.zhanghai.android.files.ui.DropDownView
-                    android:id="@+id/groupDropDown"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-            </me.zhanghai.android.files.ui.ReadOnlyTextInputLayout>
+                <CheckBox
+                    android:id="@+id/setUidCheck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Set UID" />
 
-            <me.zhanghai.android.files.ui.ReadOnlyTextInputLayout
+                <CheckBox
+                    android:id="@+id/setGidCheck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Set GID" />
+
+                <CheckBox
+                    android:id="@+id/stickyCheck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Sticky" />
+            </LinearLayout>
+
+            <!-- Octal & Mode Representation: rwxrwxrwx(777) -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="@string/file_properties_permission_set_mode_others">
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-                <me.zhanghai.android.files.ui.ReadOnlyTextInputEditText
-                    android:id="@+id/othersText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/modeStringText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="rwxrwxrwx"
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceHeadline6"
+                    android:textColor="?android:textColorPrimary" />
 
-                <me.zhanghai.android.files.ui.DropDownView
-                    android:id="@+id/othersDropDown"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-            </me.zhanghai.android.files.ui.ReadOnlyTextInputLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="("
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceHeadline6"
+                    android:textColor="?android:textColorPrimary" />
 
-            <me.zhanghai.android.files.ui.ReadOnlyTextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/file_properties_permission_set_mode_special">
+                <EditText
+                    android:id="@+id/octalEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="50dp"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:text="777"
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceHeadline6"
+                    android:textColor="?colorAccent"
+                    android:background="@null" />
 
-                <me.zhanghai.android.files.ui.ReadOnlyTextInputEditText
-                    android:id="@+id/specialText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=")"
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceHeadline6"
+                    android:textColor="?android:textColorPrimary" />
+            </LinearLayout>
 
-                <me.zhanghai.android.files.ui.DropDownView
-                    android:id="@+id/specialDropDown"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-            </me.zhanghai.android.files.ui.ReadOnlyTextInputLayout>
+            <View
+                android:layout_width="60dp"
+                android:layout_height="1.5dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="-4dp"
+                android:layout_marginBottom="12dp"
+                android:background="?colorAccent" />
 
+            <!-- Recursive options for directory -->
             <CheckBox
                 android:id="@+id/recursiveCheck"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="-7dp"
-                android:layout_marginTop="8dp"
                 android:paddingStart="@dimen/dialog_padding_minus_7dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
                 android:text="@string/file_properties_permission_recursive"
                 android:textAppearance="?textAppearanceListItem" />
 
@@ -111,10 +274,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="-7dp"
                 android:paddingStart="@dimen/dialog_padding_minus_7dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
                 android:text="@string/file_properties_permission_set_mode_uppercase_x"
                 android:textAppearance="?textAppearanceListItem" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </FrameLayout>

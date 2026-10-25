@@ -60,6 +60,10 @@
         android:title="@string/file_item_action_create_shortcut" />
 
     <item
+        android:id="@+id/action_permissions"
+        android:title="@string/file_item_action_permissions" />
+
+    <item
         android:id="@+id/action_properties"
         android:title="@string/file_item_action_properties" />
 </menu>

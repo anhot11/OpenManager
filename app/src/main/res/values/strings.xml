@@ -378,6 +378,18 @@
         <item>Sticky bit</item>
     </string-array>
     <string name="file_properties_permission_set_mode_uppercase_x">Don’t add “Execute” for enclosed files</string>
+    <string name="file_properties_permission_set_mode_read">Read</string>
+    <string name="file_properties_permission_set_mode_write">Write</string>
+    <string name="file_properties_permission_set_mode_exec">Exec</string>
+    <string name="file_properties_permission_special_header">---- Special Permissions ----</string>
+    <string name="file_item_action_permissions">Permissions</string>
+    <string name="script_action_select_action">Please select an action to perform</string>
+    <string name="script_action_preferences">PREFERENCES</string>
+    <string name="script_action_edit">EDIT</string>
+    <string name="script_action_execute">EXECUTE</string>
+    <string name="script_pref_system_env">Execute in system environment</string>
+    <string name="script_pref_termex_env">Execute in extension pack environment (Termex)</string>
+    <string name="script_pref_root_privileges">Execute with root privileges</string>
     <string name="file_properties_permission_selinux_context">SELinux Context</string>
     <string name="file_properties_permission_set_selinux_context_title">Change SELinux context</string>
     <string name="file_properties_permission_set_selinux_context_restore">Restore</string>

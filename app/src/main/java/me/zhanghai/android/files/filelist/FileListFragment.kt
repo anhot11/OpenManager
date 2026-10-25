@@ -92,6 +92,7 @@ import me.zhanghai.android.files.filejob.FileJobService
 import me.zhanghai.android.files.filelist.FileSortOptions.By
 import me.zhanghai.android.files.filelist.FileSortOptions.Order
 import me.zhanghai.android.files.fileproperties.FilePropertiesDialogFragment
+import me.zhanghai.android.files.fileproperties.permission.SetModeDialogFragment
 import me.zhanghai.android.files.navigation.BookmarkDirectories
 import me.zhanghai.android.files.navigation.BookmarkDirectory
 import me.zhanghai.android.files.navigation.NavigationFragment
@@ -1344,14 +1345,14 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             return
         }
         val fileName = file.path.fileName.toString()
+        if (ScriptRunnerHelper.isExecutableOrScript(file)) {
+            ScriptRunnerHelper.showScriptActionDialog(requireActivity(), file)
+            return
+        }
         val hasExtension = fileName.contains('.') && fileName.substringAfterLast('.', "").isNotBlank()
         if (!hasExtension) {
             // Archivo sin especificador de tipo de archivo (ej. sample_unknown, sin .sh ni .mp3) -> Menú "Abrir con..." estilo MT Manager
             OpenFileAsDialogFragment.show(file.path, childFragmentManager)
-            return
-        }
-        if (fileName.endsWith(".sh", ignoreCase = true)) {
-            ScriptRunnerHelper.showScriptActionDialog(requireActivity(), file)
             return
         }
         if (file.mimeType.isApk) {
@@ -1661,6 +1662,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             showToast(R.string.shortcut_created)
         }
+    }
+
+    override fun showPermissionsDialog(file: FileItem) {
+        SetModeDialogFragment.show(file, this)
     }
 
     override fun showPropertiesDialog(file: FileItem) {

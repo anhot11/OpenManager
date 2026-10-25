@@ -44,11 +44,30 @@ class TerminalActivity : AppActivity() {
     companion object {
         const val EXTRA_PATH = "me.zhanghai.android.files.terminal.extra.PATH"
         const val EXTRA_CWD = "me.zhanghai.android.files.terminal.extra.CWD"
+        const val EXTRA_COMMAND = "me.zhanghai.android.files.terminal.extra.COMMAND"
+        const val EXTRA_FORCE_ROOT = "me.zhanghai.android.files.terminal.extra.FORCE_ROOT"
+        const val EXTRA_FORCE_TERMEX = "me.zhanghai.android.files.terminal.extra.FORCE_TERMEX"
 
-        fun createIntent(context: Context, path: String? = null): Intent {
+        fun createIntent(
+            context: Context,
+            path: String? = null,
+            command: String? = null,
+            forceRoot: Boolean? = null,
+            forceTermex: Boolean? = null
+        ): Intent {
             return Intent(context, TerminalActivity::class.java).apply {
                 if (path != null) {
                     putExtra(EXTRA_PATH, path)
+                    putExtra(EXTRA_CWD, path)
+                }
+                if (command != null) {
+                    putExtra(EXTRA_COMMAND, command)
+                }
+                if (forceRoot != null) {
+                    putExtra(EXTRA_FORCE_ROOT, forceRoot)
+                }
+                if (forceTermex != null) {
+                    putExtra(EXTRA_FORCE_TERMEX, forceTermex)
                 }
             }
         }
@@ -76,7 +95,13 @@ class TerminalActivity : AppActivity() {
 
     private fun setupExtraKeys() {
         extraKeysView.onKeyString = { keyStr ->
-            terminalSession?.write(keyStr)
+            if (terminalSession?.isRunning == false) {
+                if (keyStr == "\r" || keyStr == "\n") {
+                    finish()
+                }
+            } else {
+                terminalSession?.write(keyStr)
+            }
         }
         extraKeysView.onOverflowMenuClick = { anchor ->
             showOverflowMenu(anchor)
@@ -100,9 +125,16 @@ class TerminalActivity : AppActivity() {
             ?: intent.getStringExtra(EXTRA_CWD)
             ?: intent.data?.path
 
+        val initialCommand = intent.getStringExtra(EXTRA_COMMAND)
+        val forceRoot = if (intent.hasExtra(EXTRA_FORCE_ROOT)) intent.getBooleanExtra(EXTRA_FORCE_ROOT, false) else null
+        val forceTermex = if (intent.hasExtra(EXTRA_FORCE_TERMEX)) intent.getBooleanExtra(EXTRA_FORCE_TERMEX, false) else null
+
         val config = TerminalExpansionManager.prepareLaunchConfig(
             this,
-            overrideCwd = overridePath
+            forceRoot = forceRoot,
+            forceTermex = forceTermex,
+            overrideCwd = overridePath,
+            initialCommand = initialCommand
         )
 
         val sessionClient = object : TerminalSessionClient {
@@ -121,7 +153,7 @@ class TerminalActivity : AppActivity() {
 
             override fun onSessionFinished(finishedSession: TerminalSession) {
                 runOnUiThread {
-                    toolbar.subtitle = "[Terminado]"
+                    toolbar.subtitle = "[Terminado (código ${finishedSession.exitStatus})]"
                 }
             }
 
@@ -198,6 +230,12 @@ class TerminalActivity : AppActivity() {
             override fun copyModeChanged(copyMode: Boolean) {}
 
             override fun onKeyDown(keyCode: Int, e: KeyEvent?, session: TerminalSession?): Boolean {
+                if (session != null && !session.isRunning) {
+                    if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+                        finish()
+                        return true
+                    }
+                }
                 return false
             }
 
@@ -235,7 +273,14 @@ class TerminalActivity : AppActivity() {
 
         // Show start info in subtitle
         val mode = if (config.isRoot) "Root (#)" else if (config.isTermex) "Termex (bash)" else "Sistema (sh)"
-        toolbar.subtitle = "$mode • ${File(config.cwd).name}"
+        if (initialCommand != null) {
+            val cmdClean = initialCommand.trim().removeSurrounding("(", ")").removeSurrounding("\"")
+            val fileName = File(cmdClean).name
+            toolbar.title = fileName
+            toolbar.subtitle = "$mode • Ejecutando..."
+        } else {
+            toolbar.subtitle = "$mode • ${File(config.cwd).name}"
+        }
     }
 
     private fun showOverflowMenu(anchor: View) {

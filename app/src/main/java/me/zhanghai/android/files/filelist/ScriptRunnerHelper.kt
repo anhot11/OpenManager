@@ -1,177 +1,200 @@
 /*
- * OpenManager - Script Runner & Root Sandbox Bridge
- * Integrates shguard with the file list to provide safe, audited execution.
+ * Copyright (c) 2026 OpenManager
+ * All Rights Reserved.
  */
 
 package me.zhanghai.android.files.filelist
 
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.view.LayoutInflater
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import me.zhanghai.android.files.R
-import me.zhanghai.android.files.file.FileItem
 import java8.nio.file.Path
+import me.zhanghai.android.files.R
+import me.zhanghai.android.files.databinding.ScriptPreferencesDialogBinding
+import me.zhanghai.android.files.file.FileItem
+import me.zhanghai.android.files.provider.common.PosixFileAttributes
+import me.zhanghai.android.files.provider.common.PosixFileModeBit
+import me.zhanghai.android.files.provider.common.newInputStream
+import me.zhanghai.android.files.terminal.TerminalActivity
+import me.zhanghai.android.files.terminal.TerminalExpansionManager
 import me.zhanghai.android.files.util.extraPath
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStreamReader
 
 object ScriptRunnerHelper {
+    private const val PREFS_NAME = "script_exec_prefs"
+    private const val KEY_EXEC_ENV = "exec_env"
+    private const val KEY_EXEC_ROOT = "exec_root"
 
     /**
-     * Extracts the embedded shguard binary to internal storage and marks it executable.
+     * Checks if a file is an executable binary (ELF), a shell script, or has POSIX executable bits.
      */
-    fun ensureShguardBinary(context: Context): File? {
-        val binFile = File(context.filesDir, "shguard")
-        if (!binFile.exists() || binFile.length() == 0L) {
-            try {
-                context.assets.open("shguard").use { input ->
-                    FileOutputStream(binFile).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                binFile.setExecutable(true, false)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return null
+    fun isExecutableOrScript(file: FileItem): Boolean {
+        val fileName = file.path.fileName.toString()
+        if (fileName.endsWith(".sh", ignoreCase = true) ||
+            fileName.endsWith(".bash", ignoreCase = true) ||
+            fileName.endsWith(".zsh", ignoreCase = true)) {
+            return true
+        }
+
+        val attributes = file.attributes
+        if (attributes is PosixFileAttributes) {
+            val mode = attributes.mode()
+            if (mode != null && (mode.contains(PosixFileModeBit.OWNER_EXECUTE) ||
+                mode.contains(PosixFileModeBit.GROUP_EXECUTE) ||
+                mode.contains(PosixFileModeBit.OTHERS_EXECUTE))) {
+                return true
             }
         }
-        return binFile
+
+        return isElfOrShebang(file.path)
+    }
+
+    fun isExecutableOrScript(path: Path): Boolean {
+        val fileName = path.fileName.toString()
+        if (fileName.endsWith(".sh", ignoreCase = true) ||
+            fileName.endsWith(".bash", ignoreCase = true) ||
+            fileName.endsWith(".zsh", ignoreCase = true)) {
+            return true
+        }
+        return isElfOrShebang(path)
+    }
+
+    fun isElfOrShebang(path: Path): Boolean {
+        return try {
+            path.newInputStream().use { stream ->
+                val b0 = stream.read()
+                val b1 = stream.read()
+                val b2 = stream.read()
+                val b3 = stream.read()
+                // ELF magic "\x7FELF"
+                if (b0 == 0x7F && b1 == 'E'.code && b2 == 'L'.code && b3 == 'F'.code) {
+                    return@use true
+                }
+                // Shebang "#!"
+                if (b0 == '#'.code && b1 == '!'.code) {
+                    return@use true
+                }
+                false
+            }
+        } catch (e: Exception) {
+            try {
+                path.toFile().canExecute()
+            } catch (e2: Exception) {
+                false
+            }
+        }
+    }
+
+    fun isElfBinary(path: Path): Boolean {
+        return try {
+            path.newInputStream().use { stream ->
+                val b0 = stream.read()
+                val b1 = stream.read()
+                val b2 = stream.read()
+                val b3 = stream.read()
+                b0 == 0x7F && b1 == 'E'.code && b2 == 'L'.code && b3 == 'F'.code
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /**
-     * Displays the MT-style Action Dialog when clicking a .sh script.
+     * Displays the MT Manager style Action Dialog when clicking a script or ELF binary.
      */
     fun showScriptActionDialog(activity: Activity, fileItem: FileItem) {
         showScriptActionDialog(activity, fileItem.path)
     }
 
     fun showScriptActionDialog(activity: Activity, path: Path) {
-        val scriptPath = path.toFile().absolutePath
         val fileName = path.fileName.toString()
 
-        val options = arrayOf(
-            "🛡️ Ejecutar con Root Seguro (Aislamiento shguard)",
-            "⚡ Ejecutar con Root Directo (Sin restricciones)",
-            "📝 Editar código (Editor Monospace)",
-            "📋 Ver registro de auditoría (/data/local/tmp)"
-        )
-
-        MaterialAlertDialogBuilder(activity)
+        val dialog = MaterialAlertDialogBuilder(activity)
             .setTitle(fileName)
-            .setItems(options) { dialog, which ->
-                when (which) {
-                    0 -> runScriptWithShguard(activity, scriptPath, isolateNetwork = true)
-                    1 -> runScriptWithShguard(activity, scriptPath, isolateNetwork = false)
-                    2 -> openInEditor(activity, path)
-                    3 -> showAuditLog(activity)
-                }
+            .setMessage(R.string.script_action_select_action)
+            .setNegativeButton(R.string.script_action_preferences, null)
+            .setNeutralButton(R.string.script_action_edit) { _, _ ->
+                editScriptOrBinary(activity, path)
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    private fun openInEditor(activity: Activity, path: Path) {
-        val intent = Intent(activity, TextEditorActivity::class.java).apply {
-            action = Intent.ACTION_VIEW
-            extraPath = path
-        }
-        activity.startActivity(intent)
-    }
-
-    private fun runScriptWithShguard(activity: Activity, scriptPath: String, isolateNetwork: Boolean) {
-        val shguardBin = ensureShguardBinary(activity)
-        val shguardPath = shguardBin?.absolutePath ?: "/data/local/tmp/shguard"
-
-        val flag = if (isolateNetwork) "-n" else "-a"
-
-        // Mostrar diálogo de salida de terminal
-        val outputView = TextView(activity).apply {
-            setPadding(32, 24, 32, 24)
-            typeface = android.graphics.Typeface.MONOSPACE
-            textSize = 12f
-            setTextIsSelectable(true)
-            text = "⏳ Ejecutando script bajo supervisión de shguard...\n\n"
-        }
-
-        val alertDialog = MaterialAlertDialogBuilder(activity)
-            .setTitle("Terminal Root Seguro")
-            .setView(outputView)
-            .setPositiveButton("Cerrar", null)
-            .show()
-
-        Thread {
-            try {
-                val hasSu = File("/system/bin/su").exists() || File("/system/xbin/su").exists() || File("/sbin/su").exists()
-                val execArgs = if (hasSu) {
-                    arrayOf("su", "-c", "$shguardPath $flag \"$scriptPath\"")
-                } else {
-                    arrayOf("sh", "-c", "$shguardPath $flag \"$scriptPath\"")
-                }
-                val process = try {
-                    Runtime.getRuntime().exec(execArgs)
-                } catch (e: Exception) {
-                    Runtime.getRuntime().exec(arrayOf("sh", "-c", "$shguardPath $flag \"$scriptPath\""))
-                }
-                val reader = BufferedReader(InputStreamReader(process.inputStream))
-                val errReader = BufferedReader(InputStreamReader(process.errorStream))
-
-                val output = StringBuilder()
-                var line: String?
-
-                while (reader.readLine().also { line = it } != null) {
-                    output.append(line).append("\n")
-                    activity.runOnUiThread {
-                        outputView.text = output.toString()
-                    }
-                }
-                while (errReader.readLine().also { line = it } != null) {
-                    output.append("[LOG] ").append(line).append("\n")
-                    activity.runOnUiThread {
-                        outputView.text = output.toString()
-                    }
-                }
-
-                val exitCode = process.waitFor()
-                activity.runOnUiThread {
-                    output.append("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                    output.append("✔ Finalizado (Código de salida: $exitCode)\n")
-                    outputView.text = output.toString()
-                }
-            } catch (e: Exception) {
-                activity.runOnUiThread {
-                    outputView.append("\n❌ Error al ejecutar: ${e.message}\n")
-                }
+            .setPositiveButton(R.string.script_action_execute) { _, _ ->
+                executeScriptOrBinary(activity, path)
             }
-        }.start()
+            .create()
+
+        dialog.setOnShowListener {
+            val prefsBtn = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+            prefsBtn.setOnClickListener {
+                showPreferencesDialog(activity)
+            }
+        }
+        dialog.show()
     }
 
-    private fun showAuditLog(activity: Activity) {
-        val logFile = File("/data/local/tmp/openmanager_audit.log")
-        val content = if (logFile.exists()) {
-            logFile.readText()
+    fun showPreferencesDialog(activity: Activity) {
+        val sp = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val defaultEnv = if (TerminalExpansionManager.isTermexInstalled(activity)) "termex" else "system"
+        val savedEnv = sp.getString(KEY_EXEC_ENV, defaultEnv) ?: defaultEnv
+        val defaultRoot = TerminalExpansionManager.isRootAvailable()
+        val savedRoot = sp.getBoolean(KEY_EXEC_ROOT, defaultRoot)
+
+        val binding = ScriptPreferencesDialogBinding.inflate(LayoutInflater.from(activity))
+        if (savedEnv == "termex") {
+            binding.radioTermex.isChecked = true
         } else {
-            "No hay registros de auditoría aún."
+            binding.radioSystem.isChecked = true
         }
-
-        val textView = TextView(activity).apply {
-            setPadding(32, 24, 32, 24)
-            typeface = android.graphics.Typeface.MONOSPACE
-            textSize = 11f
-            setTextIsSelectable(true)
-            text = content
-        }
+        binding.checkRoot.isChecked = savedRoot
 
         MaterialAlertDialogBuilder(activity)
-            .setTitle("Registro de Auditoría")
-            .setView(textView)
-            .setPositiveButton("Cerrar", null)
+            .setView(binding.root)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val chosenEnv = if (binding.radioTermex.isChecked) "termex" else "system"
+                val chosenRoot = binding.checkRoot.isChecked
+                sp.edit()
+                    .putString(KEY_EXEC_ENV, chosenEnv)
+                    .putBoolean(KEY_EXEC_ROOT, chosenRoot)
+                    .apply()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    private fun editScriptOrBinary(activity: Activity, path: Path) {
+        if (isElfBinary(path)) {
+            if (activity is FragmentActivity) {
+                HexViewerDialogFragment.show(path, activity.supportFragmentManager)
+            }
+        } else {
+            val intent = Intent(activity, TextEditorActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                extraPath = path
+            }
+            activity.startActivity(intent)
+        }
+    }
+
+    private fun executeScriptOrBinary(activity: Activity, path: Path) {
+        val sp = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val defaultEnv = if (TerminalExpansionManager.isTermexInstalled(activity)) "termex" else "system"
+        val env = sp.getString(KEY_EXEC_ENV, defaultEnv) ?: defaultEnv
+        val withRoot = sp.getBoolean(KEY_EXEC_ROOT, TerminalExpansionManager.isRootAvailable())
+
+        val scriptPath = path.toFile().absolutePath
+        val parentDir = path.toFile().parent ?: "/data/local/tmp"
+        val execCmd = "\"$scriptPath\""
+
+        val intent = TerminalActivity.createIntent(
+            activity,
+            path = parentDir,
+            command = execCmd,
+            forceRoot = withRoot,
+            forceTermex = env == "termex"
+        )
+        activity.startActivity(intent)
     }
 }

@@ -72,11 +72,18 @@ object TerminalExpansionManager {
     fun prepareLaunchConfig(
         context: Context,
         forceRoot: Boolean? = null,
-        overrideCwd: String? = null
+        forceTermex: Boolean? = null,
+        overrideCwd: String? = null,
+        initialCommand: String? = null
     ): LaunchConfig {
         val asRoot = forceRoot ?: TerminalSettings.isRootSession(context)
+        val useTermex = forceTermex ?: (isTermexInstalled(context) && !asRoot)
         val targetCwd = overrideCwd ?: TerminalSettings.getStartPath(context)
         val validCwd = if (File(targetCwd).isDirectory) targetCwd else "/storage/emulated/0"
+
+        val shellCmd = if (initialCommand != null) {
+            "cd '$validCwd' && ($initialCommand); _mt_status=\$?; exit \$_mt_status"
+        } else null
 
         if (asRoot && isRootAvailable()) {
             val env = arrayOf(
@@ -84,17 +91,22 @@ object TerminalExpansionManager {
                 "HOME=$validCwd",
                 "PATH=/system/bin:/system/xbin:/sbin:/vendor/bin"
             )
+            val args = if (shellCmd != null) {
+                arrayOf("-c", shellCmd)
+            } else {
+                arrayOf("-")
+            }
             return LaunchConfig(
                 executable = "su",
                 cwd = validCwd,
-                args = arrayOf("-"),
+                args = args,
                 env = env,
                 isTermex = false,
                 isRoot = true
             )
         }
 
-        if (isTermexInstalled(context)) {
+        if (useTermex && isTermexInstalled(context)) {
             try {
                 val pkgInfo = context.packageManager.getPackageInfo(TERMEX_PACKAGE, 0)
                 val nativeLibDir = pkgInfo.applicationInfo?.nativeLibraryDir ?: ""
@@ -123,10 +135,15 @@ object TerminalExpansionManager {
                         "TMPDIR=${context.cacheDir.absolutePath}",
                         "PS1=$prompt"
                     )
+                    val args = if (shellCmd != null) {
+                        arrayOf("--norc", "-c", shellCmd)
+                    } else {
+                        arrayOf("--norc", "-i")
+                    }
                     return LaunchConfig(
                         executable = bashBin.absolutePath,
                         cwd = validCwd,
-                        args = arrayOf("--norc", "-i"),
+                        args = args,
                         env = env,
                         isTermex = true,
                         isRoot = false
@@ -144,10 +161,15 @@ object TerminalExpansionManager {
             "HOME=$validCwd",
             "PS1=: \\w $ "
         )
+        val args = if (shellCmd != null) {
+            arrayOf("-c", shellCmd)
+        } else {
+            arrayOf("-i")
+        }
         return LaunchConfig(
             executable = "/system/bin/sh",
             cwd = validCwd,
-            args = arrayOf("-i"),
+            args = args,
             env = env,
             isTermex = false,
             isRoot = false

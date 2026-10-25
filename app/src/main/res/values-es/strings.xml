@@ -396,6 +396,18 @@
         <item>Sticky bit</item>
     </string-array>
     <string name="file_properties_permission_set_mode_uppercase_x">No añadir “Ejecución” para los archivos incluidos</string>
+    <string name="file_properties_permission_set_mode_read">Lectura</string>
+    <string name="file_properties_permission_set_mode_write">Escritura</string>
+    <string name="file_properties_permission_set_mode_exec">Ejecución</string>
+    <string name="file_properties_permission_special_header">---- Permisos especiales ----</string>
+    <string name="file_item_action_permissions">Permisos</string>
+    <string name="script_action_select_action">Seleccione una acción a realizar</string>
+    <string name="script_action_preferences">PREFERENCIAS</string>
+    <string name="script_action_edit">EDITAR</string>
+    <string name="script_action_execute">EJECUTAR</string>
+    <string name="script_pref_system_env">Ejecutar en entorno del sistema</string>
+    <string name="script_pref_termex_env">Ejecutar en entorno de paquete de extensión (Termex)</string>
+    <string name="script_pref_root_privileges">Ejecutar con privilegios de root</string>
     <string name="file_properties_permission_selinux_context">Contexto de SELinux</string>
     <string name="file_properties_permission_set_selinux_context_title">Cambiar el contexto de SELinux</string>
     <string name="file_properties_permission_set_selinux_context_restore">Restaurar</string>

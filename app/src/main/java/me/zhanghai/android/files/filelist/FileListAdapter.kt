@@ -489,6 +489,10 @@ class FileListAdapter(
                     listener.createShortcut(file)
                     true
                 }
+                R.id.action_permissions -> {
+                    listener.showPermissionsDialog(file)
+                    true
+                }
                 R.id.action_properties -> {
                     listener.showPropertiesDialog(file)
                     true
@@ -596,6 +600,7 @@ class FileListAdapter(
         fun copyPath(file: FileItem)
         fun addBookmark(file: FileItem)
         fun createShortcut(file: FileItem)
+        fun showPermissionsDialog(file: FileItem)
         fun showPropertiesDialog(file: FileItem)
     }
 }

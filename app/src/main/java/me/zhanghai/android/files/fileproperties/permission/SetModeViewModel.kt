@@ -8,6 +8,7 @@ package me.zhanghai.android.files.fileproperties.permission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import me.zhanghai.android.files.provider.common.PosixFileMode
 import me.zhanghai.android.files.provider.common.PosixFileModeBit
 import me.zhanghai.android.files.util.toEnumSet
 import me.zhanghai.android.files.util.valueCompat
@@ -18,6 +19,14 @@ class SetModeViewModel(mode: Set<PosixFileModeBit>) : ViewModel() {
         get() = _modeLiveData
     val mode: Set<PosixFileModeBit>
         get() = _modeLiveData.valueCompat
+
+    fun setMode(newMode: Set<PosixFileModeBit>) {
+        _modeLiveData.value = newMode
+    }
+
+    fun setFromOctal(octal: Int) {
+        _modeLiveData.value = PosixFileMode.fromInt(octal)
+    }
 
     fun toggleModeBit(modeBit: PosixFileModeBit) {
         val mode = _modeLiveData.valueCompat.toEnumSet()
