@@ -35,7 +35,15 @@ fun <T, R> callRootable(
                     localObject.block()
                 }
             } else {
-                localObject.block()
+                try {
+                    localObject.block()
+                } catch (e: Exception) {
+                    try {
+                        rootObject.block()
+                    } catch (e2: Exception) {
+                        throw e
+                    }
+                }
             }
         RootStrategy.ALWAYS -> {
             try {
@@ -70,7 +78,15 @@ fun <T, R> callRootable(
                     localObject.block()
                 }
             } else {
-                localObject.block()
+                try {
+                    localObject.block()
+                } catch (e: Exception) {
+                    try {
+                        rootObject.block()
+                    } catch (e2: Exception) {
+                        throw e
+                    }
+                }
             }
         RootStrategy.ALWAYS -> {
             try {
