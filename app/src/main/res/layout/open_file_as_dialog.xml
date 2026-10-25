@@ -39,7 +39,7 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/help"
+            android:contentDescription="@string/open_as_help_title"
             android:src="@drawable/information_icon_white_24dp"
             app:tint="#B0BEC5" />
     </LinearLayout>
