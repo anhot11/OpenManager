@@ -493,7 +493,7 @@ class FileListActivity : AppActivity() {
                 }
                 R.id.mt_menu_export_file_list -> {
                     val allFiles = activeFragment.viewModel.fileListStateful.value ?: emptyList()
-                    ExportFileListHelper.showDialog(this, activeFragment.currentPath, allFiles, activeFragment.selectedFiles) {
+                    ExportFileListHelper.showDialog(this, activeFragment.currentPath, allFiles, activeFragment.selectedFiles.toList()) {
                         activeFragment.clearSelectedFiles()
                     }
                     true
@@ -844,7 +844,7 @@ class FileListActivity : AppActivity() {
                 }
                 2 -> {
                     val allFiles = activeFragment.viewModel.fileListStateful.value ?: emptyList()
-                    ExportFileListHelper.showDialog(this, activeFragment.currentPath, allFiles, activeFragment.selectedFiles) {
+                    ExportFileListHelper.showDialog(this, activeFragment.currentPath, allFiles, activeFragment.selectedFiles.toList()) {
                         activeFragment.clearSelectedFiles()
                     }
                     true
