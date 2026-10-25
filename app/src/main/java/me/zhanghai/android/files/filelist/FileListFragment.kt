@@ -275,7 +275,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             )
         }
         binding.swipeRefreshLayout.setOnRefreshListener { this.refresh() }
-        binding.errorText.setOnClickListener { navigateToDefaultRoot() }
+        binding.errorText.setOnClickListener { viewModel.reload() }
         layoutManager = GridLayoutManager(activity, 1)
         binding.recyclerView.layoutManager = layoutManager
         adapter = FileListAdapter(this)
@@ -422,6 +422,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
         if (!viewModel.isStorageAccessRequested) {
             ensureNotificationPermission()
+        }
+        if (viewModel.fileListStateful is Failure) {
+            viewModel.reload()
         }
     }
 
@@ -656,7 +659,15 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val throwable = (stateful as? Failure)?.throwable
         if (throwable != null) {
             throwable.printStackTrace()
-            val error = throwable.toString()
+            val isAccessDenied = throwable is java8.nio.file.AccessDeniedException ||
+                throwable is me.zhanghai.android.files.provider.remote.RemoteFileSystemException ||
+                throwable.message?.contains("Permission denied", ignoreCase = true) == true ||
+                throwable.message?.contains("Root isn't available", ignoreCase = true) == true
+            val error = if (isAccessDenied) {
+                getString(R.string.root_permission_required_message)
+            } else {
+                throwable.toString()
+            }
             if (hasFiles) {
                 showToast(error)
             } else {

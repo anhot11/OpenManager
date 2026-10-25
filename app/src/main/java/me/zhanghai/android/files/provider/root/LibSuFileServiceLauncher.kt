@@ -41,15 +41,35 @@ object LibSuFileServiceLauncher {
         )
     }
 
-    fun isSuAvailable(): Boolean =
-        // @see com.topjohnwu.superuser.Shell.rootAccess
-        try {
-            Runtime.getRuntime().exec("su --version")
-            true
-        } catch (e: IOException) {
-            // java.io.IOException: Cannot run program "su": error=2, No such file or directory
-            false
+    fun isSuAvailable(): Boolean {
+        val paths = arrayOf(
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/sbin/su",
+            "/vendor/bin/su",
+            "/system/sd/xbin/su",
+            "/data/adb/ksu/bin/su",
+            "/data/adb/ap/bin/su",
+            "/data/adb/magisk/su"
+        )
+        for (path in paths) {
+            val f = java.io.File(path)
+            if (f.exists() && f.canExecute()) return true
         }
+        return try {
+            val process = Runtime.getRuntime().exec(arrayOf("su", "--version"))
+            process.destroy()
+            true
+        } catch (e: Exception) {
+            try {
+                val process = Runtime.getRuntime().exec(arrayOf("which", "su"))
+                val exitCode = process.waitFor()
+                exitCode == 0
+            } catch (e2: Exception) {
+                false
+            }
+        }
+    }
 
     @Throws(RemoteFileSystemException::class)
     fun launchService(): IRemoteFileService {

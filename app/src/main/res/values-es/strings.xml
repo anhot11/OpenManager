@@ -745,6 +745,8 @@
         <item>Automático</item>
         <item>Sólo acceso administrativo</item>
     </string-array>
+    <string name="root_permission_required">Permisos de Root requeridos</string>
+    <string name="root_permission_required_message">Se requieren permisos de Superusuario (Root) o Shizuku para acceder a este directorio.\n\nToca para reintentar tras conceder permisos en tu gestor de root.</string>
     <string name="settings_archive_file_name_encoding_title">Codificación del nombre de archivo</string>
     <string name="settings_open_apk_default_action_title">Al abrir un paquete de Android</string>
     <string-array name="settings_open_apk_default_action_entries">

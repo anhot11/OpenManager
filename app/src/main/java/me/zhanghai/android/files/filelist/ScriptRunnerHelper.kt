@@ -139,8 +139,8 @@ object ScriptRunnerHelper {
         val sp = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val defaultEnv = if (TerminalExpansionManager.isTermexInstalled(activity)) "termex" else "system"
         val savedEnv = sp.getString(KEY_EXEC_ENV, defaultEnv) ?: defaultEnv
-        val defaultRoot = TerminalExpansionManager.isRootAvailable()
-        val savedRoot = sp.getBoolean(KEY_EXEC_ROOT, defaultRoot)
+        val isRoot = TerminalExpansionManager.isRootAvailable()
+        val savedRoot = if (isRoot) sp.getBoolean(KEY_EXEC_ROOT, false) else false
 
         val binding = ScriptPreferencesDialogBinding.inflate(LayoutInflater.from(activity))
         if (savedEnv == "termex") {
@@ -148,13 +148,21 @@ object ScriptRunnerHelper {
         } else {
             binding.radioSystem.isChecked = true
         }
-        binding.checkRoot.isChecked = savedRoot
+
+        // Hide root option completely when no root is available on the device
+        if (isRoot) {
+            binding.checkRoot.visibility = android.view.View.VISIBLE
+            binding.checkRoot.isChecked = savedRoot
+        } else {
+            binding.checkRoot.visibility = android.view.View.GONE
+            binding.checkRoot.isChecked = false
+        }
 
         MaterialAlertDialogBuilder(activity)
             .setView(binding.root)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 val chosenEnv = if (binding.radioTermex.isChecked) "termex" else "system"
-                val chosenRoot = binding.checkRoot.isChecked
+                val chosenRoot = if (isRoot) binding.checkRoot.isChecked else false
                 sp.edit()
                     .putString(KEY_EXEC_ENV, chosenEnv)
                     .putBoolean(KEY_EXEC_ROOT, chosenRoot)
@@ -182,33 +190,20 @@ object ScriptRunnerHelper {
         val sp = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val defaultEnv = if (TerminalExpansionManager.isTermexInstalled(activity)) "termex" else "system"
         val env = sp.getString(KEY_EXEC_ENV, defaultEnv) ?: defaultEnv
-        val withRoot = sp.getBoolean(KEY_EXEC_ROOT, TerminalExpansionManager.isRootAvailable())
+        val isRoot = TerminalExpansionManager.isRootAvailable()
+        val withRoot = isRoot && sp.getBoolean(KEY_EXEC_ROOT, false)
 
         val scriptPath = path.toFile().absolutePath
-        val parentDir = path.toFile().parent ?: "/data/local/tmp"
+        val parentDir = path.toFile().parent ?: "/storage/emulated/0"
 
         val execCmd: String
         val isElf = isElfBinary(path)
 
         if (isElf) {
-            if (withRoot) {
-                execCmd = "chmod 777 \"$scriptPath\" 2>/dev/null; \"$scriptPath\""
+            execCmd = if (withRoot) {
+                "chmod 777 \"$scriptPath\" 2>/dev/null; \"$scriptPath\""
             } else {
-                val binDir = File(activity.filesDir, "bin").apply { mkdirs() }
-                val targetFile = File(binDir, path.fileName.toString())
-                try {
-                    path.newInputStream().use { input ->
-                        targetFile.outputStream().use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-                    targetFile.setReadable(true, false)
-                    targetFile.setWritable(true, false)
-                    targetFile.setExecutable(true, false)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                execCmd = "\"${targetFile.absolutePath}\""
+                "\"$scriptPath\""
             }
         } else {
             val shell = if (env == "termex") "bash" else "sh"

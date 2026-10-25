@@ -54,18 +54,27 @@ object TerminalExpansionManager {
             "/system/xbin/su",
             "/sbin/su",
             "/vendor/bin/su",
-            "/system/sd/xbin/su"
+            "/system/sd/xbin/su",
+            "/data/adb/ksu/bin/su",
+            "/data/adb/ap/bin/su",
+            "/data/adb/magisk/su"
         )
         for (path in paths) {
             val f = File(path)
             if (f.exists() && f.canExecute()) return true
         }
         return try {
-            val process = Runtime.getRuntime().exec(arrayOf("which", "su"))
+            val process = Runtime.getRuntime().exec(arrayOf("su", "--version"))
             val exitCode = process.waitFor()
             exitCode == 0
         } catch (e: Exception) {
-            false
+            try {
+                val process = Runtime.getRuntime().exec(arrayOf("which", "su"))
+                val exitCode = process.waitFor()
+                exitCode == 0
+            } catch (e2: Exception) {
+                false
+            }
         }
     }
 
