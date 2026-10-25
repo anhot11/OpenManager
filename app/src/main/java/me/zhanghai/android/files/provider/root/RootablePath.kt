@@ -29,11 +29,21 @@ fun <T, R> callRootable(
         RootStrategy.NEVER -> localObject.block()
         RootStrategy.AUTOMATIC ->
             if (path.isRootRequired(isAttributeAccess)) {
-                rootObject.block()
+                try {
+                    rootObject.block()
+                } catch (e: Exception) {
+                    localObject.block()
+                }
             } else {
                 localObject.block()
             }
-        RootStrategy.ALWAYS -> rootObject.block()
+        RootStrategy.ALWAYS -> {
+            try {
+                rootObject.block()
+            } catch (e: Exception) {
+                localObject.block()
+            }
+        }
     }
 }
 
@@ -54,11 +64,20 @@ fun <T, R> callRootable(
         RootStrategy.AUTOMATIC ->
             if (path1.isRootRequired(isAttributeAccess)
                 || path2.isRootRequired(isAttributeAccess)) {
-                rootObject.block()
+                try {
+                    rootObject.block()
+                } catch (e: Exception) {
+                    localObject.block()
+                }
             } else {
                 localObject.block()
             }
-        RootStrategy.ALWAYS ->
-            rootObject.block()
+        RootStrategy.ALWAYS -> {
+            try {
+                rootObject.block()
+            } catch (e: Exception) {
+                localObject.block()
+            }
+        }
     }
 }

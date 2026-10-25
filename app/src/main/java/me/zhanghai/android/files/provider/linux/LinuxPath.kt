@@ -86,6 +86,9 @@ internal class LinuxPath : ByteStringListPath<LinuxPath>, RootablePath {
 
     override fun isRootRequired(isAttributeAccess: Boolean): Boolean {
         val file = toFile()
+        if (file.canRead() || (file.isDirectory && file.canExecute())) {
+            return false
+        }
         return StorageVolumeListLiveData.valueCompat.none {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !it.isPrimaryCompat) {
                 return@none false
