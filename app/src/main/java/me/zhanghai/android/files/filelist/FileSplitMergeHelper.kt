@@ -62,20 +62,24 @@ object FileSplitMergeHelper {
         )
 
         var selectedSize = sizes[1].first // default 10MB
+        val rbIdMap = mutableMapOf<Int, Long>()
 
         for ((sizeBytes, label) in sizes) {
+            val viewId = android.view.View.generateViewId()
+            rbIdMap[viewId] = sizeBytes
             val rb = RadioButton(context).apply {
                 text = label
-                id = sizeBytes.toInt()
+                id = viewId
                 if (sizeBytes == selectedSize) isChecked = true
                 setOnClickListener { selectedSize = sizeBytes }
             }
             radioGroup.addView(rb)
         }
 
+        val customId = android.view.View.generateViewId()
         val rbCustom = RadioButton(context).apply {
             text = "Custom (MB)"
-            id = -1
+            id = customId
         }
         radioGroup.addView(rbCustom)
 
@@ -88,11 +92,11 @@ object FileSplitMergeHelper {
         container.addView(customInput)
 
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == -1) {
+            if (checkedId == customId) {
                 customInput.visibility = android.view.View.VISIBLE
             } else {
                 customInput.visibility = android.view.View.GONE
-                selectedSize = checkedId.toLong()
+                rbIdMap[checkedId]?.let { selectedSize = it }
             }
         }
 
@@ -172,6 +176,18 @@ object FileSplitMergeHelper {
         return name.contains(Regex("\\.part\\d+$")) || name.contains(Regex("\\.\\d{3}$"))
     }
 
+    private fun extractPartNumber(name: String): Int {
+        val partMatch = Regex("\\.part(\\d+)$", RegexOption.IGNORE_CASE).find(name)
+        if (partMatch != null) {
+            return partMatch.groupValues[1].toIntOrNull() ?: Int.MAX_VALUE
+        }
+        val numMatch = Regex("\\.(\\d{3})$").find(name)
+        if (numMatch != null) {
+            return numMatch.groupValues[1].toIntOrNull() ?: Int.MAX_VALUE
+        }
+        return Int.MAX_VALUE
+    }
+
     fun findSplitParts(firstPart: FileItem, allFiles: List<FileItem>): List<FileItem> {
         val name = firstPart.name
         val baseName: String
@@ -194,7 +210,7 @@ object FileSplitMergeHelper {
             } else {
                 siblingName.startsWith(baseName + ".", ignoreCase = true) && siblingName.substringAfterLast(".").matches(Regex("\\d{3}"))
             }
-        }.sortedBy { it.name.lowercase(Locale.ROOT) }
+        }.sortedWith(compareBy({ extractPartNumber(it.name) }, { it.name.lowercase(Locale.ROOT) }))
     }
 
     fun showMergeDialog(activity: Activity, firstPart: FileItem, allFiles: List<FileItem>, onComplete: () -> Unit) {

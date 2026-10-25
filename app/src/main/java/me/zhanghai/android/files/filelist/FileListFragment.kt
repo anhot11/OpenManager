@@ -1381,11 +1381,15 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
             return
         }
+        val fileName = file.path.fileName.toString()
+        if (file.mimeType.isApk || fileName.endsWith(".apk", true)) {
+            openApk(file)
+            return
+        }
         if (file.isListable) {
             navigateTo(file.listablePath)
             return
         }
-        val fileName = file.path.fileName.toString()
         if (ScriptRunnerHelper.isExecutableOrScript(file)) {
             ScriptRunnerHelper.showScriptActionDialog(requireActivity(), file)
             return
@@ -1394,10 +1398,6 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         if (!hasExtension) {
             // Archivo sin especificador de tipo de archivo (ej. sample_unknown, sin .sh ni .mp3) -> Menú "Abrir con..." estilo MT Manager
             OpenFileAsDialogFragment.show(file.path, childFragmentManager)
-            return
-        }
-        if (file.mimeType.isApk) {
-            openApk(file)
             return
         }
         if (file.mimeType.isAudio) {
