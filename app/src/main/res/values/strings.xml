@@ -995,4 +995,45 @@
     <string name="apk_clone">Clone APK</string>
     <string name="apk_optimize">Optimize (zipalign)</string>
     <string name="apk_convert_apks">Convert APKS to APK</string>
+
+    <!-- MT Manager Open With Strings -->
+    <string name="open_as_title">Open with…</string>
+    <string name="open_as_search_hint">Filter tools…</string>
+    <string name="open_as_help_title">Open with…</string>
+    <string name="open_as_help_message">Select a built-in tool to view, edit, or process this file.</string>
+    <string name="open_as_type">TYPE</string>
+    <string name="open_as_close">CLOSE</string>
+    <string name="open_as_text_editor">Text editor</string>
+    <string name="open_as_archive_viewer">Archive viewer</string>
+    <string name="open_as_image_viewer">Image viewer</string>
+    <string name="open_as_hex_editor">Hex editor</string>
+    <string name="open_as_music_player">Music player</string>
+    <string name="open_as_video_player">Video player</string>
+    <string name="open_as_xml_functions">Xml functions</string>
+    <string name="open_as_dex_functions">Dex functions</string>
+    <string name="open_as_arsc_functions">Arsc functions</string>
+    <string name="open_as_apk_viewer">Apk viewer</string>
+    <string name="open_as_apks_functions">Apks functions</string>
+    <string name="open_as_script_executor">Script executor</string>
+    <string name="open_as_font_viewer">Font viewer</string>
+    <string name="open_as_signature_importer">Signature Importer</string>
+    <string name="open_as_plugin_viewer">MT-Plugin viewer</string>
+    <string name="open_as_html_functions">HTML functions</string>
+    <string name="open_as_svg_functions">Svg functions</string>
+    <string name="open_as_nine_patch_editor">9-Patch editor</string>
+    <string name="open_as_type_builtin">Built-in</string>
+    <string name="open_as_type_text">Text</string>
+    <string name="open_as_type_image">Image</string>
+    <string name="open_as_type_video">Video</string>
+    <string name="open_as_type_audio">Audio</string>
+    <string name="open_as_type_all">All</string>
+    <string name="open_as_hex_title">Hex editor</string>
+    <string name="open_as_hex_copy">Copy</string>
+    <string name="open_as_hex_copied">Hex text copied</string>
+    <string name="open_as_font_title">Font viewer</string>
+    <string name="open_as_font_sample">The quick brown fox jumps over the lazy dog 1234567890</string>
+    <string name="open_as_font_sample_es">El veloz murciélago hindú comía feliz cardillo y kiwi 1234567890</string>
+    <string name="open_as_sig_title">Signature / Certificate Info</string>
+    <string name="open_as_html_title">HTML viewer</string>
+    <string name="open_as_html_edit">Edit</string>
 </resources>

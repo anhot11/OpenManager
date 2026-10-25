@@ -48,8 +48,12 @@ object ScriptRunnerHelper {
      * Displays the MT-style Action Dialog when clicking a .sh script.
      */
     fun showScriptActionDialog(activity: Activity, fileItem: FileItem) {
-        val scriptPath = fileItem.path.toFile().absolutePath
-        val fileName = fileItem.path.fileName.toString()
+        showScriptActionDialog(activity, fileItem.path)
+    }
+
+    fun showScriptActionDialog(activity: Activity, path: Path) {
+        val scriptPath = path.toFile().absolutePath
+        val fileName = path.fileName.toString()
 
         val options = arrayOf(
             "🛡️ Ejecutar con Root Seguro (Aislamiento shguard)",
@@ -64,7 +68,7 @@ object ScriptRunnerHelper {
                 when (which) {
                     0 -> runScriptWithShguard(activity, scriptPath, isolateNetwork = true)
                     1 -> runScriptWithShguard(activity, scriptPath, isolateNetwork = false)
-                    2 -> openInEditor(activity, fileItem)
+                    2 -> openInEditor(activity, path)
                     3 -> showAuditLog(activity)
                 }
             }
@@ -72,10 +76,10 @@ object ScriptRunnerHelper {
             .show()
     }
 
-    private fun openInEditor(activity: Activity, fileItem: FileItem) {
+    private fun openInEditor(activity: Activity, path: Path) {
         val intent = Intent(activity, TextEditorActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            extraPath = fileItem.path
+            extraPath = path
         }
         activity.startActivity(intent)
     }

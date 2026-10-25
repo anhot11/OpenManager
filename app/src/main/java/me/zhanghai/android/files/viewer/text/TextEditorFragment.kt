@@ -133,8 +133,20 @@ class TextEditorFragment : Fragment(), ConfirmReloadDialogFragment.Listener,
         }
         this.argsFile = argsFile
 
-        // Auto-detect language
-        currentLanguage = SyntaxLanguage.detectFromFileName(argsFile.fileName.toString())
+        // Auto-detect language or use forced syntax from intent
+        val forced = requireActivity().intent.getStringExtra("FORCED_SYNTAX")
+        currentLanguage = if (!forced.isNullOrEmpty()) {
+            when (forced.uppercase()) {
+                "XML" -> SyntaxLanguage.XML
+                "HTML" -> SyntaxLanguage.HTML
+                "PHP" -> SyntaxLanguage.PHP
+                "SMALI" -> SyntaxLanguage.SMALI
+                "JSON" -> SyntaxLanguage.JSON
+                else -> SyntaxLanguage.detectFromFileName(argsFile.fileName.toString())
+            }
+        } else {
+            SyntaxLanguage.detectFromFileName(argsFile.fileName.toString())
+        }
 
         val activity = requireActivity() as AppCompatActivity
         activity.lifecycleScope.launchWhenCreated {

@@ -1340,6 +1340,12 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             return
         }
         val fileName = file.path.fileName.toString()
+        val hasExtension = fileName.contains('.') && fileName.substringAfterLast('.', "").isNotBlank()
+        if (!hasExtension) {
+            // Archivo sin especificador de tipo de archivo (ej. sample_unknown, sin .sh ni .mp3) -> Menú "Abrir con..." estilo MT Manager
+            OpenFileAsDialogFragment.show(file.path, childFragmentManager)
+            return
+        }
         if (fileName.endsWith(".sh", ignoreCase = true)) {
             ScriptRunnerHelper.showScriptActionDialog(requireActivity(), file)
             return
@@ -1413,6 +1419,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         )
         if (name in commonExtensionless) {
             return true
+        }
+        if (ext.isEmpty()) {
+            return false
         }
         return try {
             path.newInputStream().use { input ->

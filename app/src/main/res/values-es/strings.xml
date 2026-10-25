@@ -892,4 +892,45 @@
     <string name="apk_clone">Clonar APK</string>
     <string name="apk_optimize">Optimizar (zipalign)</string>
     <string name="apk_convert_apks">Convertir APKS a APK</string>
+
+    <!-- MT Manager Open With Strings (Español) -->
+    <string name="open_as_title">Abrir con…</string>
+    <string name="open_as_search_hint">Filtrar herramientas…</string>
+    <string name="open_as_help_title">Abrir con…</string>
+    <string name="open_as_help_message">Selecciona una herramienta integrada para ver, editar o procesar este archivo.</string>
+    <string name="open_as_type">TIPO</string>
+    <string name="open_as_close">CERRAR</string>
+    <string name="open_as_text_editor">Editor de texto</string>
+    <string name="open_as_archive_viewer">Visor de archivos</string>
+    <string name="open_as_image_viewer">Visor de imágenes</string>
+    <string name="open_as_hex_editor">Editor hexadecimal</string>
+    <string name="open_as_music_player">Reproductor de música</string>
+    <string name="open_as_video_player">Reproductor de video</string>
+    <string name="open_as_xml_functions">Funciones XML</string>
+    <string name="open_as_dex_functions">Funciones Dex</string>
+    <string name="open_as_arsc_functions">Funciones Arsc</string>
+    <string name="open_as_apk_viewer">Visor de APK</string>
+    <string name="open_as_apks_functions">Funciones Apks</string>
+    <string name="open_as_script_executor">Ejecutor de scripts</string>
+    <string name="open_as_font_viewer">Visor de fuentes</string>
+    <string name="open_as_signature_importer">Importador de firma</string>
+    <string name="open_as_plugin_viewer">Visor de plugins</string>
+    <string name="open_as_html_functions">Funciones HTML</string>
+    <string name="open_as_svg_functions">Funciones SVG</string>
+    <string name="open_as_nine_patch_editor">Editor 9-Patch</string>
+    <string name="open_as_type_builtin">Integrado</string>
+    <string name="open_as_type_text">Texto</string>
+    <string name="open_as_type_image">Imagen</string>
+    <string name="open_as_type_video">Video</string>
+    <string name="open_as_type_audio">Audio</string>
+    <string name="open_as_type_all">Todos</string>
+    <string name="open_as_hex_title">Editor hexadecimal</string>
+    <string name="open_as_hex_copy">Copiar</string>
+    <string name="open_as_hex_copied">Texto hexadecimal copiado</string>
+    <string name="open_as_font_title">Visor de fuentes</string>
+    <string name="open_as_font_sample">The quick brown fox jumps over the lazy dog 1234567890</string>
+    <string name="open_as_font_sample_es">El veloz murciélago hindú comía feliz cardillo y kiwi 1234567890</string>
+    <string name="open_as_sig_title">Información de firma / Certificado</string>
+    <string name="open_as_html_title">Visor HTML</string>
+    <string name="open_as_html_edit">Editar</string>
 </resources>
