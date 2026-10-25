@@ -14,15 +14,7 @@ import me.zhanghai.android.files.util.startActivitySafe
 
 object Terminal {
     fun open(path: String, context: Context) {
-        val componentName =
-            packageManager.queryIntentActivities(Intent(Intent.ACTION_SEND).setType("*/*"), 0)
-                .firstOrNull { it.activityInfo.name.endsWith(".TermHere") }?.activityInfo
-                ?.let { ComponentName(it.packageName, it.name) }
-                ?: ComponentName("jackpal.androidterm", "jackpal.androidterm.TermHere")
-        val intent = Intent()
-            .setComponent(componentName)
-            .setAction(Intent.ACTION_SEND)
-            .putExtra(Intent.EXTRA_STREAM, Uri.parse(path))
+        val intent = TerminalActivity.createIntent(context, path)
         context.startActivitySafe(intent)
     }
 }
