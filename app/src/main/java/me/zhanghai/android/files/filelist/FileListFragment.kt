@@ -1339,6 +1339,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
             return
         }
+        if (file.isListable) {
+            navigateTo(file.listablePath)
+            return
+        }
         val fileName = file.path.fileName.toString()
         val hasExtension = fileName.contains('.') && fileName.substringAfterLast('.', "").isNotBlank()
         if (!hasExtension) {
@@ -1352,10 +1356,6 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
         if (file.mimeType.isApk) {
             openApk(file)
-            return
-        }
-        if (file.isListable) {
-            navigateTo(file.listablePath)
             return
         }
         if (file.mimeType.isAudio) {

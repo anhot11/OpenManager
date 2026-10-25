@@ -60,9 +60,11 @@ class OpenFileAsDialogFragment : AppCompatDialogFragment() {
         setupHeader()
         setupBottomBar()
 
-        return MaterialAlertDialogBuilder(requireContext(), theme)
+        val dialog = MaterialAlertDialogBuilder(requireContext(), theme)
             .setView(binding.root)
             .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        return dialog
     }
 
     private fun setupHeader() {
@@ -109,7 +111,9 @@ class OpenFileAsDialogFragment : AppCompatDialogFragment() {
 
         binding.typeBtn.setOnClickListener { v ->
             val popup = PopupMenu(requireContext(), v)
-            popup.menu.add(0, 0, 0, getString(R.string.open_as_type_builtin))
+            val builtinItem = popup.menu.add(0, 0, 0, getString(R.string.open_as_type_builtin))
+            builtinItem.isCheckable = true
+            builtinItem.isChecked = true
             popup.menu.add(0, 1, 1, getString(R.string.open_as_type_text))
             popup.menu.add(0, 2, 2, getString(R.string.open_as_type_image))
             popup.menu.add(0, 3, 3, getString(R.string.open_as_type_video))
