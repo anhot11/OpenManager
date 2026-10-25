@@ -252,7 +252,11 @@ public final class TerminalSession extends TerminalOutput {
         // Stop the reader and writer threads, and close the I/O streams
         mTerminalToProcessIOQueue.close();
         mProcessToTerminalIOQueue.close();
-        JNI.close(mTerminalFileDescriptor);
+        if (mTerminalFileDescriptor > 0) {
+            int fd = mTerminalFileDescriptor;
+            mTerminalFileDescriptor = -1;
+            JNI.close(fd);
+        }
     }
 
     @Override
@@ -315,9 +319,6 @@ public final class TerminalSession extends TerminalOutput {
     }
 
     private static FileDescriptor wrapFileDescriptor(int fileDescriptor, TerminalSessionClient client) {
-        try {
-            return android.os.ParcelFileDescriptor.adoptFd(fileDescriptor).getFileDescriptor();
-        } catch (Throwable ignored) {}
         FileDescriptor result = new FileDescriptor();
         try {
             Field descriptorField;

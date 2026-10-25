@@ -315,6 +315,10 @@ class TerminalActivity : AppActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        finish()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (wakeLock?.isHeld == true) {
