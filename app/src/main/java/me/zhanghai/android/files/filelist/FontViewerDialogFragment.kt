@@ -17,8 +17,7 @@ import me.zhanghai.android.files.util.ParcelableArgs
 import me.zhanghai.android.files.util.ParcelableParceler
 import me.zhanghai.android.files.util.args
 import me.zhanghai.android.files.util.putArgs
-import me.zhanghai.android.files.util.show
-import me.zhanghai.android.files.util.toFile
+import java.io.File
 
 class FontViewerDialogFragment : AppCompatDialogFragment() {
     private val args by args<Args>()
@@ -26,7 +25,7 @@ class FontViewerDialogFragment : AppCompatDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
         val customTypeface = try {
-            Typeface.createFromFile(args.path.toFile())
+            Typeface.createFromFile(File(args.path.toString()))
         } catch (e: Exception) {
             Typeface.DEFAULT
         }

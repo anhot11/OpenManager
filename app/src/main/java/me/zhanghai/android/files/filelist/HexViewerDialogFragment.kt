@@ -24,7 +24,7 @@ import me.zhanghai.android.files.databinding.HexViewerDialogFragmentBinding
 import me.zhanghai.android.files.util.ParcelableArgs
 import me.zhanghai.android.files.util.ParcelableParceler
 import me.zhanghai.android.files.util.args
-import me.zhanghai.android.files.util.newInputStream
+import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.show
 import me.zhanghai.android.files.util.showToast

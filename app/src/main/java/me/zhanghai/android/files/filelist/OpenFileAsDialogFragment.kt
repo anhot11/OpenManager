@@ -23,17 +23,19 @@ import me.zhanghai.android.files.file.asMimeType
 import me.zhanghai.android.files.file.fileProviderUri
 import me.zhanghai.android.files.filejob.FileJobService
 import me.zhanghai.android.files.provider.archive.isArchivePath
+import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.util.ParcelableArgs
 import me.zhanghai.android.files.util.ParcelableParceler
 import me.zhanghai.android.files.util.args
 import me.zhanghai.android.files.util.createViewIntent
 import me.zhanghai.android.files.util.extraPath
-import me.zhanghai.android.files.util.newInputStream
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.show
 import me.zhanghai.android.files.util.startActivitySafe
 import me.zhanghai.android.files.util.withChooser
 import me.zhanghai.android.files.viewer.audio.AudioPlayerDialogFragment
+import me.zhanghai.android.files.viewer.binary.ArscInfoDialogFragment
+import me.zhanghai.android.files.viewer.binary.DexInfoDialogFragment
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import me.zhanghai.android.files.viewer.video.VideoPlayerActivity
 
