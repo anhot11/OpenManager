@@ -17,7 +17,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java8.nio.file.Path
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
-import me.zhanghai.android.files.file.toFile
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -131,9 +130,9 @@ object ExportFileListHelper {
 
         for (file in files) {
             val name = file.name
-            val size = formatSize(file.attributes.size)
+            val size = formatSize(file.attributes.size())
             val path = file.path.toFile().absolutePath
-            val date = dateFormat.format(Date(file.attributes.lastModifiedTime.toMillis()))
+            val date = dateFormat.format(Date(file.attributes.lastModifiedTime().toMillis()))
 
             when (format) {
                 0 -> sb.appendLine(name)

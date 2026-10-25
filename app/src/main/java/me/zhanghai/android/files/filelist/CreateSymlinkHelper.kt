@@ -16,7 +16,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java8.nio.file.Path
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
-import me.zhanghai.android.files.file.toFile
 import me.zhanghai.android.files.terminal.TerminalExpansionManager
 import java.io.File
 

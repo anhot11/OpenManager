@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import java8.nio.file.Path
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
-import me.zhanghai.android.files.file.toFile
 import java.io.File
 import java.io.IOException
 

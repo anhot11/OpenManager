@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 import java8.nio.file.Path
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
-import me.zhanghai.android.files.file.toFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -216,7 +215,7 @@ object FileSplitMergeHelper {
 
         var totalSize = 0L
         for (part in parts) {
-            totalSize += part.attributes.size
+            totalSize += part.attributes.size()
         }
 
         val context = activity
