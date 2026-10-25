@@ -112,7 +112,7 @@ object TerminalExpansionManager {
 
                 val bashBin = File(nativeLibDir, "bash")
                 if (bashBin.exists()) {
-                    val prompt = "$([ $? == 0 ] && echo '\\[\\e[1;32m\\]' || echo '\\[\\e[1;31m\\]')$([ $UID == 0 ] && echo '#' || echo '➜') \\[\\e[1;36m\\]\\W\\[\\e[m\\] "
+                    val prompt = "\$([ \$? == 0 ] && echo '\\[\\e[1;32m\\]' || echo '\\[\\e[1;31m\\]')\$([ \$UID == 0 ] && echo '#' || echo '➜') \\[\\e[1;36m\\]\\W\\[\\e[m\\] "
                     val env = arrayOf(
                         "PREFIX=${termexDir.absolutePath}",
                         "LD_LIBRARY_PATH=${libDir.absolutePath}:$nativeLibDir",
