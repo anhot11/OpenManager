@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
+import java8.nio.file.Path
 import me.zhanghai.android.files.util.extraPath
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import java.io.BufferedReader
