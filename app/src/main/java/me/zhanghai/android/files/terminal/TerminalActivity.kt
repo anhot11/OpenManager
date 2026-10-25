@@ -360,6 +360,16 @@ class TerminalActivity : AppActivity() {
         }
     }
 
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (terminalSession?.isRunning == false && event.action == KeyEvent.ACTION_DOWN) {
+            if (event.keyCode == KeyEvent.KEYCODE_ENTER || event.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+                finish()
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     override fun onBackPressed() {
         finish()
     }

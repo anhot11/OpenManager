@@ -186,7 +186,38 @@ object ScriptRunnerHelper {
 
         val scriptPath = path.toFile().absolutePath
         val parentDir = path.toFile().parent ?: "/data/local/tmp"
-        val execCmd = "\"$scriptPath\""
+
+        val execCmd: String
+        val isElf = isElfBinary(path)
+
+        if (isElf) {
+            if (withRoot) {
+                execCmd = "chmod 777 \"$scriptPath\" 2>/dev/null; \"$scriptPath\""
+            } else {
+                val binDir = File(activity.filesDir, "bin").apply { mkdirs() }
+                val targetFile = File(binDir, path.fileName.toString())
+                try {
+                    path.newInputStream().use { input ->
+                        targetFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    targetFile.setReadable(true, false)
+                    targetFile.setWritable(true, false)
+                    targetFile.setExecutable(true, false)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                execCmd = "\"${targetFile.absolutePath}\""
+            }
+        } else {
+            val shell = if (env == "termex") "bash" else "sh"
+            execCmd = if (withRoot) {
+                "chmod 777 \"$scriptPath\" 2>/dev/null; $shell \"$scriptPath\""
+            } else {
+                "$shell \"$scriptPath\""
+            }
+        }
 
         val intent = TerminalActivity.createIntent(
             activity,
