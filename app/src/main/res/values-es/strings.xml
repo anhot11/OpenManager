@@ -971,4 +971,59 @@
     <string name="open_as_sig_title">Información de firma / Certificado</string>
     <string name="open_as_html_title">Visor HTML</string>
     <string name="open_as_html_edit">Editar</string>
+
+    <!-- MT Manager Features: Installed Apps, Swap Names, Split & Merge, Symlink, Export List -->
+    <string name="navigation_installed_apps">Aplicaciones Instaladas</string>
+    <string name="user_apps">Apps de Usuario</string>
+    <string name="system_apps">Apps del Sistema</string>
+    <string name="extract_apk">Extraer APK</string>
+    <string name="extract_apk_success">APK extraído en %s</string>
+    <string name="extract_apk_failed">Error al extraer el APK</string>
+    <string name="app_launch">Iniciar</string>
+    <string name="app_details">Info de la App</string>
+    <string name="app_uninstall">Desinstalar</string>
+
+    <string name="action_swap_file_names">Intercambiar nombres</string>
+    <string name="swap_file_names_title">Intercambiar nombres</string>
+    <string name="swap_file_names_select_second">Selecciona el segundo archivo para intercambiar nombres con \"%s\":</string>
+    <string name="swap_file_names_success">Nombres intercambiados exitosamente</string>
+    <string name="swap_file_names_failed">Error al intercambiar nombres de archivo</string>
+
+    <string name="action_split_file">Dividir archivo</string>
+    <string name="action_merge_files">Unir archivos</string>
+    <string name="split_file_title">Dividir archivo</string>
+    <string name="split_file_size_label">Tamaño por parte:</string>
+    <string name="split_file_btn_split">Dividir</string>
+    <string name="split_file_progress">Dividiendo archivo…</string>
+    <string name="split_file_success">Archivo dividido exitosamente en %d partes</string>
+    <string name="merge_files_title">Unir archivos</string>
+    <string name="merge_files_parts_detected">Detectadas %d partes (%s total)</string>
+    <string name="merge_files_target_label">Nombre de archivo de salida:</string>
+    <string name="merge_files_delete_parts">Eliminar archivos de partes tras unir</string>
+    <string name="merge_files_btn_merge">Unir</string>
+    <string name="merge_files_progress">Uniendo archivos…</string>
+    <string name="merge_files_success">Archivos unidos exitosamente en %s</string>
+
+    <string name="action_create_symlink">Crear enlace simbólico</string>
+    <string name="create_symlink_title">Crear enlace simbólico (Symlink)</string>
+    <string name="create_symlink_target_label">Ruta de destino:</string>
+    <string name="create_symlink_name_label">Nombre del enlace:</string>
+    <string name="create_symlink_btn_create">Crear</string>
+    <string name="create_symlink_success">Enlace simbólico \"%s\" creado exitosamente</string>
+    <string name="create_symlink_failed">Error al crear enlace simbólico: %s</string>
+
+    <string name="action_export_file_list">Exportar lista de archivos</string>
+    <string name="export_file_list_title">Exportar lista de archivos</string>
+    <string name="export_file_list_scope">Ámbito de exportación:</string>
+    <string name="export_file_list_all">Todos los archivos de la carpeta (%d)</string>
+    <string name="export_file_list_selected">Solo archivos seleccionados (%d)</string>
+    <string name="export_file_list_format">Formato:</string>
+    <string name="export_file_list_names_only">Solo nombres</string>
+    <string name="export_file_list_names_sizes">Nombres y tamaños</string>
+    <string name="export_file_list_full_paths">Rutas completas</string>
+    <string name="export_file_list_full_details">Detalles completos (Nombre, Tamaño, Fecha)</string>
+    <string name="export_file_list_copy_clipboard">Copiar al portapapeles</string>
+    <string name="export_file_list_save_file">Guardar en file_list.txt</string>
+    <string name="export_file_list_copied">%d elementos copiados al portapapeles</string>
+    <string name="export_file_list_saved">Lista de archivos guardada en %s</string>
 </resources>

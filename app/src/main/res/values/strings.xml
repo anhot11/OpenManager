@@ -1075,4 +1075,59 @@
     <string name="open_as_sig_title">Signature / Certificate Info</string>
     <string name="open_as_html_title">HTML viewer</string>
     <string name="open_as_html_edit">Edit</string>
+
+    <!-- MT Manager Features: Installed Apps, Swap Names, Split & Merge, Symlink, Export List -->
+    <string name="navigation_installed_apps">Installed Apps</string>
+    <string name="user_apps">User Apps</string>
+    <string name="system_apps">System Apps</string>
+    <string name="extract_apk">Extract APK</string>
+    <string name="extract_apk_success">APK extracted to %s</string>
+    <string name="extract_apk_failed">Failed to extract APK</string>
+    <string name="app_launch">Launch</string>
+    <string name="app_details">App Info</string>
+    <string name="app_uninstall">Uninstall</string>
+
+    <string name="action_swap_file_names">Swap file names</string>
+    <string name="swap_file_names_title">Swap file names</string>
+    <string name="swap_file_names_select_second">Select the second file to swap names with \"%s\":</string>
+    <string name="swap_file_names_success">File names swapped successfully</string>
+    <string name="swap_file_names_failed">Failed to swap file names</string>
+
+    <string name="action_split_file">Split file</string>
+    <string name="action_merge_files">Merge files</string>
+    <string name="split_file_title">Split file</string>
+    <string name="split_file_size_label">Part size:</string>
+    <string name="split_file_btn_split">Split</string>
+    <string name="split_file_progress">Splitting file…</string>
+    <string name="split_file_success">File split successfully into %d parts</string>
+    <string name="merge_files_title">Merge files</string>
+    <string name="merge_files_parts_detected">Detected %d parts (%s total)</string>
+    <string name="merge_files_target_label">Output file name:</string>
+    <string name="merge_files_delete_parts">Delete part files after merging</string>
+    <string name="merge_files_btn_merge">Merge</string>
+    <string name="merge_files_progress">Merging files…</string>
+    <string name="merge_files_success">Files merged successfully into %s</string>
+
+    <string name="action_create_symlink">Create soft link</string>
+    <string name="create_symlink_title">Create soft link (Symlink)</string>
+    <string name="create_symlink_target_label">Target path:</string>
+    <string name="create_symlink_name_label">Link name:</string>
+    <string name="create_symlink_btn_create">Create</string>
+    <string name="create_symlink_success">Symlink \"%s\" created successfully</string>
+    <string name="create_symlink_failed">Failed to create symlink: %s</string>
+
+    <string name="action_export_file_list">Export file list</string>
+    <string name="export_file_list_title">Export file list</string>
+    <string name="export_file_list_scope">Export scope:</string>
+    <string name="export_file_list_all">All files in directory (%d)</string>
+    <string name="export_file_list_selected">Selected files only (%d)</string>
+    <string name="export_file_list_format">Format:</string>
+    <string name="export_file_list_names_only">Names only</string>
+    <string name="export_file_list_names_sizes">Names and sizes</string>
+    <string name="export_file_list_full_paths">Full paths</string>
+    <string name="export_file_list_full_details">Full details (Name, Size, Date)</string>
+    <string name="export_file_list_copy_clipboard">Copy to clipboard</string>
+    <string name="export_file_list_save_file">Save to file_list.txt</string>
+    <string name="export_file_list_copied">Copied %d entries to clipboard</string>
+    <string name="export_file_list_saved">File list saved to %s</string>
 </resources>

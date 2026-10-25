@@ -594,6 +594,11 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                 createShortcut()
                 true
             }
+            R.id.action_export_file_list -> {
+                val allFiles = viewModel.fileListStateful.value ?: emptyList()
+                ExportFileListHelper.showDialog(requireActivity(), currentPath, allFiles, null) { viewModel.reload() }
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -999,6 +1004,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             menu.findItem(R.id.action_extract).isVisible = areAllFilesArchiveFiles
             val isCurrentPathReadOnly = viewModel.currentPath.fileSystem.isReadOnly
             menu.findItem(R.id.action_archive).isVisible = !isCurrentPathReadOnly
+            menu.findItem(R.id.action_swap_file_names)?.isVisible = !isAnyFileReadOnly && (files.size == 2 || files.size == 1)
+            menu.findItem(R.id.action_export_file_list)?.isVisible = true
         }
         if (!overlayActionMode.isActive) {
             binding.appBarLayout.setExpanded(true)
@@ -1068,6 +1075,29 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
             R.id.action_select_all -> {
                 selectAllFiles()
+                true
+            }
+            R.id.action_swap_file_names -> {
+                val files = viewModel.selectedFiles.toList()
+                if (files.size == 2) {
+                    FileSwapNamesHelper.swap(requireContext(), files[0].path, files[1].path) {
+                        viewModel.clearSelectedFiles()
+                        viewModel.reload()
+                    }
+                } else if (files.isNotEmpty()) {
+                    val allFiles = viewModel.fileListStateful.value ?: emptyList()
+                    FileSwapNamesHelper.showPickSecondFileDialog(requireActivity(), files[0], allFiles) {
+                        viewModel.clearSelectedFiles()
+                        viewModel.reload()
+                    }
+                }
+                true
+            }
+            R.id.action_export_file_list -> {
+                val allFiles = viewModel.fileListStateful.value ?: emptyList()
+                ExportFileListHelper.showDialog(requireActivity(), currentPath, allFiles, viewModel.selectedFiles.toList()) {
+                    viewModel.clearSelectedFiles()
+                }
                 true
             }
             else -> false
@@ -1464,15 +1494,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     private fun openApk(file: FileItem) {
-        if (!file.isListable) {
-            installApk(file)
-            return
-        }
-        when (Settings.OPEN_APK_DEFAULT_ACTION.valueCompat) {
-            OpenApkDefaultAction.INSTALL -> installApk(file)
-            OpenApkDefaultAction.VIEW -> viewApk(file)
-            OpenApkDefaultAction.ASK -> OpenApkDialogFragment.show(file, this)
-        }
+        OpenApkDialogFragment.show(file, this)
     }
 
     override fun installApk(file: FileItem) {
@@ -1681,6 +1703,24 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     override fun showPropertiesDialog(file: FileItem) {
         FilePropertiesDialogFragment.show(file, this)
+    }
+
+    override fun swapFileNames(file: FileItem) {
+        val allFiles = viewModel.fileListStateful.value ?: emptyList()
+        FileSwapNamesHelper.showPickSecondFileDialog(requireActivity(), file, allFiles) { viewModel.reload() }
+    }
+
+    override fun splitFile(file: FileItem) {
+        FileSplitMergeHelper.showSplitDialog(requireActivity(), file) { viewModel.reload() }
+    }
+
+    override fun mergeFiles(file: FileItem) {
+        val allFiles = viewModel.fileListStateful.value ?: emptyList()
+        FileSplitMergeHelper.showMergeDialog(requireActivity(), file, allFiles) { viewModel.reload() }
+    }
+
+    override fun createSymlink(file: FileItem) {
+        CreateSymlinkHelper.showDialog(requireActivity(), file, currentPath) { viewModel.reload() }
     }
 
     fun showCreateFileDialog() {

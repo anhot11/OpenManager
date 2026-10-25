@@ -287,6 +287,12 @@
             android:theme="@style/Theme.MaterialFiles" />
 
         <activity
+            android:name="me.zhanghai.android.files.appmanager.InstalledAppsActivity"
+            android:label="@string/navigation_installed_apps"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.MaterialFiles" />
+
+        <activity
             android:name="me.zhanghai.android.files.about.AboutActivity"
             android:label="@string/about_title"
             android:launchMode="singleTop"

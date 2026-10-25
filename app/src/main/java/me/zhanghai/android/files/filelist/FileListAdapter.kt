@@ -435,6 +435,10 @@ class FileListAdapter(
         menu.findItem(R.id.action_add_bookmark).isVisible = isDirectory
         menu.findItem(R.id.action_copy_opposite)?.isVisible = !hasPickOptions
         menu.findItem(R.id.action_move_opposite)?.isVisible = !hasPickOptions && !isReadOnly
+        menu.findItem(R.id.action_swap_file_names)?.isVisible = !isReadOnly
+        menu.findItem(R.id.action_split_file)?.isVisible = !isDirectory && !isArchivePath
+        menu.findItem(R.id.action_merge_files)?.isVisible = FileSplitMergeHelper.isSplitPart(file)
+        menu.findItem(R.id.action_create_symlink)?.isVisible = !isArchivePath
         holder.popupMenu.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_open_with -> {
@@ -487,6 +491,22 @@ class FileListAdapter(
                 }
                 R.id.action_create_shortcut -> {
                     listener.createShortcut(file)
+                    true
+                }
+                R.id.action_swap_file_names -> {
+                    listener.swapFileNames(file)
+                    true
+                }
+                R.id.action_split_file -> {
+                    listener.splitFile(file)
+                    true
+                }
+                R.id.action_merge_files -> {
+                    listener.mergeFiles(file)
+                    true
+                }
+                R.id.action_create_symlink -> {
+                    listener.createSymlink(file)
                     true
                 }
                 R.id.action_permissions -> {
@@ -600,6 +620,10 @@ class FileListAdapter(
         fun copyPath(file: FileItem)
         fun addBookmark(file: FileItem)
         fun createShortcut(file: FileItem)
+        fun swapFileNames(file: FileItem)
+        fun splitFile(file: FileItem)
+        fun mergeFiles(file: FileItem)
+        fun createSymlink(file: FileItem)
         fun showPermissionsDialog(file: FileItem)
         fun showPropertiesDialog(file: FileItem)
     }

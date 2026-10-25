@@ -60,6 +60,22 @@
         android:title="@string/file_item_action_create_shortcut" />
 
     <item
+        android:id="@+id/action_swap_file_names"
+        android:title="@string/action_swap_file_names" />
+
+    <item
+        android:id="@+id/action_split_file"
+        android:title="@string/action_split_file" />
+
+    <item
+        android:id="@+id/action_merge_files"
+        android:title="@string/action_merge_files" />
+
+    <item
+        android:id="@+id/action_create_symlink"
+        android:title="@string/action_create_symlink" />
+
+    <item
         android:id="@+id/action_permissions"
         android:title="@string/file_item_action_permissions" />
 

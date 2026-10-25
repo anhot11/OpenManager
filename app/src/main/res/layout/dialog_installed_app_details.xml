@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 OpenManager
+  ~ All Rights Reserved.
+  -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/dialogAppIcon"
+                android:layout_width="54dp"
+                android:layout_height="54dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/dialogAppName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?textAppearanceHeadline6"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/dialogAppVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?textAppearanceBody2"
+                    android:textColor="?android:attr/textColorSecondary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1">
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="Package:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppPackage"
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="Version code:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppVersionCode"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="File size:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppSize"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="Target SDK:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppTargetSdk"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="Min SDK:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppMinSdk"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="APK path:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppApkPath"
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="6dp">
+                <TextView
+                    android:text="Data path:"
+                    android:textStyle="bold"
+                    android:paddingEnd="12dp"
+                    android:textAppearance="?textAppearanceCaption" />
+                <TextView
+                    android:id="@+id/dialogAppDataPath"
+                    android:fontFamily="monospace"
+                    android:textAppearance="?textAppearanceCaption" />
+            </TableRow>
+        </TableLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="?android:attr/listDivider" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAppLaunch"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_launch" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAppDetails"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_details" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAppExtract"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/extract_apk" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
