@@ -138,7 +138,7 @@ class SetModeDialogFragment : AppCompatDialogFragment() {
             binding.modeStringText.text = mode.toModeString()
 
             val modeInt = mode.toInt()
-            val octalStr = if (modeInt >= 01000) String.format("%04o", modeInt) else String.format("%03o", modeInt)
+            val octalStr = if (modeInt >= 512) String.format("%04o", modeInt) else String.format("%03o", modeInt)
             if (binding.octalEdit.text.toString() != octalStr) {
                 val selection = binding.octalEdit.selectionStart
                 binding.octalEdit.setText(octalStr)
