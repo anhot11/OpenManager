@@ -274,9 +274,9 @@ class TerminalActivity : AppActivity() {
         // Show start info in subtitle
         val mode = if (config.isRoot) "Root (#)" else if (config.isTermex) "Termex (bash)" else "Sistema (sh)"
         if (initialCommand != null) {
-            val cmdClean = initialCommand.trim().removeSurrounding("(", ")").removeSurrounding("\"")
-            val fileName = File(cmdClean).name
-            toolbar.title = fileName
+            val lastPathPart = initialCommand.split(" ", ";").lastOrNull { it.contains("/") } ?: initialCommand
+            val fileName = File(lastPathPart.trim().trim('"', '\'', ')', '(')).name
+            toolbar.title = if (fileName.isNotEmpty()) fileName else initialCommand
             toolbar.subtitle = "$mode • Ejecutando..."
         } else {
             toolbar.subtitle = "$mode • ${File(config.cwd).name}"
