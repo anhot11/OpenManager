@@ -19,3 +19,13 @@ target_compile_options(syscall
 target_link_libraries(syscall
         PRIVATE
         ${LOG_LIBRARY})
+
+add_library(termux SHARED
+        src/main/jni/term.c)
+target_compile_options(termux
+        PRIVATE
+        -Wall
+        -Werror)
+target_link_libraries(termux
+        PRIVATE
+        ${LOG_LIBRARY})

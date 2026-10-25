@@ -696,8 +696,33 @@
     <string name="navigation_edit_bookmark_directory_name">Name</string>
     <string name="navigation_edit_bookmark_directory_path">Path</string>
     <string name="navigation_ftp_server" translatable="false">@string/ftp_server_title</string>
+    <string name="navigation_terminal">Terminal Simulator</string>
     <string name="navigation_settings" translatable="false">@string/settings_title</string>
     <string name="navigation_about" translatable="false">@string/about_title</string>
+
+    <string name="terminal_title">Terminal</string>
+    <string name="terminal_wakelock">WakeLock</string>
+    <string name="terminal_wakelock_acquired">Wake lock acquired</string>
+    <string name="terminal_wakelock_released">Wake lock released</string>
+    <string name="terminal_close">Close</string>
+    <string name="terminal_reset">Reset</string>
+    <string name="terminal_preferences">Preferences</string>
+    <string name="terminal_paste">Paste</string>
+    <string name="terminal_copy">Copy</string>
+    <string name="terminal_pref_title">Terminal settings</string>
+    <string name="terminal_pref_start_path">Start path</string>
+    <string name="terminal_pref_font">Font</string>
+    <string name="terminal_pref_font_default">Default</string>
+    <string name="terminal_pref_font_size">Font size</string>
+    <string name="terminal_pref_black_theme">Keep black theme</string>
+    <string name="terminal_pref_root_session">Create terminal session as root</string>
+    <string name="terminal_pref_root_not_found">No root privileges found on device.</string>
+    <string name="terminal_pref_expansion">Terminal expansion pack</string>
+    <string name="terminal_pref_expansion_installed">Installed: v3.8 arm64</string>
+    <string name="terminal_pref_expansion_not_installed">Not installed (Click to install)</string>
+    <string name="copy_text">Copy</string>
+    <string name="paste_text">Paste</string>
+    <string name="text_selection_more">More…</string>
 
     <string name="archive_viewer_title">Archive viewer</string>
     <string name="image_viewer_title">Image viewer</string>
