@@ -635,6 +635,38 @@
                     android:textSize="11.5sp"
                     android:textStyle="bold" />
 
+                <!-- APK Tools / Apktool -->
+                <LinearLayout
+                    android:id="@+id/drawerItemApktool"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_open_as_apk"
+                            app:tint="#4CAF50" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="Herramientas APK / Apktool"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13.5sp" />
+                </LinearLayout>
+
                 <!-- Installed Apps (MT Manager Extractor) -->
                 <LinearLayout
                     android:id="@+id/drawerItemInstalledApps"

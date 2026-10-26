@@ -274,7 +274,9 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
                 optionsList.add(getString(R.string.install_root))
             }
             optionsList.addAll(listOf(
+                "Descompilar APK (Apktool)",
                 getString(R.string.apk_sign),
+                "Verificar firma",
                 "Copiar nombre del paquete",
                 "Extraer APK",
                 getString(R.string.apk_optimize)
@@ -293,13 +295,24 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
                             dialog.dismiss()
                             listener.installApkWithRoot(file)
                         }
+                        "Descompilar APK (Apktool)" -> {
+                            dialog.dismiss()
+                            ApktoolHelper.decompileApk(requireActivity(), file.path) { targetDir ->
+                                if (targetDir != null) {
+                                    (activity as? FileListActivity)?.activeFragment?.reload()
+                                }
+                            }
+                        }
                         getString(R.string.apk_sign) -> {
                             dialog.dismiss()
-                            ApkSignerHelper.signApk(requireActivity(), file.path) { targetPath ->
+                            ApkSignerHelper.showSignDialog(requireActivity(), file.path) { targetPath ->
                                 if (targetPath != null) {
                                     (activity as? FileListActivity)?.activeFragment?.reload()
                                 }
                             }
+                        }
+                        "Verificar firma" -> {
+                            ApkSignerHelper.showVerifySignatureDialog(requireActivity(), file.path)
                         }
                         "Copiar nombre del paquete" -> {
                             val pkg = parsedPackageName ?: tvPackage.text.toString()

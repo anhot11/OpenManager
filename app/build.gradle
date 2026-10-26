@@ -150,6 +150,7 @@ dependencies {
         exclude group: 'org.bouncycastle', module: 'bcpkix-jdk18on'
     }
     implementation "org.bouncycastle:bcpkix-jdk15to18:$bouncy_castle_version"
+    implementation 'com.android.tools.build:apksig:9.4.1'
     implementation 'com.leinardi.android:speed-dial:3.3.0'
     implementation ('com.rapid7.client:dcerpc:0.12.13') {
         // SMBJ-RPC depends on the JRE flavor of Guava which targets Java 8.

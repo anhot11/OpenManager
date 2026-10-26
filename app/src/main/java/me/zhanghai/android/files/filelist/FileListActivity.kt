@@ -340,6 +340,11 @@ class FileListActivity : AppActivity() {
         }
         observeCustomStorages()
 
+        findViewById<View>(R.id.drawerItemApktool)?.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            ApktoolHelper.showApktoolHubDialog(this, activeFragment.currentPath)
+        }
+
         findViewById<View>(R.id.drawerItemInstalledApps)?.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             startActivity(Intent(this, InstalledAppsActivity::class.java))

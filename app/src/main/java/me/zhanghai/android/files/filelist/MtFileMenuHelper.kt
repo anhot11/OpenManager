@@ -360,6 +360,63 @@ object MtFileMenuHelper {
             fragment.copyPath(file)
         }
 
+        val isApk = !isDirectory && file.name.endsWith(".apk", ignoreCase = true)
+        val isApktoolProj = isDirectory && ApktoolHelper.isApktoolProject(file.path)
+
+        // Descompilar APK (Apktool)
+        val toolDecompileApk = view.findViewById<LinearLayout>(R.id.toolDecompileApk)
+        if (isApk && isSingleFile) {
+            toolDecompileApk.isVisible = true
+            toolDecompileApk.setOnClickListener {
+                dialog.dismiss()
+                ApktoolHelper.decompileApk(activity, file.path) {
+                    fragment.viewModel.reload()
+                }
+            }
+        } else {
+            toolDecompileApk.isVisible = false
+        }
+
+        // Recompilar APK (Apktool)
+        val toolRecompileApk = view.findViewById<LinearLayout>(R.id.toolRecompileApk)
+        if (isApktoolProj && isSingleFile) {
+            toolRecompileApk.isVisible = true
+            toolRecompileApk.setOnClickListener {
+                dialog.dismiss()
+                ApktoolHelper.recompileApk(activity, file.path) {
+                    fragment.viewModel.reload()
+                }
+            }
+        } else {
+            toolRecompileApk.isVisible = false
+        }
+
+        // Firmar APK
+        val toolSignApk = view.findViewById<LinearLayout>(R.id.toolSignApk)
+        if (isApk && isSingleFile) {
+            toolSignApk.isVisible = true
+            toolSignApk.setOnClickListener {
+                dialog.dismiss()
+                ApkSignerHelper.showSignDialog(activity, file.path) {
+                    fragment.viewModel.reload()
+                }
+            }
+        } else {
+            toolSignApk.isVisible = false
+        }
+
+        // Verificar firma
+        val toolVerifySignature = view.findViewById<LinearLayout>(R.id.toolVerifySignature)
+        if (isApk && isSingleFile) {
+            toolVerifySignature.isVisible = true
+            toolVerifySignature.setOnClickListener {
+                dialog.dismiss()
+                ApkSignerHelper.showVerifySignatureDialog(activity, file.path)
+            }
+        } else {
+            toolVerifySignature.isVisible = false
+        }
+
         dialog.show()
     }
 }

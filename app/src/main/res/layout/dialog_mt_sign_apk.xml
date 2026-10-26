@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MT Manager Style APK Signing Dialog -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#262626">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Title Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="14dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_open_as_signature"
+                app:tint="#4CAF50" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Firmar archivo APK"
+                    android:textColor="#FFFFFF"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Elige el tipo de firma y la clave"
+                    android:textColor="#AAAAAA"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#383838"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Output File Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nombre del archivo firmado:"
+            android:textColor="#CCCCCC"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editOutputName"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="14dp"
+            android:background="#333333"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:singleLine="true" />
+
+        <!-- Signature Scheme Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tipo de esquema de firma:"
+            android:textColor="#CCCCCC"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rgSignatureScheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="14dp">
+
+            <RadioButton
+                android:id="@+id/rbSchemeV1V2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="V1 + V2 (Híbrido - Recomendado)"
+                android:textColor="#FFFFFF"
+                android:textSize="13.5sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginBottom="8dp"
+                android:text="Esquema JAR + APK Signature Scheme v2. Máxima compatibilidad (Android 4.4 a 15+)."
+                android:textColor="#888888"
+                android:textSize="11sp" />
+
+            <RadioButton
+                android:id="@+id/rbSchemeV1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="V1 (Esquema JAR)"
+                android:textColor="#FFFFFF"
+                android:textSize="13.5sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginBottom="8dp"
+                android:text="Firma clásica en META-INF. Para dispositivos antiguos o ROMs heredadas."
+                android:textColor="#888888"
+                android:textSize="11sp" />
+
+            <RadioButton
+                android:id="@+id/rbSchemeV2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="V2 (Android 7.0+)"
+                android:textColor="#FFFFFF"
+                android:textSize="13.5sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginBottom="4dp"
+                android:text="Firma de archivo completo APK v2. Solo para dispositivos con Android 7.0 o superior."
+                android:textColor="#888888"
+                android:textSize="11sp" />
+        </RadioGroup>
+
+        <!-- Signing Key Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clave de firma (Keystore):"
+            android:textColor="#CCCCCC"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rgKeystore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp">
+
+            <RadioButton
+                android:id="@+id/rbKeyTestkey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="testkey (AOSP por defecto)"
+                android:textColor="#FFFFFF"
+                android:textSize="13.5sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginBottom="8dp"
+                android:text="Clave estándar RSA 2048-bit generada automáticamente."
+                android:textColor="#888888"
+                android:textSize="11sp" />
+
+            <RadioButton
+                android:id="@+id/rbKeyCustom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="KeyStore personalizado (.jks / .keystore)"
+                android:textColor="#FFFFFF"
+                android:textSize="13.5sp" />
+        </RadioGroup>
+
+        <!-- Custom Keystore Options Layout -->
+        <LinearLayout
+            android:id="@+id/layoutCustomKeyOptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ruta del archivo KeyStore:"
+                android:textColor="#AAAAAA"
+                android:textSize="11.5sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <EditText
+                    android:id="@+id/editKeystorePath"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="#333333"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:hint="/sdcard/.../key.jks"
+                    android:textColorHint="#666666"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:singleLine="true" />
+
+                <Button
+                    android:id="@+id/btnBrowseKeystore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:text="Elegir"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:backgroundTint="#424242" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Contraseña del KeyStore:"
+                android:textColor="#AAAAAA"
+                android:textSize="11.5sp" />
+
+            <EditText
+                android:id="@+id/editKeystorePass"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:background="#333333"
+                android:inputType="textPassword"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:singleLine="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Alias de la clave:"
+                android:textColor="#AAAAAA"
+                android:textSize="11.5sp" />
+
+            <EditText
+                android:id="@+id/editKeyAlias"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:background="#333333"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:singleLine="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Contraseña de la clave:"
+                android:textColor="#AAAAAA"
+                android:textSize="11.5sp" />
+
+            <EditText
+                android:id="@+id/editKeyPass"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:background="#333333"
+                android:inputType="textPassword"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Overwrite original APK checkbox -->
+        <CheckBox
+            android:id="@+id/cbOverwrite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sobrescribir archivo APK original"
+            android:textColor="#CCCCCC"
+            android:textSize="12.5sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Buttons: Cancel / Sign -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="end|center_vertical">
+
+            <Button
+                android:id="@+id/btnCancelSign"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?selectableItemBackground"
+                android:text="CANCELAR"
+                android:textColor="#AAAAAA"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnConfirmSign"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:backgroundTint="#4CAF50"
+                android:text="FIRMAR"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
