@@ -37,6 +37,7 @@ import me.zhanghai.android.files.viewer.audio.AudioPlayerDialogFragment
 import me.zhanghai.android.files.viewer.binary.ArscInfoDialogFragment
 import me.zhanghai.android.files.viewer.binary.DexInfoDialogFragment
 import me.zhanghai.android.files.viewer.dex.DexActionDialogFragment
+import me.zhanghai.android.files.viewer.hex.HexEditorActivity
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import me.zhanghai.android.files.viewer.video.VideoPlayerActivity
 
@@ -190,7 +191,7 @@ class OpenFileAsDialogFragment : AppCompatDialogFragment() {
 
             // 4. Hex Editor
             ToolItem("hex_editor", R.string.open_as_hex_editor, R.drawable.ic_open_as_hex) {
-                HexViewerDialogFragment.show(path, parentFragmentManager)
+                HexEditorActivity.start(requireContext(), path)
                 dismissOrFinishActivity()
             },
 

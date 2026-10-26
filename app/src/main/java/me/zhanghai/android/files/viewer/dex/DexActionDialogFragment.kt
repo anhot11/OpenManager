@@ -16,7 +16,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import me.zhanghai.android.files.databinding.DialogDexOpenChoiceBinding
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
-import me.zhanghai.android.files.filelist.HexViewerDialogFragment
+import me.zhanghai.android.files.viewer.hex.HexEditorActivity
 import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.util.ParcelableArgs
 import me.zhanghai.android.files.util.ParcelableParceler
@@ -95,7 +95,7 @@ class DexActionDialogFragment : AppCompatDialogFragment() {
         // 4. Editor Hexadecimal
         binding.btnModeHex.setOnClickListener {
             dialog.dismiss()
-            HexViewerDialogFragment.show(path, parentFragmentManager)
+            HexEditorActivity.start(requireContext(), path)
         }
 
         // 5. Abrir como Texto

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 OpenManager
+  ~ Hex Editor Menu
+  -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo_24dp"
+        android:title="@string/undo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo_24dp"
+        android:title="@string/redo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/search_icon_control_normal_24dp"
+        android:title="@string/search"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_save"
+        android:icon="@drawable/save_icon_control_normal_24dp"
+        android:title="@string/save"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_goto"
+        android:title="@string/hex_editor_goto_offset"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_edit"
+        android:title="@string/hex_editor_edit_byte"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_insert"
+        android:title="@string/hex_editor_insert_bytes"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_delete"
+        android:title="@string/hex_editor_delete_bytes"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_fill"
+        android:title="@string/hex_editor_fill_range"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_encoding"
+        android:title="@string/hex_editor_encoding"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_file_info"
+        android:title="@string/hex_editor_file_info"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_readonly_toggle"
+        android:checkable="true"
+        android:title="@string/hex_editor_readonly"
+        app:showAsAction="never" />
+</menu>

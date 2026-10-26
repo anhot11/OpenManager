@@ -22,6 +22,7 @@ import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.terminal.TerminalActivity
 import me.zhanghai.android.files.terminal.TerminalExpansionManager
 import me.zhanghai.android.files.util.extraPath
+import me.zhanghai.android.files.viewer.hex.HexEditorActivity
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import java.io.File
 
@@ -174,9 +175,7 @@ object ScriptRunnerHelper {
 
     private fun editScriptOrBinary(activity: Activity, path: Path) {
         if (isElfBinary(path)) {
-            if (activity is FragmentActivity) {
-                HexViewerDialogFragment.show(path, activity.supportFragmentManager)
-            }
+            HexEditorActivity.start(activity, path)
         } else {
             val intent = Intent(activity, TextEditorActivity::class.java).apply {
                 action = Intent.ACTION_VIEW
