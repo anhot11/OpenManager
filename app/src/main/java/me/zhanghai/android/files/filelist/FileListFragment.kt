@@ -149,7 +149,10 @@ import me.zhanghai.android.files.util.valueCompat
 import me.zhanghai.android.files.util.viewModels
 import me.zhanghai.android.files.util.withChooser
 import android.provider.DocumentsContract
+import android.widget.Button
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import me.zhanghai.android.files.file.asDocumentTreeUriOrNull
 import me.zhanghai.android.files.provider.document.isDocumentPath
@@ -2251,7 +2254,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val contentLayout: ViewGroup,
         val progress: ProgressBar,
         val errorText: TextView,
-        val btnGrantSafPermission: Button,
+        val btnGrantSafPermission: MaterialButton,
         val emptyView: View,
         val swipeRefreshLayout: SwipeRefreshLayout,
         val recyclerView: RecyclerView,
