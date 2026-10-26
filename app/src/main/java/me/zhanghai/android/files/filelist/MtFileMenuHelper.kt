@@ -18,10 +18,7 @@ import androidx.appcompat.app.AppCompatDialog
 import androidx.core.view.isVisible
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.file.FileItem
-import me.zhanghai.android.files.file.fileItemSetOf
-import me.zhanghai.android.files.file.isArchiveFile
-import me.zhanghai.android.files.file.isArchivePath
-import me.zhanghai.android.files.util.Success
+import me.zhanghai.android.files.provider.archive.isArchivePath
 
 object MtFileMenuHelper {
 
@@ -310,7 +307,7 @@ object MtFileMenuHelper {
         val toolExportList = view.findViewById<LinearLayout>(R.id.toolExportList)
         toolExportList.setOnClickListener {
             dialog.dismiss()
-            val allFiles = (fragment.viewModel.fileListStateful.value as? Success)?.value ?: emptyList()
+            val allFiles = fragment.viewModel.fileListStateful.value ?: emptyList()
             ExportFileListHelper.showDialog(activity, fragment.currentPath, allFiles, targetFiles.toList()) {
                 fragment.viewModel.clearSelectedFiles()
             }
