@@ -162,14 +162,14 @@ object FileEncryptDecryptHelper {
                         outStream.write(salt)
                         outStream.write(iv)
 
-                        val cipherOut = CipherOutputStream(outStream, cipher)
-                        val buf = ByteArray(65536)
-                        var read: Int
-                        while (inStream.read(buf).also { read = it } != -1) {
-                            cipherOut.write(buf, 0, read)
+                        CipherOutputStream(outStream, cipher).use { cipherOut ->
+                            val buf = ByteArray(65536)
+                            var read: Int
+                            while (inStream.read(buf).also { read = it } != -1) {
+                                cipherOut.write(buf, 0, read)
+                            }
+                            cipherOut.flush()
                         }
-                        cipherOut.flush()
-                        cipherOut.close()
                     }
                 }
 
@@ -190,7 +190,8 @@ object FileEncryptDecryptHelper {
             }
 
             activity.runOnUiThread {
-                progress.dismiss()
+                if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                try { progress.dismiss() } catch (ignored: Exception) {}
                 if (success) {
                     Toast.makeText(activity, "Archivo cifrado:\n$targetName", Toast.LENGTH_LONG).show()
                     onDone()
@@ -233,15 +234,18 @@ object FileEncryptDecryptHelper {
             try {
                 sourcePath.newInputStream().use { inStream ->
                     val magic = ByteArray(MAGIC_HEADER.size)
-                    inStream.read(magic)
-                    if (!magic.contentEquals(MAGIC_HEADER)) {
+                    if (!inStream.readFully(magic) || !magic.contentEquals(MAGIC_HEADER)) {
                         throw IllegalArgumentException("Formato no compatible o archivo no cifrado por OpenManager")
                     }
 
                     val salt = ByteArray(16)
-                    inStream.read(salt)
+                    if (!inStream.readFully(salt)) {
+                        throw IllegalArgumentException("Archivo corrupto: no se pudo leer la sal")
+                    }
                     val iv = ByteArray(16)
-                    inStream.read(iv)
+                    if (!inStream.readFully(iv)) {
+                        throw IllegalArgumentException("Archivo corrupto: no se pudo leer el vector de inicialización")
+                    }
 
                     val keySpec = PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_LENGTH)
                     val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
@@ -252,17 +256,17 @@ object FileEncryptDecryptHelper {
                     cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
 
                     targetPath.newOutputStream().use { outStream ->
-                        val cipherIn = CipherInputStream(inStream, cipher)
-                        val buf = ByteArray(65536)
-                        var read: Int
-                        try {
-                            while (cipherIn.read(buf).also { read = it } != -1) {
-                                outStream.write(buf, 0, read)
+                        CipherInputStream(inStream, cipher).use { cipherIn ->
+                            val buf = ByteArray(65536)
+                            var read: Int
+                            try {
+                                while (cipherIn.read(buf).also { read = it } != -1) {
+                                    outStream.write(buf, 0, read)
+                                }
+                            } catch (e: Exception) {
+                                isWrongPassword = true
+                                throw e
                             }
-                            cipherIn.close()
-                        } catch (e: Exception) {
-                            isWrongPassword = true
-                            throw e
                         }
                     }
                 }
@@ -288,7 +292,8 @@ object FileEncryptDecryptHelper {
             }
 
             activity.runOnUiThread {
-                progress.dismiss()
+                if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                try { progress.dismiss() } catch (ignored: Exception) {}
                 if (success) {
                     Toast.makeText(activity, "Archivo descifrado:\n$targetName", Toast.LENGTH_LONG).show()
                     onDone()
@@ -301,5 +306,15 @@ object FileEncryptDecryptHelper {
                 }
             }
         }
+    }
+
+    private fun java.io.InputStream.readFully(b: ByteArray): Boolean {
+        var offset = 0
+        while (offset < b.size) {
+            val count = read(b, offset, b.size - offset)
+            if (count == -1) return false
+            offset += count
+        }
+        return true
     }
 }

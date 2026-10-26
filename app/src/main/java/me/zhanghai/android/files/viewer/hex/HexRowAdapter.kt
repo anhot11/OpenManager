@@ -12,6 +12,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
+import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -50,15 +51,77 @@ class HexRowAdapter(
 
     override fun getItemCount(): Int = (buffer.size + 15) / 16
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemHexRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         binding.tvOffset.typeface = typeface
         binding.tvHex.typeface = typeface
         binding.tvAscii.typeface = typeface
-        return ViewHolder(binding)
+
+        val holder = ViewHolder(binding)
+
+        val hexGestureDetector = GestureDetector(parent.context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                val pos = holder.bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return false
+                val rowOffset = pos * 16
+                val x = e.x - binding.tvHex.paddingLeft
+                if (x >= 0) {
+                    val charWidth = binding.tvHex.paint.measureText("0")
+                    val charPos = (x / charWidth).toInt()
+                    val byteInRow = if (charPos < 24) {
+                        (charPos / 3).coerceIn(0, 7)
+                    } else {
+                        (8 + ((charPos - 25).coerceAtLeast(0) / 3)).coerceIn(8, 15)
+                    }
+                    val targetOffset = rowOffset + byteInRow
+                    if (targetOffset < buffer.size) {
+                        onByteSelected(targetOffset)
+                        return true
+                    }
+                }
+                return false
+            }
+        })
+
+        val asciiGestureDetector = GestureDetector(parent.context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                val pos = holder.bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return false
+                val rowOffset = pos * 16
+                val x = e.x - binding.tvAscii.paddingLeft
+                if (x >= 0) {
+                    val charWidth = binding.tvAscii.paint.measureText("·")
+                    val byteInRow = (x / charWidth).toInt().coerceIn(0, 15)
+                    val targetOffset = rowOffset + byteInRow
+                    if (targetOffset < buffer.size) {
+                        onByteSelected(targetOffset)
+                        return true
+                    }
+                }
+                return false
+            }
+        })
+
+        binding.tvHex.setOnTouchListener { v, event ->
+            val handled = hexGestureDetector.onTouchEvent(event)
+            if (handled) {
+                v.performClick()
+            }
+            handled
+        }
+
+        binding.tvAscii.setOnTouchListener { v, event ->
+            val handled = asciiGestureDetector.onTouchEvent(event)
+            if (handled) {
+                v.performClick()
+            }
+            handled
+        }
+
+        return holder
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val rowOffset = position * 16
         val b = holder.binding
@@ -107,43 +170,6 @@ class HexRowAdapter(
             }
         }
         b.tvAscii.text = asciiSb
-
-        // 3. Touch listener for Hex column
-        b.tvHex.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
-                val x = event.x - b.tvHex.paddingLeft
-                if (x >= 0) {
-                    val charWidth = b.tvHex.paint.measureText("0")
-                    val charPos = (x / charWidth).toInt()
-                    val byteInRow = if (charPos < 24) {
-                        (charPos / 3).coerceIn(0, 7)
-                    } else {
-                        (8 + ((charPos - 25).coerceAtLeast(0) / 3)).coerceIn(8, 15)
-                    }
-                    val targetOffset = rowOffset + byteInRow
-                    if (targetOffset < buffer.size) {
-                        onByteSelected(targetOffset)
-                    }
-                }
-            }
-            true
-        }
-
-        // 4. Touch listener for ASCII column
-        b.tvAscii.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
-                val x = event.x - b.tvAscii.paddingLeft
-                if (x >= 0) {
-                    val charWidth = b.tvAscii.paint.measureText("·")
-                    val byteInRow = (x / charWidth).toInt().coerceIn(0, 15)
-                    val targetOffset = rowOffset + byteInRow
-                    if (targetOffset < buffer.size) {
-                        onByteSelected(targetOffset)
-                    }
-                }
-            }
-            true
-        }
     }
 
     private fun applySpans(sb: SpannableStringBuilder, start: Int, end: Int, offset: Int) {

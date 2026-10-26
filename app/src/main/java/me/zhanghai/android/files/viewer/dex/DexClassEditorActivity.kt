@@ -168,6 +168,7 @@ class DexClassEditorActivity : AppActivity() {
             )
 
             // If original path is different (e.g. non-linux or content), sync back
+            var writeBackError: String? = null
             if (success && originalPath != null && !originalPath!!.isLinuxPath) {
                 try {
                     FileInputStream(dexFile).use { input ->
@@ -177,12 +178,19 @@ class DexClassEditorActivity : AppActivity() {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    writeBackError = e.localizedMessage ?: e.message
                 }
             }
 
             withContext(Dispatchers.Main) {
                 binding.progressBar.visibility = View.GONE
-                if (success) {
+                if (writeBackError != null) {
+                    MaterialAlertDialogBuilder(this@DexClassEditorActivity)
+                        .setTitle("Advertencia al guardar")
+                        .setMessage("El código Smali se compiló pero no se pudo sincronizar en el archivo original:\n\n$writeBackError")
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
+                } else if (success) {
                     val snackbar = Snackbar.make(binding.root, R.string.dex_compile_success, Snackbar.LENGTH_LONG)
                     snackbar.show()
                 } else {

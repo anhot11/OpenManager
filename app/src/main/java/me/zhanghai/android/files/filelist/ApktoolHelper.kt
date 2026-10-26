@@ -82,45 +82,46 @@ object ApktoolHelper {
 
             try {
                 Files.createDirectories(projectDir)
-                val inStream = apkPath.newInputStream()
-                val zipIn = ZipInputStream(inStream)
-                var entry = zipIn.nextEntry
-                val buffer = ByteArray(65536)
+                apkPath.newInputStream().use { inStream ->
+                    ZipInputStream(inStream).use { zipIn ->
+                        var entry = zipIn.nextEntry
+                        val buffer = ByteArray(65536)
 
-                while (entry != null) {
-                    val name = entry.name
-                    if (!entry.isDirectory && !name.startsWith("META-INF/")) {
-                        val targetFile = projectDir.resolve(name)
-                        val parent = targetFile.parent
-                        if (parent != null && !Files.exists(parent)) {
-                            Files.createDirectories(parent)
-                        }
+                        while (entry != null) {
+                            val name = entry.name
+                            if (!entry.isDirectory && !name.startsWith("META-INF/")) {
+                                val targetFile = projectDir.resolve(name)
+                                val parent = targetFile.parent
+                                if (parent != null && !Files.exists(parent)) {
+                                    Files.createDirectories(parent)
+                                }
 
-                        val baos = ByteArrayOutputStream()
-                        var bytesRead: Int
-                        while (zipIn.read(buffer).also { bytesRead = it } != -1) {
-                            baos.write(buffer, 0, bytesRead)
-                        }
-                        val entryBytes = baos.toByteArray()
+                                val baos = ByteArrayOutputStream()
+                                var bytesRead: Int
+                                while (zipIn.read(buffer).also { bytesRead = it } != -1) {
+                                    baos.write(buffer, 0, bytesRead)
+                                }
+                                val entryBytes = baos.toByteArray()
 
-                        if (name == "AndroidManifest.xml" && AxmlDecoder.isAxml(entryBytes)) {
-                            val decoded = AxmlDecoder.decode(entryBytes)
-                            targetFile.newOutputStream().use { it.write(decoded.toByteArray(Charsets.UTF_8)) }
-                            val origFile = projectDir.resolve("AndroidManifest.xml.orig")
-                            origFile.newOutputStream().use { it.write(entryBytes) }
-                        } else if (name.startsWith("res/") && name.endsWith(".xml") && AxmlDecoder.isAxml(entryBytes)) {
-                            val decoded = AxmlDecoder.decode(entryBytes)
-                            targetFile.newOutputStream().use { it.write(decoded.toByteArray(Charsets.UTF_8)) }
-                            val origFile = projectDir.resolve("$name.orig")
-                            origFile.newOutputStream().use { it.write(entryBytes) }
-                        } else {
-                            targetFile.newOutputStream().use { it.write(entryBytes) }
+                                if (name == "AndroidManifest.xml" && AxmlDecoder.isAxml(entryBytes)) {
+                                    val decoded = AxmlDecoder.decode(entryBytes)
+                                    targetFile.newOutputStream().use { it.write(decoded.toByteArray(Charsets.UTF_8)) }
+                                    val origFile = projectDir.resolve("AndroidManifest.xml.orig")
+                                    origFile.newOutputStream().use { it.write(entryBytes) }
+                                } else if (name.startsWith("res/") && name.endsWith(".xml") && AxmlDecoder.isAxml(entryBytes)) {
+                                    val decoded = AxmlDecoder.decode(entryBytes)
+                                    targetFile.newOutputStream().use { it.write(decoded.toByteArray(Charsets.UTF_8)) }
+                                    val origFile = projectDir.resolve("$name.orig")
+                                    origFile.newOutputStream().use { it.write(entryBytes) }
+                                } else {
+                                    targetFile.newOutputStream().use { it.write(entryBytes) }
+                                }
+                            }
+                            zipIn.closeEntry()
+                            entry = zipIn.nextEntry
                         }
                     }
-                    zipIn.closeEntry()
-                    entry = zipIn.nextEntry
                 }
-                zipIn.close()
 
                 // Generate apktool.yml metadata
                 val yml = """
@@ -151,7 +152,8 @@ object ApktoolHelper {
             }
 
             activity.runOnUiThread {
-                progressDialog.dismiss()
+                if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                try { progressDialog.dismiss() } catch (ignored: Exception) {}
                 if (success) {
                     Toast.makeText(
                         activity,
@@ -205,69 +207,69 @@ object ApktoolHelper {
             var errorMsg: String? = null
 
             try {
-                val outStream = rawApkPath.newOutputStream()
-                val zipOut = ZipOutputStream(outStream)
-
-                fun addDirectoryToZip(currentDir: Path, basePath: Path) {
-                    Files.newDirectoryStream(currentDir).use { stream ->
-                        for (path in stream) {
-                            val relPath = basePath.relativize(path).toString().replace('\\', '/')
-                            if (Files.isDirectory(path)) {
-                                addDirectoryToZip(path, basePath)
-                            } else {
-                                // Skip metadata files
-                                if (relPath == "apktool.yml" || relPath.endsWith(".orig")) {
-                                    continue
-                                }
-
-                                var dataBytes: ByteArray
-                                // Check if there is an original binary for this xml
-                                val origFile = currentDir.resolve("${path.fileName}.orig")
-                                if (Files.exists(origFile)) {
-                                    val currentText = path.newInputStream().use { it.readBytes().toString(Charsets.UTF_8) }
-                                    val origBytes = origFile.newInputStream().use { it.readBytes() }
-                                    val origText = if (AxmlDecoder.isAxml(origBytes)) {
-                                        AxmlDecoder.decode(origBytes)
+                rawApkPath.newOutputStream().use { outStream ->
+                    ZipOutputStream(outStream).use { zipOut ->
+                        fun addDirectoryToZip(currentDir: Path, basePath: Path) {
+                            Files.newDirectoryStream(currentDir).use { stream ->
+                                for (path in stream) {
+                                    val relPath = basePath.relativize(path).toString().replace('\\', '/')
+                                    if (Files.isDirectory(path)) {
+                                        addDirectoryToZip(path, basePath)
                                     } else {
-                                        origBytes.toString(Charsets.UTF_8)
+                                        // Skip metadata files
+                                        if (relPath == "apktool.yml" || relPath.endsWith(".orig")) {
+                                            continue
+                                        }
+
+                                        var dataBytes: ByteArray
+                                        // Check if there is an original binary for this xml
+                                        val origFile = currentDir.resolve("${path.fileName}.orig")
+                                        if (Files.exists(origFile)) {
+                                            val currentText = path.newInputStream().use { it.readBytes().toString(Charsets.UTF_8) }
+                                            val origBytes = origFile.newInputStream().use { it.readBytes() }
+                                            val origText = if (AxmlDecoder.isAxml(origBytes)) {
+                                                AxmlDecoder.decode(origBytes)
+                                            } else {
+                                                origBytes.toString(Charsets.UTF_8)
+                                            }
+                                            dataBytes = if (currentText == origText) {
+                                                origBytes
+                                            } else {
+                                                path.newInputStream().use { it.readBytes() }
+                                            }
+                                        } else {
+                                            dataBytes = path.newInputStream().use { it.readBytes() }
+                                        }
+
+                                        val entry = ZipEntry(relPath)
+                                        val lower = relPath.lowercase()
+                                        val isStored = lower.endsWith(".arsc") || lower.endsWith(".png") ||
+                                            lower.endsWith(".jpg") || lower.endsWith(".webp") ||
+                                            lower.endsWith(".ogg") || lower.endsWith(".mp3")
+
+                                        if (isStored) {
+                                            entry.method = ZipEntry.STORED
+                                            entry.size = dataBytes.size.toLong()
+                                            entry.compressedSize = dataBytes.size.toLong()
+                                            val crc = CRC32()
+                                            crc.update(dataBytes)
+                                            entry.crc = crc.value
+                                        } else {
+                                            entry.method = ZipEntry.DEFLATED
+                                        }
+
+                                        zipOut.putNextEntry(entry)
+                                        zipOut.write(dataBytes)
+                                        zipOut.closeEntry()
                                     }
-                                    dataBytes = if (currentText == origText) {
-                                        origBytes
-                                    } else {
-                                        path.newInputStream().use { it.readBytes() }
-                                    }
-                                } else {
-                                    dataBytes = path.newInputStream().use { it.readBytes() }
                                 }
-
-                                val entry = ZipEntry(relPath)
-                                val lower = relPath.lowercase()
-                                val isStored = lower.endsWith(".arsc") || lower.endsWith(".png") ||
-                                    lower.endsWith(".jpg") || lower.endsWith(".webp") ||
-                                    lower.endsWith(".ogg") || lower.endsWith(".mp3")
-
-                                if (isStored) {
-                                    entry.method = ZipEntry.STORED
-                                    entry.size = dataBytes.size.toLong()
-                                    entry.compressedSize = dataBytes.size.toLong()
-                                    val crc = CRC32()
-                                    crc.update(dataBytes)
-                                    entry.crc = crc.value
-                                } else {
-                                    entry.method = ZipEntry.DEFLATED
-                                }
-
-                                zipOut.putNextEntry(entry)
-                                zipOut.write(dataBytes)
-                                zipOut.closeEntry()
                             }
                         }
+
+                        addDirectoryToZip(projectDir, projectDir)
+                        zipOut.finish()
                     }
                 }
-
-                addDirectoryToZip(projectDir, projectDir)
-                zipOut.finish()
-                zipOut.close()
 
                 success = true
             } catch (e: Exception) {
@@ -276,7 +278,8 @@ object ApktoolHelper {
             }
 
             activity.runOnUiThread {
-                progressDialog.dismiss()
+                if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                try { progressDialog.dismiss() } catch (ignored: Exception) {}
                 if (success) {
                     // Prompt user to sign with the 3 signature schemes (V1, V2, V1+V2)
                     Toast.makeText(

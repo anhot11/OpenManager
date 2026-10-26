@@ -126,47 +126,58 @@ object FileSplitMergeHelper {
         CoroutineScope(Dispatchers.IO).launch {
             var partIndex = 1
             var totalParts = 0
+            var output: FileOutputStream? = null
             try {
                 FileInputStream(srcFile).use { input ->
                     val buffer = ByteArray(64 * 1024)
                     var currentPartBytes = 0L
                     var partFile = File(srcFile.parentFile, "${srcFile.name}.part$partIndex")
-                    var output = FileOutputStream(partFile)
+                    output = FileOutputStream(partFile)
 
                     var bytesRead: Int
                     while (input.read(buffer).also { bytesRead = it } != -1) {
-                        output.write(buffer, 0, bytesRead)
+                        output!!.write(buffer, 0, bytesRead)
                         currentPartBytes += bytesRead
 
                         if (currentPartBytes >= partSizeBytes) {
-                            output.flush()
-                            output.close()
+                            output!!.flush()
+                            output!!.close()
+                            output = null
                             partIndex++
                             currentPartBytes = 0L
                             partFile = File(srcFile.parentFile, "${srcFile.name}.part$partIndex")
                             output = FileOutputStream(partFile)
                         }
                     }
-                    output.flush()
-                    output.close()
+                    output?.flush()
+                    output?.close()
+                    output = null
                     totalParts = partIndex
                 }
 
                 withContext(Dispatchers.Main) {
-                    progress.dismiss()
-                    Toast.makeText(
-                        activity,
-                        activity.getString(R.string.split_file_success, totalParts),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    onComplete()
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        try { progress.dismiss() } catch (ignored: Exception) {}
+                        Toast.makeText(
+                            activity,
+                            activity.getString(R.string.split_file_success, totalParts),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        onComplete()
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    progress.dismiss()
-                    Toast.makeText(activity, "Split failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        try { progress.dismiss() } catch (ignored: Exception) {}
+                        Toast.makeText(activity, "Error al dividir archivo: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
+            } finally {
+                try {
+                    output?.close()
+                } catch (ignored: Exception) {}
             }
         }
     }
@@ -315,19 +326,23 @@ object FileSplitMergeHelper {
                 }
 
                 withContext(Dispatchers.Main) {
-                    progress.dismiss()
-                    Toast.makeText(
-                        activity,
-                        activity.getString(R.string.merge_files_success, destFile.name),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    onComplete()
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        try { progress.dismiss() } catch (ignored: Exception) {}
+                        Toast.makeText(
+                            activity,
+                            activity.getString(R.string.merge_files_success, destFile.name),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        onComplete()
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    progress.dismiss()
-                    Toast.makeText(activity, "Merge failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        try { progress.dismiss() } catch (ignored: Exception) {}
+                        Toast.makeText(activity, "Error al unir archivos: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

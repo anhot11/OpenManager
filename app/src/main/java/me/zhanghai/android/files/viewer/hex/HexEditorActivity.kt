@@ -197,9 +197,31 @@ class HexEditorActivity : AppActivity() {
     private fun loadFileContent() {
         lifecycleScope.launch {
             binding.progressBar.visibility = View.VISIBLE
+            val maxSafeBytes = 25L * 1024L * 1024L // 25 MB
+            val fileSize = withContext(Dispatchers.IO) {
+                try {
+                    java8.nio.file.Files.size(path)
+                } catch (e: Exception) {
+                    -1L
+                }
+            }
+            if (fileSize > maxSafeBytes) {
+                binding.progressBar.visibility = View.GONE
+                MaterialAlertDialogBuilder(this@HexEditorActivity)
+                    .setTitle("Archivo demasiado grande")
+                    .setMessage("El archivo supera el límite seguro de 25 MB para edición hexadecimal en memoria (${formatFileSize(fileSize)}).\n\nPara evitar cierres forzados por memoria insuficiente (OOM), no se puede cargar en este modo.")
+                    .setPositiveButton(android.R.string.ok) { _, _ -> finish() }
+                    .setCancelable(false)
+                    .show()
+                return@launch
+            }
+
             val rawBytes = withContext(Dispatchers.IO) {
                 try {
                     path.newInputStream().use { stream -> stream.readBytes() }
+                } catch (e: OutOfMemoryError) {
+                    System.gc()
+                    null
                 } catch (e: Exception) {
                     null
                 }
@@ -207,7 +229,7 @@ class HexEditorActivity : AppActivity() {
             binding.progressBar.visibility = View.GONE
 
             if (rawBytes == null) {
-                showToast("Error al leer el archivo")
+                showToast("Error al leer el archivo o memoria insuficiente")
                 finish()
                 return@launch
             }

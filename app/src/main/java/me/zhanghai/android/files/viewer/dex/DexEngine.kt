@@ -39,6 +39,14 @@ object DexEngine {
         }
 
         val cacheDir = File(context.cacheDir, "dex_cache").apply { mkdirs() }
+        try {
+            val now = System.currentTimeMillis()
+            cacheDir.listFiles()?.forEach { f ->
+                if (now - f.lastModified() > 24 * 60 * 60 * 1000L) {
+                    f.delete()
+                }
+            }
+        } catch (ignored: Exception) {}
         val safeName = path.fileName.toString().replace(Regex("[\\\\/:*?\"<>|\\s]"), "_")
         val localFile = File(cacheDir, "${System.currentTimeMillis()}_$safeName")
 

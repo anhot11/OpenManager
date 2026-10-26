@@ -326,7 +326,8 @@ object ApkSignerHelper {
             }
 
             activity.runOnUiThread {
-                progressDialog.dismiss()
+                if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                try { progressDialog.dismiss() } catch (ignored: Exception) {}
                 if (success) {
                     Toast.makeText(
                         activity,
@@ -411,7 +412,8 @@ object ApkSignerHelper {
             }
 
             activity.runOnUiThread {
-                progressDialog.dismiss()
+                if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
+                try { progressDialog.dismiss() } catch (ignored: Exception) {}
                 if (errorMsg != null) {
                     MaterialAlertDialogBuilder(activity)
                         .setTitle("Error al verificar firma")

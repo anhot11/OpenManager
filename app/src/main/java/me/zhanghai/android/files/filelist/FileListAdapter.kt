@@ -549,6 +549,14 @@ class FileListAdapter(
                 else -> false
             }
         }
+    override fun onViewRecycled(holder: ViewHolder) {
+        super.onViewRecycled(holder)
+        holder.thumbnailImage.dispose()
+        holder.thumbnailImage.setImageDrawable(null)
+        holder.thumbnailIconImage?.dispose()
+        holder.thumbnailIconImage?.setImageDrawable(null)
+        holder.appIconBadgeImage.dispose()
+        holder.appIconBadgeImage.setImageDrawable(null)
     }
 
     override fun getPopupText(view: View, position: Int): CharSequence {

@@ -48,6 +48,8 @@ import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.util.copyText
 import me.zhanghai.android.files.util.createSendStreamIntent
 import me.zhanghai.android.files.util.withChooser
+import coil.load
+import me.zhanghai.android.files.coil.AppIconPackageName
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -85,8 +87,7 @@ class InstalledAppsActivity : AppActivity() {
         val isSystem: Boolean,
         val isEnabled: Boolean,
         val firstInstallTime: Long,
-        val lastUpdateTime: Long,
-        val icon: Drawable?
+        val lastUpdateTime: Long
     ) {
         val isSplit: Boolean get() = splitSourceDirs.isNotEmpty()
         val splitCount: Int get() = if (splitSourceDirs.isNotEmpty()) splitSourceDirs.size + 1 else 1
@@ -153,11 +154,6 @@ class InstalledAppsActivity : AppActivity() {
                 } catch (e: Exception) {
                     pkg.packageName
                 }
-                val icon = try {
-                    appInfo.loadIcon(pm)
-                } catch (e: Exception) {
-                    null
-                }
 
                 val splits = appInfo.splitSourceDirs?.toList() ?: emptyList()
                 var size = try {
@@ -196,8 +192,7 @@ class InstalledAppsActivity : AppActivity() {
                         isSystem = isSystem,
                         isEnabled = isEnabled,
                         firstInstallTime = pkg.firstInstallTime,
-                        lastUpdateTime = pkg.lastUpdateTime,
-                        icon = icon
+                        lastUpdateTime = pkg.lastUpdateTime
                     )
                 )
             }
@@ -275,10 +270,9 @@ class InstalledAppsActivity : AppActivity() {
 
     private fun showAppDetails(app: AppModel) {
         val dialogBinding = DialogInstalledAppDetailsBinding.inflate(layoutInflater)
-        if (app.icon != null) {
-            dialogBinding.dialogAppIcon.setImageDrawable(app.icon)
-        } else {
-            dialogBinding.dialogAppIcon.setImageResource(R.drawable.file_apk_icon)
+        dialogBinding.dialogAppIcon.load(AppIconPackageName(app.packageName)) {
+            placeholder(R.drawable.file_apk_icon)
+            error(R.drawable.file_apk_icon)
         }
         dialogBinding.dialogAppName.text = app.label
         dialogBinding.dialogAppVersionSize.text = "v${app.versionName} (${app.versionCode}) • ${formatSize(app.sizeBytes)}"
@@ -639,40 +633,42 @@ class InstalledAppsActivity : AppActivity() {
 
     private fun extractSplitApk(app: AppModel, destFile: File): Boolean {
         return try {
-            ZipOutputStream(FileOutputStream(destFile)).use { zos ->
-                // 1. base.apk
-                val baseFile = File(app.sourceDir)
-                if (baseFile.canRead()) {
-                    zos.putNextEntry(ZipEntry("base.apk"))
-                    baseFile.inputStream().use { it.copyTo(zos) }
-                    zos.closeEntry()
-                } else if (ApkInstallHelper.isRootAvailable()) {
-                    val tmpBase = File(cacheDir, "tmp_base_${System.currentTimeMillis()}.apk")
-                    Shell.cmd("cp \"${app.sourceDir}\" \"${tmpBase.absolutePath}\" && chmod 644 \"${tmpBase.absolutePath}\"").exec()
-                    if (tmpBase.exists()) {
+            FileOutputStream(destFile).use { fos ->
+                ZipOutputStream(fos).use { zos ->
+                    // 1. base.apk
+                    val baseFile = File(app.sourceDir)
+                    if (baseFile.canRead()) {
                         zos.putNextEntry(ZipEntry("base.apk"))
-                        tmpBase.inputStream().use { it.copyTo(zos) }
-                        zos.closeEntry()
-                        tmpBase.delete()
-                    }
-                }
-
-                // 2. split APKs
-                for (splitPath in app.splitSourceDirs) {
-                    val splitFile = File(splitPath)
-                    val entryName = splitFile.name
-                    if (splitFile.canRead()) {
-                        zos.putNextEntry(ZipEntry(entryName))
-                        splitFile.inputStream().use { it.copyTo(zos) }
+                        baseFile.inputStream().use { it.copyTo(zos) }
                         zos.closeEntry()
                     } else if (ApkInstallHelper.isRootAvailable()) {
-                        val tmpSplit = File(cacheDir, "tmp_split_${System.currentTimeMillis()}_$entryName")
-                        Shell.cmd("cp \"$splitPath\" \"${tmpSplit.absolutePath}\" && chmod 644 \"${tmpSplit.absolutePath}\"").exec()
-                        if (tmpSplit.exists()) {
-                            zos.putNextEntry(ZipEntry(entryName))
-                            tmpSplit.inputStream().use { it.copyTo(zos) }
+                        val tmpBase = File(cacheDir, "tmp_base_${System.currentTimeMillis()}.apk")
+                        Shell.cmd("cp \"${app.sourceDir}\" \"${tmpBase.absolutePath}\" && chmod 644 \"${tmpBase.absolutePath}\"").exec()
+                        if (tmpBase.exists()) {
+                            zos.putNextEntry(ZipEntry("base.apk"))
+                            tmpBase.inputStream().use { it.copyTo(zos) }
                             zos.closeEntry()
-                            tmpSplit.delete()
+                            tmpBase.delete()
+                        }
+                    }
+
+                    // 2. split APKs
+                    for (splitPath in app.splitSourceDirs) {
+                        val splitFile = File(splitPath)
+                        val entryName = splitFile.name
+                        if (splitFile.canRead()) {
+                            zos.putNextEntry(ZipEntry(entryName))
+                            splitFile.inputStream().use { it.copyTo(zos) }
+                            zos.closeEntry()
+                        } else if (ApkInstallHelper.isRootAvailable()) {
+                            val tmpSplit = File(cacheDir, "tmp_split_${System.currentTimeMillis()}_$entryName")
+                            Shell.cmd("cp \"$splitPath\" \"${tmpSplit.absolutePath}\" && chmod 644 \"${tmpSplit.absolutePath}\"").exec()
+                            if (tmpSplit.exists()) {
+                                zos.putNextEntry(ZipEntry(entryName))
+                                tmpSplit.inputStream().use { it.copyTo(zos) }
+                                zos.closeEntry()
+                                tmpSplit.delete()
+                            }
                         }
                     }
                 }
@@ -794,14 +790,18 @@ class InstalledAppsActivity : AppActivity() {
                 val dateStr = formatDate(app.lastUpdateTime)
                 appMetaInfo.text = "SDK: $minSdkStr - ${app.targetSdkVersion}  •  $dateStr"
 
-                if (app.icon != null) {
-                    appIcon.setImageDrawable(app.icon)
-                } else {
-                    appIcon.setImageResource(R.drawable.file_apk_icon)
+                appIcon.load(AppIconPackageName(app.packageName)) {
+                    placeholder(R.drawable.file_apk_icon)
+                    error(R.drawable.file_apk_icon)
                 }
                 root.alpha = if (app.isEnabled) 1.0f else 0.5f
                 root.setOnClickListener { onClick(app) }
             }
+        }
+
+        override fun onViewRecycled(holder: ViewHolder) {
+            super.onViewRecycled(holder)
+            holder.binding.appIcon.setImageDrawable(null)
         }
 
         override fun getItemCount(): Int = items.size
