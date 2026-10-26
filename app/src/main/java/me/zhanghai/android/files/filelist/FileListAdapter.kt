@@ -549,6 +549,8 @@ class FileListAdapter(
                 else -> false
             }
         }
+    }
+
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
         holder.thumbnailImage.dispose()
