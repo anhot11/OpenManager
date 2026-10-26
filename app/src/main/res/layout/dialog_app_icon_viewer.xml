@@ -113,7 +113,7 @@
             android:text="Guardar PNG"
             android:textColor="#FFFFFF"
             app:backgroundTint="#388E3C"
-            app:icon="@drawable/check_icon_white_24dp"
+            app:icon="@drawable/download_icon_white_24dp"
             app:iconTint="#FFFFFF" />
     </LinearLayout>
 </LinearLayout>
