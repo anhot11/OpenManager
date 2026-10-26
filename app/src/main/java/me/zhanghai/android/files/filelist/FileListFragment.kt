@@ -997,15 +997,15 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     private fun retryWithRoot() {
         if (LibSuFileServiceLauncher.isSuAvailable()) {
-            Settings.ROOT_STRATEGY.valueCompat = RootStrategy.AUTOMATIC
+            Settings.ROOT_STRATEGY.putValue(RootStrategy.AUTOMATIC)
             showToast(getString(R.string.root_requesting_toast))
             viewModel.reload()
         } else {
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.root_not_detected_title)
                 .setMessage(R.string.root_not_detected_message)
-                .setPositiveButton(R.string.settings) { _, _ ->
-                    startActivity(SettingsActivity::class.createIntent())
+                .setPositiveButton(R.string.settings_title) { _, _ ->
+                    startActivity(Intent(requireContext(), SettingsActivity::class.java))
                 }
                 .setNegativeButton(android.R.string.ok, null)
                 .show()
