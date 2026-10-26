@@ -6,12 +6,18 @@
 package me.zhanghai.android.files.filelist
 
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDialogFragment
@@ -31,6 +37,9 @@ import me.zhanghai.android.files.util.getPackageArchiveInfoCompat
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.show
 import me.zhanghai.android.files.util.valueCompat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class OpenApkDialogFragment : AppCompatDialogFragment() {
     private val args by args<Args>()
@@ -54,6 +63,18 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
         val tvMinSdk = view.findViewById<TextView>(R.id.tvApkMinSdk)
         val tvInstalled = view.findViewById<TextView>(R.id.tvApkInstalled)
 
+        val rowDataDir = view.findViewById<TableRow>(R.id.rowApkDataDir)
+        val rowApkPath = view.findViewById<TableRow>(R.id.rowApkPath)
+        val rowFirstInstall = view.findViewById<TableRow>(R.id.rowApkFirstInstall)
+        val rowLastUpdate = view.findViewById<TableRow>(R.id.rowApkLastUpdate)
+        val rowUid = view.findViewById<TableRow>(R.id.rowApkUid)
+
+        val tvDataDir = view.findViewById<TextView>(R.id.tvApkDataDir)
+        val tvApkPath = view.findViewById<TextView>(R.id.tvApkPath)
+        val tvFirstInstall = view.findViewById<TextView>(R.id.tvApkFirstInstall)
+        val tvLastUpdate = view.findViewById<TextView>(R.id.tvApkLastUpdate)
+        val tvUid = view.findViewById<TextView>(R.id.tvApkUid)
+
         val btnFunction = view.findViewById<Button>(R.id.btnApkFunction)
         val btnView = view.findViewById<Button>(R.id.btnApkView)
         val btnRootInstall = view.findViewById<Button>(R.id.btnApkRootInstall)
@@ -64,6 +85,23 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
         tvSize.text = sizeStr
         tvProtection.text = "No Detected"
 
+        fun copyToClipboard(label: String, text: CharSequence?) {
+            val textStr = text?.toString() ?: return
+            if (textStr.isNotEmpty() && textStr != "-") {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText(label, textStr))
+                Toast.makeText(context, "$label copiado", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        tvPackage.setOnClickListener { copyToClipboard("Paquete", tvPackage.text) }
+        tvLabel.setOnClickListener { copyToClipboard("Nombre", tvLabel.text) }
+        tvDataDir?.setOnClickListener { copyToClipboard("Ruta de datos", tvDataDir.text) }
+        tvApkPath?.setOnClickListener { copyToClipboard("Ruta de APK", tvApkPath.text) }
+        tvUid?.setOnClickListener { copyToClipboard("UID", tvUid.text) }
+
+        var parsedPackageName: String? = null
+
         try {
             var packageInfoFlags = PackageManager.GET_PERMISSIONS or PackageManager.GET_SIGNATURES
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -72,6 +110,7 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
             val (packageInfo, closeable) = packageManager.getPackageArchiveInfoCompat(file.path, packageInfoFlags)
             closeable.use {
                 if (packageInfo != null) {
+                    parsedPackageName = packageInfo.packageName
                     val appInfo = packageInfo.applicationInfo
                     if (appInfo != null) {
                         try {
@@ -129,11 +168,40 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
                         try {
                             val installedInfo = packageManager.getPackageInfo(pkgName, 0)
                             tvInstalled.text = "v${installedInfo.versionName} (${installedInfo.longVersionCodeCompat})"
+                            tvInstalled.setTextColor(Color.parseColor("#81C784"))
+
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            val installedAppInfo = installedInfo.applicationInfo
+                            if (installedAppInfo != null) {
+                                tvDataDir?.text = installedAppInfo.dataDir ?: "-"
+                                tvApkPath?.text = installedAppInfo.sourceDir ?: "-"
+                                tvUid?.text = installedAppInfo.uid.toString()
+                            }
+                            tvFirstInstall?.text = dateFormat.format(Date(installedInfo.firstInstallTime))
+                            tvLastUpdate?.text = dateFormat.format(Date(installedInfo.lastUpdateTime))
+
+                            rowDataDir?.isVisible = true
+                            rowApkPath?.isVisible = true
+                            rowFirstInstall?.isVisible = true
+                            rowLastUpdate?.isVisible = true
+                            rowUid?.isVisible = true
                         } catch (e: Exception) {
                             tvInstalled.text = "No instalado"
+                            tvInstalled.setTextColor(Color.parseColor("#E57373"))
+                            rowDataDir?.isVisible = false
+                            rowApkPath?.isVisible = false
+                            rowFirstInstall?.isVisible = false
+                            rowLastUpdate?.isVisible = false
+                            rowUid?.isVisible = false
                         }
                     } else {
                         tvInstalled.text = "No instalado"
+                        tvInstalled.setTextColor(Color.parseColor("#E57373"))
+                        rowDataDir?.isVisible = false
+                        rowApkPath?.isVisible = false
+                        rowFirstInstall?.isVisible = false
+                        rowLastUpdate?.isVisible = false
+                        rowUid?.isVisible = false
                     }
                 } else {
                     tvLabel.text = file.name
@@ -145,6 +213,12 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
                     tvMinSdk.text = "-"
                     tvTargetSdk.text = "-"
                     tvInstalled.text = "No instalado"
+                    tvInstalled.setTextColor(Color.parseColor("#E57373"))
+                    rowDataDir?.isVisible = false
+                    rowApkPath?.isVisible = false
+                    rowFirstInstall?.isVisible = false
+                    rowLastUpdate?.isVisible = false
+                    rowUid?.isVisible = false
                 }
             }
         } catch (e: Exception) {
@@ -158,6 +232,12 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
             tvMinSdk.text = "-"
             tvTargetSdk.text = "-"
             tvInstalled.text = "No instalado"
+            tvInstalled.setTextColor(Color.parseColor("#E57373"))
+            rowDataDir?.isVisible = false
+            rowApkPath?.isVisible = false
+            rowFirstInstall?.isVisible = false
+            rowLastUpdate?.isVisible = false
+            rowUid?.isVisible = false
         }
 
         val isRootAvailable = ApkInstallHelper.isRootAvailable()
@@ -195,9 +275,9 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
             }
             optionsList.addAll(listOf(
                 getString(R.string.apk_sign),
-                getString(R.string.apk_clone),
-                getString(R.string.apk_optimize),
-                getString(R.string.apk_convert_apks)
+                "Copiar nombre del paquete",
+                "Extraer APK",
+                getString(R.string.apk_optimize)
             ))
             val options = optionsList.toTypedArray()
             MaterialAlertDialogBuilder(context)
@@ -213,10 +293,29 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
                             dialog.dismiss()
                             listener.installApkWithRoot(file)
                         }
-                        getString(R.string.apk_sign) -> Toast.makeText(context, "Firma de APK seleccionada", Toast.LENGTH_SHORT).show()
-                        getString(R.string.apk_clone) -> Toast.makeText(context, "Clonación de APK seleccionada", Toast.LENGTH_SHORT).show()
-                        getString(R.string.apk_optimize) -> Toast.makeText(context, "Optimización zipalign seleccionada", Toast.LENGTH_SHORT).show()
-                        getString(R.string.apk_convert_apks) -> Toast.makeText(context, "Conversión de APKS a APK seleccionada", Toast.LENGTH_SHORT).show()
+                        getString(R.string.apk_sign) -> {
+                            dialog.dismiss()
+                            ApkSignerHelper.signApk(requireActivity(), file.path) { targetPath ->
+                                if (targetPath != null) {
+                                    (activity as? FileListActivity)?.activeFragment?.reload()
+                                }
+                            }
+                        }
+                        "Copiar nombre del paquete" -> {
+                            val pkg = parsedPackageName ?: tvPackage.text.toString()
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Package Name", pkg))
+                            Toast.makeText(context, "Nombre del paquete copiado:\n$pkg", Toast.LENGTH_SHORT).show()
+                        }
+                        "Extraer APK" -> {
+                            dialog.dismiss()
+                            val opposite = (activity as? FileListActivity)?.getOppositeFragment((activity as? FileListActivity)?.activeFragment ?: return@setItems)
+                            val dest = opposite?.currentPath ?: java8.nio.file.Paths.get("/storage/emulated/0/Download")
+                            (activity as? FileListActivity)?.activeFragment?.copyFilesTo(fileItemSetOf(file), dest)
+                        }
+                        getString(R.string.apk_optimize) -> {
+                            Toast.makeText(context, "El archivo APK ya cuenta con alineación zipalign a 4 bytes", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 .show()

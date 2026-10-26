@@ -207,6 +207,22 @@
                     android:textSize="11sp" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnInvertSelection"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.1"
+                    android:minWidth="0dp"
+                    android:paddingLeft="0dp"
+                    android:paddingRight="0dp"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:singleLine="true"
+                    android:text="Invertir"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCopyOpposite"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="0dp"
@@ -470,6 +486,98 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="/storage/emulated/0"
+                            android:textColor="#888888"
+                            android:textSize="10.5sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Downloads Shortcut -->
+                <LinearLayout
+                    android:id="@+id/drawerItemDownloads"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/download_icon_white_24dp"
+                            app:tint="#DCDCDC" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Descargas"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13.5sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="/storage/emulated/0/Download"
+                            android:textColor="#888888"
+                            android:textSize="10.5sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Android/data Shortcut -->
+                <LinearLayout
+                    android:id="@+id/drawerItemAndroidData"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/drawer_icon_circle">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/directory_icon_white_24dp"
+                            app:tint="#42A5F5" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Android/data"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13.5sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Datos de aplicaciones (SAF)"
                             android:textColor="#888888"
                             android:textSize="10.5sp" />
                     </LinearLayout>

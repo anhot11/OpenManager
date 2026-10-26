@@ -126,6 +126,64 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
+            <!-- Cifrar archivo -->
+            <LinearLayout
+                android:id="@+id/toolEncryptFile"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/ivEncryptIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/lock_icon_white_24dp"
+                    app:tint="#E0E0E0" />
+
+                <TextView
+                    android:id="@+id/tvEncryptLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="16dp"
+                    android:text="Cifrar archivo"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Descifrar archivo -->
+            <LinearLayout
+                android:id="@+id/toolDecryptFile"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/ivDecryptIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/lock_icon_white_24dp"
+                    app:tint="#E0E0E0" />
+
+                <TextView
+                    android:id="@+id/tvDecryptLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="16dp"
+                    android:text="Descifrar archivo"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
             <!-- Intercambiar nombres de archivos -->
             <LinearLayout
                 android:id="@+id/toolSwapNames"

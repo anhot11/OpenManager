@@ -1342,6 +1342,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         adapter.selectAllFiles()
     }
 
+    fun invertSelection() {
+        adapter.invertSelection()
+    }
+
     private fun onPasteStateChanged(pasteState: PasteState) {
         updateBottomToolbar()
     }

@@ -162,7 +162,9 @@
         </TableRow>
 
         <!-- Installed -->
-        <TableRow android:paddingVertical="3dp">
+        <TableRow
+            android:id="@+id/rowApkInstalled"
+            android:paddingVertical="3dp">
             <TextView
                 android:text="Installed"
                 android:textColor="#9E9E9E"
@@ -172,21 +174,105 @@
                 android:textColor="#E0E0E0"
                 android:textSize="13sp" />
         </TableRow>
+
+        <!-- Data directory (Installed only) -->
+        <TableRow
+            android:id="@+id/rowApkDataDir"
+            android:paddingVertical="3dp"
+            android:visibility="gone">
+            <TextView
+                android:text="Data directory"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkDataDir"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:ellipsize="middle" />
+        </TableRow>
+
+        <!-- APK path (Installed only) -->
+        <TableRow
+            android:id="@+id/rowApkPath"
+            android:paddingVertical="3dp"
+            android:visibility="gone">
+            <TextView
+                android:text="APK path"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkPath"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:ellipsize="middle" />
+        </TableRow>
+
+        <!-- First install (Installed only) -->
+        <TableRow
+            android:id="@+id/rowApkFirstInstall"
+            android:paddingVertical="3dp"
+            android:visibility="gone">
+            <TextView
+                android:text="First install"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkFirstInstall"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- Last update (Installed only) -->
+        <TableRow
+            android:id="@+id/rowApkLastUpdate"
+            android:paddingVertical="3dp"
+            android:visibility="gone">
+            <TextView
+                android:text="Last update"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkLastUpdate"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
+
+        <!-- UID (Installed only) -->
+        <TableRow
+            android:id="@+id/rowApkUid"
+            android:paddingVertical="3dp"
+            android:visibility="gone">
+            <TextView
+                android:text="UID"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvApkUid"
+                android:textColor="#E0E0E0"
+                android:textSize="13sp" />
+        </TableRow>
     </TableLayout>
 
     <!-- Bottom Buttons Bar: FUNCTION, VIEW, INSTALL -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="end"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingTop="20dp">
+        android:paddingTop="18dp">
 
         <Button
             android:id="@+id/btnApkFunction"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
             android:text="@string/apk_function"
             android:textColor="#2196F3"
             android:textStyle="bold" />
@@ -201,6 +287,11 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
             android:text="@string/view"
             android:textColor="#2196F3"
             android:textStyle="bold" />
@@ -210,20 +301,30 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
             android:text="@string/install_root"
             android:textColor="#4CAF50"
             android:textStyle="bold"
             android:visibility="gone"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="4dp" />
 
         <Button
             android:id="@+id/btnApkInstall"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
             android:text="@string/install"
             android:textColor="#2196F3"
             android:textStyle="bold"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="4dp" />
     </LinearLayout>
 </LinearLayout>

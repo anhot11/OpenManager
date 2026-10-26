@@ -247,6 +247,34 @@ object MtFileMenuHelper {
             toolMergeFiles.isEnabled = false
         }
 
+        // Cifrar archivo
+        val toolEncryptFile = view.findViewById<LinearLayout>(R.id.toolEncryptFile)
+        if (!isDirectory && !isArchivePath && isSingleFile && !FileEncryptDecryptHelper.isEncryptedFile(file)) {
+            toolEncryptFile.setOnClickListener {
+                dialog.dismiss()
+                FileEncryptDecryptHelper.showEncryptDialog(activity, file) {
+                    fragment.viewModel.reload()
+                }
+            }
+        } else {
+            toolEncryptFile.alpha = 0.4f
+            toolEncryptFile.isEnabled = false
+        }
+
+        // Descifrar archivo
+        val toolDecryptFile = view.findViewById<LinearLayout>(R.id.toolDecryptFile)
+        if (!isDirectory && !isArchivePath && isSingleFile && FileEncryptDecryptHelper.isEncryptedFile(file)) {
+            toolDecryptFile.setOnClickListener {
+                dialog.dismiss()
+                FileEncryptDecryptHelper.showDecryptDialog(activity, file) {
+                    fragment.viewModel.reload()
+                }
+            }
+        } else {
+            toolDecryptFile.alpha = 0.4f
+            toolDecryptFile.isEnabled = false
+        }
+
         // Intercambiar nombres de archivos
         val toolSwapNames = view.findViewById<LinearLayout>(R.id.toolSwapNames)
         if (!isReadOnly) {

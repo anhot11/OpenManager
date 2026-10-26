@@ -86,6 +86,7 @@ class FileListActivity : AppActivity() {
     private lateinit var btnBottomUp: ImageButton
 
     private lateinit var btnSelectAll: MaterialButton
+    private lateinit var btnInvertSelection: MaterialButton
     private lateinit var btnCopyOpposite: MaterialButton
     private lateinit var btnMoveOpposite: MaterialButton
     private lateinit var btnDeleteSelection: MaterialButton
@@ -158,6 +159,7 @@ class FileListActivity : AppActivity() {
         btnBottomUp = findViewById(R.id.btnBottomUp)
 
         btnSelectAll = findViewById(R.id.btnSelectAll)
+        btnInvertSelection = findViewById(R.id.btnInvertSelection)
         btnCopyOpposite = findViewById(R.id.btnCopyOpposite)
         btnMoveOpposite = findViewById(R.id.btnMoveOpposite)
         btnDeleteSelection = findViewById(R.id.btnDeleteSelection)
@@ -314,6 +316,21 @@ class FileListActivity : AppActivity() {
         findViewById<View>(R.id.drawerItemInternal).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             activeFragment.navigateTo(Paths.get("/storage/emulated/0"))
+        }
+
+        findViewById<View>(R.id.drawerItemDownloads)?.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            activeFragment.navigateTo(Paths.get("/storage/emulated/0/Download"))
+        }
+
+        findViewById<View>(R.id.drawerItemAndroidData)?.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val resolved = PathNavigator.resolve("/storage/emulated/0/Android/data", activeFragment.currentPath)
+            if (resolved != null) {
+                activeFragment.navigateTo(resolved)
+            } else {
+                activeFragment.navigateTo(Paths.get("/storage/emulated/0/Android/data"))
+            }
         }
 
         layoutCustomStorages = findViewById(R.id.layoutCustomStorages)
@@ -567,6 +584,10 @@ class FileListActivity : AppActivity() {
             activeFragment.selectAllFiles()
         }
 
+        btnInvertSelection.setOnClickListener {
+            activeFragment.invertSelection()
+        }
+
         btnCopyOpposite.setOnClickListener {
             val selected = activeFragment.selectedFiles
             if (selected.isNotEmpty()) {
@@ -756,8 +777,16 @@ class FileListActivity : AppActivity() {
                 editText.setText("/storage/emulated/0/Download/")
                 editText.setSelection(editText.text?.length ?: 0)
             })
+            buttonBar.addView(createChip("Android/data") {
+                editText.setText("/storage/emulated/0/Android/data/")
+                editText.setSelection(editText.text?.length ?: 0)
+            })
 
-            addView(buttonBar)
+            val hsv = android.widget.HorizontalScrollView(context).apply {
+                isHorizontalScrollBarEnabled = false
+                addView(buttonBar)
+            }
+            addView(hsv)
         }
 
         val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
@@ -885,10 +914,14 @@ class FileListActivity : AppActivity() {
     private fun showMoreSelectionMenu(anchor: View) {
         val popup = PopupMenu(this, anchor)
         popup.menu.apply {
+            add(0, 4, 0, "Invertir selección")
             add(0, 1, 0, "Desmarcar todo")
             add(0, 2, 0, getString(R.string.action_export_file_list))
             if (activeFragment.selectedFiles.size == 2) {
                 add(0, 3, 0, getString(R.string.action_swap_file_names))
+            }
+            if (activeFragment.selectedFiles.size == 1) {
+                add(0, 5, 0, getString(R.string.file_properties))
             }
         }
         popup.setOnMenuItemClickListener { item ->
@@ -911,6 +944,17 @@ class FileListActivity : AppActivity() {
                             activeFragment.clearSelectedFiles()
                             activeFragment.reload()
                         }
+                    }
+                    true
+                }
+                4 -> {
+                    activeFragment.invertSelection()
+                    true
+                }
+                5 -> {
+                    val file = activeFragment.selectedFiles.firstOrNull()
+                    if (file != null) {
+                        activeFragment.showPropertiesDialog(file)
                     }
                     true
                 }

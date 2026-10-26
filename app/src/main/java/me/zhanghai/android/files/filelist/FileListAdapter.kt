@@ -156,6 +156,27 @@ class FileListAdapter(
         listener.selectFiles(files, true)
     }
 
+    fun invertSelection() {
+        val filesToSelect = fileItemSetOf()
+        val filesToDeselect = fileItemSetOf()
+        for (index in 0..<itemCount) {
+            val file = getItem(index)
+            if (!file.isParentDirectoryItem && isFileSelectable(file)) {
+                if (file in selectedFiles) {
+                    filesToDeselect.add(file)
+                } else {
+                    filesToSelect.add(file)
+                }
+            }
+        }
+        if (filesToDeselect.isNotEmpty()) {
+            listener.selectFiles(filesToDeselect, false)
+        }
+        if (filesToSelect.isNotEmpty()) {
+            listener.selectFiles(filesToSelect, true)
+        }
+    }
+
     private fun isFileSelectable(file: FileItem): Boolean {
         if (file.isParentDirectoryItem) {
             return false
