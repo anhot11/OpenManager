@@ -921,7 +921,7 @@ class FileListActivity : AppActivity() {
                 add(0, 3, 0, getString(R.string.action_swap_file_names))
             }
             if (activeFragment.selectedFiles.size == 1) {
-                add(0, 5, 0, getString(R.string.file_properties))
+                add(0, 5, 0, getString(R.string.file_item_action_properties))
             }
         }
         popup.setOnMenuItemClickListener { item ->
