@@ -4,7 +4,6 @@ import java.io.File
 import java8.nio.file.Path
 import java8.nio.file.Paths
 import me.zhanghai.android.files.compat.DocumentsContractCompat
-import me.zhanghai.android.files.file.asDocumentTreeUriOrNull
 import me.zhanghai.android.files.provider.archive.createArchiveRootPath
 import me.zhanghai.android.files.provider.archive.isArchivePath
 import me.zhanghai.android.files.settings.Settings
@@ -137,7 +136,7 @@ object PathNavigator {
             val storages = Settings.STORAGES.valueCompat
             val match = storages.filterIsInstance<DocumentTree>().firstOrNull { t ->
                 val uriStr = t.uri.value.toString()
-                val docId = t.uri.asDocumentTreeUriOrNull()?.documentId
+                val docId = t.uri.documentId
                 docId == targetDocId ||
                     (if (isObb) uriStr.contains("Android%2Fobb", true) else uriStr.contains("Android%2Fdata", true))
             }
