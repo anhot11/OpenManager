@@ -27,9 +27,14 @@ class HexRowAdapter(
 
     var selectedOffset: Int = 0
         set(value) {
-            val oldRow = field / 16
+            val count = itemCount
+            if (count == 0) {
+                field = value
+                return
+            }
+            val oldRow = (field / 16).coerceIn(0, count - 1)
             field = value
-            val newRow = value / 16
+            val newRow = (value / 16).coerceIn(0, count - 1)
             if (oldRow == newRow) {
                 notifyItemChanged(oldRow)
             } else {

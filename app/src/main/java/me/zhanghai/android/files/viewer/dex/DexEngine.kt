@@ -102,15 +102,19 @@ object DexEngine {
                 val stringIdsOff = bb.getInt(60)
                 val limit = stringCount.coerceAtMost(10000)
                 for (i in 0 until limit) {
-                    val off = bb.getInt(stringIdsOff + i * 4)
+                    val tableEntryOff = stringIdsOff + i * 4
+                    if (tableEntryOff < 0 || tableEntryOff + 4 > bytes.size) break
+                    val off = bb.getInt(tableEntryOff)
                     if (off in 0 until bytes.size) {
                         var pos = off
-                        while (pos < bytes.size && (bytes[pos].toInt() and 0x80) != 0) {
+                        var ulebCount = 0
+                        while (pos < bytes.size && (bytes[pos].toInt() and 0x80) != 0 && ulebCount < 5) {
                             pos++
+                            ulebCount++
                         }
                         pos++
                         val sb = StringBuilder()
-                        while (pos < bytes.size && bytes[pos].toInt() != 0) {
+                        while (pos < bytes.size && bytes[pos].toInt() != 0 && sb.length < 500) {
                             val c = bytes[pos].toInt().toChar()
                             if (c in ' '..'~' || c == '\n' || c == '\t') {
                                 sb.append(c)

@@ -66,12 +66,16 @@ class AudioPlayerDialogFragment : AppCompatDialogFragment() {
     private val progressRunnable = object : Runnable {
         override fun run() {
             mediaPlayer?.let { player ->
-                if (player.isPlaying && !isUserTracking) {
-                    val current = player.currentPosition
-                    seekBar.progress = current
-                    tvElapsed.text = formatTime(current)
+                try {
+                    if (player.isPlaying && !isUserTracking) {
+                        val current = player.currentPosition
+                        seekBar.progress = current
+                        tvElapsed.text = formatTime(current)
+                    }
+                    handler.postDelayed(this, 250)
+                } catch (e: Exception) {
+                    // Ignore if player is released or transitioning
                 }
-                handler.postDelayed(this, 250)
             }
         }
     }
@@ -108,19 +112,27 @@ class AudioPlayerDialogFragment : AppCompatDialogFragment() {
 
         btnRewind.setOnClickListener {
             mediaPlayer?.let { player ->
-                val newPos = (player.currentPosition - 10000).coerceAtLeast(0)
-                player.seekTo(newPos)
-                seekBar.progress = newPos
-                tvElapsed.text = formatTime(newPos)
+                try {
+                    val newPos = (player.currentPosition - 10000).coerceAtLeast(0)
+                    player.seekTo(newPos)
+                    seekBar.progress = newPos
+                    tvElapsed.text = formatTime(newPos)
+                } catch (e: Exception) {
+                    // Ignore state errors
+                }
             }
         }
 
         btnForward.setOnClickListener {
             mediaPlayer?.let { player ->
-                val newPos = (player.currentPosition + 10000).coerceAtMost(player.duration)
-                player.seekTo(newPos)
-                seekBar.progress = newPos
-                tvElapsed.text = formatTime(newPos)
+                try {
+                    val newPos = (player.currentPosition + 10000).coerceAtMost(player.duration)
+                    player.seekTo(newPos)
+                    seekBar.progress = newPos
+                    tvElapsed.text = formatTime(newPos)
+                } catch (e: Exception) {
+                    // Ignore state errors
+                }
             }
         }
 
@@ -215,28 +227,32 @@ class AudioPlayerDialogFragment : AppCompatDialogFragment() {
             }
             player.setOnErrorListener { _, what, extra ->
                 Toast.makeText(context, "Error al reproducir audio ($what, $extra)", Toast.LENGTH_SHORT).show()
-                dismiss()
+                dismissAllowingStateLoss()
                 true
             }
             player.prepareAsync()
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(context, "No se pudo abrir el audio: ${e.message}", Toast.LENGTH_SHORT).show()
-            dismiss()
+            dismissAllowingStateLoss()
         }
     }
 
     private fun togglePlayPause() {
         mediaPlayer?.let { player ->
-            if (player.isPlaying) {
-                player.pause()
-                isPlaying = false
-                ivPlayPause.setImageResource(R.drawable.ic_play_arrow_24dp)
-            } else {
-                player.start()
-                isPlaying = true
-                ivPlayPause.setImageResource(R.drawable.ic_pause_24dp)
-                handler.post(progressRunnable)
+            try {
+                if (player.isPlaying) {
+                    player.pause()
+                    isPlaying = false
+                    ivPlayPause.setImageResource(R.drawable.ic_play_arrow_24dp)
+                } else {
+                    player.start()
+                    isPlaying = true
+                    ivPlayPause.setImageResource(R.drawable.ic_pause_24dp)
+                    handler.post(progressRunnable)
+                }
+            } catch (e: Exception) {
+                // Ignore state errors if media is releasing
             }
         }
     }

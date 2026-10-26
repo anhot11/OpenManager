@@ -312,7 +312,7 @@ class InstalledAppsActivity : AppActivity() {
         dialogBinding.btnActionLocateData.setOnClickListener {
             dialog.dismiss()
             val isRoot = ApkInstallHelper.isRootAvailable()
-            val targetDataDir = if (isRoot && File(app.dataDir).exists()) {
+            val targetDataDir = if (isRoot && app.dataDir.isNotEmpty() && File(app.dataDir).exists()) {
                 File(app.dataDir)
             } else {
                 File("/storage/emulated/0/Android/data/${app.packageName}")
@@ -551,14 +551,14 @@ class InstalledAppsActivity : AppActivity() {
 
     private fun extractApk(app: AppModel) {
         val baseDir = File("/storage/emulated/0/OpenManager/apks")
-        if (!baseDir.exists()) {
-            baseDir.mkdirs()
-        }
-        val targetDir = if (baseDir.exists() && baseDir.canWrite()) {
-            baseDir
-        } else {
-            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "OpenManager")
-                .apply { mkdirs() }
+        baseDir.mkdirs()
+        val targetDir = when {
+            baseDir.exists() && baseDir.canWrite() -> baseDir
+            else -> {
+                val downloads = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "OpenManager")
+                downloads.mkdirs()
+                if (downloads.exists() && downloads.canWrite()) downloads else (getExternalFilesDir(null) ?: filesDir)
+            }
         }
 
         val safeLabel = app.label.replace(Regex("[\\\\/:*?\"<>|\\s]"), "_")
@@ -643,11 +643,14 @@ class InstalledAppsActivity : AppActivity() {
                         zos.closeEntry()
                     } else if (ApkInstallHelper.isRootAvailable()) {
                         val tmpBase = File(cacheDir, "tmp_base_${System.currentTimeMillis()}.apk")
-                        Shell.cmd("cp \"${app.sourceDir}\" \"${tmpBase.absolutePath}\" && chmod 644 \"${tmpBase.absolutePath}\"").exec()
-                        if (tmpBase.exists()) {
-                            zos.putNextEntry(ZipEntry("base.apk"))
-                            tmpBase.inputStream().use { it.copyTo(zos) }
-                            zos.closeEntry()
+                        try {
+                            Shell.cmd("cp \"${app.sourceDir}\" \"${tmpBase.absolutePath}\" && chmod 644 \"${tmpBase.absolutePath}\"").exec()
+                            if (tmpBase.exists()) {
+                                zos.putNextEntry(ZipEntry("base.apk"))
+                                tmpBase.inputStream().use { it.copyTo(zos) }
+                                zos.closeEntry()
+                            }
+                        } finally {
                             tmpBase.delete()
                         }
                     }
@@ -662,11 +665,14 @@ class InstalledAppsActivity : AppActivity() {
                             zos.closeEntry()
                         } else if (ApkInstallHelper.isRootAvailable()) {
                             val tmpSplit = File(cacheDir, "tmp_split_${System.currentTimeMillis()}_$entryName")
-                            Shell.cmd("cp \"$splitPath\" \"${tmpSplit.absolutePath}\" && chmod 644 \"${tmpSplit.absolutePath}\"").exec()
-                            if (tmpSplit.exists()) {
-                                zos.putNextEntry(ZipEntry(entryName))
-                                tmpSplit.inputStream().use { it.copyTo(zos) }
-                                zos.closeEntry()
+                            try {
+                                Shell.cmd("cp \"$splitPath\" \"${tmpSplit.absolutePath}\" && chmod 644 \"${tmpSplit.absolutePath}\"").exec()
+                                if (tmpSplit.exists()) {
+                                    zos.putNextEntry(ZipEntry(entryName))
+                                    tmpSplit.inputStream().use { it.copyTo(zos) }
+                                    zos.closeEntry()
+                                }
+                            } finally {
                                 tmpSplit.delete()
                             }
                         }

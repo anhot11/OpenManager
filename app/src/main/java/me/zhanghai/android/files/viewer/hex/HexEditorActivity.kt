@@ -606,9 +606,10 @@ class HexEditorActivity : AppActivity() {
             .show()
     }
 
-    private fun saveFile() {
+    private fun saveFile(onComplete: ((Boolean) -> Unit)? = null) {
         if (!buffer.isModified) {
             showToast(R.string.hex_editor_saved_success)
+            onComplete?.invoke(true)
             return
         }
 
@@ -622,6 +623,7 @@ class HexEditorActivity : AppActivity() {
             } else {
                 showToast(getString(R.string.hex_editor_save_failed, "I/O error"))
             }
+            onComplete?.invoke(successful)
         }
     }
 
@@ -630,8 +632,11 @@ class HexEditorActivity : AppActivity() {
             .setTitle(R.string.hex_editor_title)
             .setMessage(R.string.hex_editor_unsaved_changes)
             .setPositiveButton(R.string.save) { _, _ ->
-                saveFile()
-                finish()
+                saveFile { successful ->
+                    if (successful) {
+                        finish()
+                    }
+                }
             }
             .setNegativeButton("Descartar") { _, _ ->
                 finish()
@@ -657,19 +662,21 @@ class HexEditorActivity : AppActivity() {
         return when (item.itemId) {
             R.id.action_undo -> {
                 val restoredOffset = buffer.undo()
+                adapter.updateBuffer(buffer)
                 if (restoredOffset != -1) {
-                    adapter.updateBuffer(buffer)
                     selectOffset(restoredOffset)
                 }
+                updateToolbarInfo()
                 invalidateOptionsMenu()
                 true
             }
             R.id.action_redo -> {
                 val restoredOffset = buffer.redo()
+                adapter.updateBuffer(buffer)
                 if (restoredOffset != -1) {
-                    adapter.updateBuffer(buffer)
                     selectOffset(restoredOffset)
                 }
+                updateToolbarInfo()
                 invalidateOptionsMenu()
                 true
             }

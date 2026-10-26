@@ -31,6 +31,8 @@ import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.databinding.ActivityDexEditorBinding
 import me.zhanghai.android.files.databinding.ItemDexClassBinding
 import me.zhanghai.android.files.databinding.ItemDexStringBinding
+import me.zhanghai.android.files.filejob.FileJobService
+import me.zhanghai.android.files.provider.linux.isLinuxPath
 import me.zhanghai.android.files.util.extraPath
 import java.io.File
 
@@ -39,6 +41,7 @@ class DexEditorActivity : AppActivity() {
     private lateinit var binding: ActivityDexEditorBinding
     private lateinit var path: Path
     private var localDexFile: File? = null
+    private var lastDexModified: Long = 0L
 
     private val allClasses = mutableListOf<DexClassModel>()
     private val displayedClasses = mutableListOf<DexClassModel>()
@@ -50,6 +53,14 @@ class DexEditorActivity : AppActivity() {
 
     private var activeTab = 0 // 0: Clases, 1: Cadenas
     private var searchQuery = ""
+
+    override fun onResume() {
+        super.onResume()
+        val dex = localDexFile
+        if (dex != null && dex.exists() && dex.lastModified() > lastDexModified && lastDexModified != 0L) {
+            loadDex()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,6 +142,7 @@ class DexEditorActivity : AppActivity() {
                 val (classes, strings) = DexEngine.parseDexClasses(prepared)
 
                 withContext(Dispatchers.Main) {
+                    lastDexModified = prepared.lastModified()
                     allClasses.clear()
                     allClasses.addAll(classes)
 
@@ -252,11 +264,46 @@ class DexEditorActivity : AppActivity() {
                 return true
             }
             R.id.action_save -> {
-                Toast.makeText(this, R.string.dex_save_success, Toast.LENGTH_SHORT).show()
+                saveDex()
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun saveDex() {
+        val dex = localDexFile ?: run {
+            Toast.makeText(this, "No hay archivo cargado", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!dex.exists()) {
+            Toast.makeText(this, "El archivo DEX no existe", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!path.isLinuxPath) {
+            binding.progressBar.visibility = View.VISIBLE
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val bytes = dex.readBytes()
+                    FileJobService.write(path, bytes, this@DexEditorActivity) { success ->
+                        binding.progressBar.visibility = View.GONE
+                        if (success) {
+                            Toast.makeText(this@DexEditorActivity, R.string.dex_save_success, Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@DexEditorActivity, "Error al escribir en destino", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(this@DexEditorActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        } else {
+            Toast.makeText(this, R.string.dex_save_success, Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {

@@ -6,6 +6,7 @@
 package me.zhanghai.android.files.viewer.hex
 
 import java.nio.charset.Charset
+import java.util.Locale
 
 class HexBuffer(initialData: ByteArray) {
 
@@ -194,9 +195,9 @@ class HexBuffer(initialData: ByteArray) {
     fun toByteArray(): ByteArray = data.clone()
 
     fun searchHex(pattern: ByteArray, startOffset: Int, forward: Boolean): Int {
-        if (pattern.isEmpty() || data.isEmpty()) return -1
+        if (pattern.isEmpty() || data.isEmpty() || data.size < pattern.size) return -1
         if (forward) {
-            val start = startOffset.coerceIn(0, (data.size - pattern.size).coerceAtLeast(0))
+            val start = startOffset.coerceIn(0, data.size - pattern.size)
             for (i in start..(data.size - pattern.size)) {
                 var match = true
                 for (j in pattern.indices) {
@@ -208,7 +209,7 @@ class HexBuffer(initialData: ByteArray) {
                 if (match) return i
             }
         } else {
-            val start = startOffset.coerceIn(0, (data.size - pattern.size).coerceAtLeast(0))
+            val start = startOffset.coerceIn(0, data.size - pattern.size)
             for (i in start downTo 0) {
                 var match = true
                 for (j in pattern.indices) {
@@ -226,13 +227,15 @@ class HexBuffer(initialData: ByteArray) {
     fun searchText(text: String, startOffset: Int, forward: Boolean, ignoreCase: Boolean, charset: Charset = Charsets.UTF_8): Int {
         if (text.isEmpty() || data.isEmpty()) return -1
         val pattern = text.toByteArray(charset)
+        if (data.size < pattern.size) return -1
         if (!ignoreCase) {
             return searchHex(pattern, startOffset, forward)
         } else {
-            val lower = text.lowercase()
+            val lower = text.lowercase(Locale.ROOT)
             val len = text.length
+            if (data.size < len) return -1
             if (forward) {
-                val start = startOffset.coerceIn(0, (data.size - len).coerceAtLeast(0))
+                val start = startOffset.coerceIn(0, data.size - len)
                 for (i in start..(data.size - len)) {
                     var match = true
                     for (j in 0 until len) {
@@ -245,7 +248,7 @@ class HexBuffer(initialData: ByteArray) {
                     if (match) return i
                 }
             } else {
-                val start = startOffset.coerceIn(0, (data.size - len).coerceAtLeast(0))
+                val start = startOffset.coerceIn(0, data.size - len)
                 for (i in start downTo 0) {
                     var match = true
                     for (j in 0 until len) {
@@ -272,13 +275,15 @@ class HexBuffer(initialData: ByteArray) {
     }
 
     fun replaceAllHex(pattern: ByteArray, replacement: ByteArray): Int {
-        if (pattern.isEmpty()) return 0
+        if (pattern.isEmpty() || data.isEmpty() || data.size < pattern.size) return 0
         var count = 0
         var cur = searchHex(pattern, 0, forward = true)
-        while (cur != -1 && cur < data.size) {
+        while (cur != -1 && cur <= data.size - pattern.size) {
             replace(cur, pattern.size, replacement)
             count++
-            cur = searchHex(pattern, cur + replacement.size, forward = true)
+            val nextOffset = if (replacement.isEmpty()) cur else cur + replacement.size
+            if (nextOffset > data.size) break
+            cur = searchHex(pattern, nextOffset, forward = true)
         }
         return count
     }
