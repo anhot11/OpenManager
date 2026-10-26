@@ -44,7 +44,7 @@ import me.zhanghai.android.files.databinding.InstalledAppItemBinding
 import me.zhanghai.android.files.file.fileProviderUri
 import me.zhanghai.android.files.filelist.ApkInstallHelper
 import me.zhanghai.android.files.filelist.FileListActivity
-import me.zhanghai.android.files.util.asMimeType
+import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.util.copyText
 import me.zhanghai.android.files.util.createSendStreamIntent
 import me.zhanghai.android.files.util.withChooser
@@ -511,7 +511,7 @@ class InstalledAppsActivity : AppActivity() {
                     try {
                         val path = Paths.get(shareFile.absolutePath)
                         val uri = path.fileProviderUri
-                        val intent = uri.createSendStreamIntent("application/vnd.android.package-archive".asMimeType())
+                        val intent = uri.createSendStreamIntent(MimeType.APK)
                             .withChooser()
                         startActivity(intent)
                     } catch (e: Exception) {
