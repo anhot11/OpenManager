@@ -910,7 +910,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     override fun navigateUp() {
         collapseSearchView()
         if (!viewModel.navigateUp()) {
-            val parent = currentPath.parent
+            val parent = currentPath.parentOrArchiveParent
             if (parent != null) {
                 navigateTo(parent)
             }
@@ -987,7 +987,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             files = files.filterNot { it.isHidden }
         }
         val isSearching = viewModel.searchState.isSearching
-        val displayFiles = if (!isSearching && currentPath.parent != null) {
+        val hasParent = currentPath.parentOrArchiveParent != null
+        val displayFiles = if (!isSearching && hasParent) {
             listOf(createParentDirectoryItem(currentPath)) + files
         } else {
             files

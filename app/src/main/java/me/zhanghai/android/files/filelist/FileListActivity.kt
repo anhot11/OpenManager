@@ -124,8 +124,21 @@ class FileListActivity : AppActivity() {
 
         tvPathTitle = findViewById(R.id.tvPathTitle)
         tvStatsSubtitle = findViewById(R.id.tvStatsSubtitle)
-        findViewById<View>(R.id.layoutPathTitle)?.setOnClickListener {
-            showJumpToPathDialog()
+        findViewById<View>(R.id.layoutPathTitle)?.let { layout ->
+            layout.setOnClickListener {
+                showJumpToPathDialog()
+            }
+            layout.setOnLongClickListener {
+                try {
+                    val fullPath = activeFragment.currentPath.toDisplayPath(trailingSlash = true)
+                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                    clipboard?.setPrimaryClip(android.content.ClipData.newPlainText("path", fullPath))
+                    android.widget.Toast.makeText(this, "Ruta copiada: $fullPath", android.widget.Toast.LENGTH_SHORT).show()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
         }
 
         containerA = findViewById(R.id.containerPanelA)
@@ -659,8 +672,8 @@ class FileListActivity : AppActivity() {
         if (!activeFragment.isAdded) return
         try {
             val path = activeFragment.currentPath
-            val pathStr = path.toString()
-            tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
+            val pathStr = path.toDisplayPath(trailingSlash = true)
+            tvPathTitle.text = pathStr
             val stats = activeFragment.currentStatsSubtitle
             val disk = getDiskStats()
             tvStatsSubtitle.text = when {
@@ -676,10 +689,10 @@ class FileListActivity : AppActivity() {
 
     private fun showJumpToPathDialog() {
         if (!::fragmentA.isInitialized || !::fragmentB.isInitialized) return
-        val currentPath = activeFragment.currentPath.toString()
+        val currentDisplayPath = activeFragment.currentPath.toDisplayPath(trailingSlash = true)
         val context = this
         val editText = androidx.appcompat.widget.AppCompatEditText(context).apply {
-            setText(currentPath)
+            setText(currentDisplayPath)
             setSingleLine(true)
             selectAll()
             setTextColor(android.graphics.Color.WHITE)
@@ -688,26 +701,72 @@ class FileListActivity : AppActivity() {
             val paddingPx = (16 * resources.displayMetrics.density).toInt()
             setPadding(paddingPx, paddingPx / 2, paddingPx, paddingPx / 2)
         }
-        val container = android.widget.FrameLayout(context).apply {
+
+        val container = android.widget.LinearLayout(context).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad / 2, pad, pad / 2)
             addView(editText)
-            setPadding((16 * resources.displayMetrics.density).toInt(), 0, (16 * resources.displayMetrics.density).toInt(), 0)
+
+            val buttonBar = android.widget.LinearLayout(context).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
+            }
+
+            fun createChip(text: String, onClick: () -> Unit): android.widget.TextView {
+                return android.widget.TextView(context).apply {
+                    this.text = text
+                    setTextColor(android.graphics.Color.parseColor("#90CAF9"))
+                    textSize = 12f
+                    setPadding((8 * resources.displayMetrics.density).toInt(), (4 * resources.displayMetrics.density).toInt(), (8 * resources.displayMetrics.density).toInt(), (4 * resources.displayMetrics.density).toInt())
+                    setBackgroundResource(R.drawable.rounded_white_background)
+                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#252525"))
+                    val params = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { marginEnd = (8 * resources.displayMetrics.density).toInt() }
+                    layoutParams = params
+                    setOnClickListener { onClick() }
+                }
+            }
+
+            val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+            buttonBar.addView(createChip("Copiar") {
+                val text = editText.text?.toString() ?: ""
+                clipboard?.setPrimaryClip(android.content.ClipData.newPlainText("path", text))
+                android.widget.Toast.makeText(context, "Ruta copiada", android.widget.Toast.LENGTH_SHORT).show()
+            })
+            buttonBar.addView(createChip("Pegar") {
+                val clipText = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
+                if (!clipText.isNullOrEmpty()) {
+                    editText.setText(clipText)
+                    editText.setSelection(clipText.length)
+                }
+            })
+            buttonBar.addView(createChip("Interno") {
+                editText.setText("/storage/emulated/0/")
+                editText.setSelection(editText.text?.length ?: 0)
+            })
+            buttonBar.addView(createChip("Descargas") {
+                editText.setText("/storage/emulated/0/Download/")
+                editText.setSelection(editText.text?.length ?: 0)
+            })
+
+            addView(buttonBar)
         }
 
         val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
             .setTitle(R.string.jump_to_path)
             .setView(container)
-            .setNeutralButton(R.string.paste, null)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                var target = editText.text?.toString()?.trim() ?: ""
+                val target = editText.text?.toString()?.trim() ?: ""
                 if (target.isNotEmpty()) {
-                    if (target.startsWith("/sdcard")) {
-                        target = "/storage/emulated/0" + target.removePrefix("/sdcard")
-                    }
                     try {
-                        val path = java8.nio.file.Paths.get(target)
-                        activeFragment.navigateTo(path)
+                        val resolved = PathNavigator.resolve(target, activeFragment.currentPath)
+                        activeFragment.navigateTo(resolved)
                     } catch (e: Exception) {
+                        e.printStackTrace()
                         android.widget.Toast.makeText(context, "Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -715,15 +774,6 @@ class FileListActivity : AppActivity() {
             .create()
 
         dialog.setOnShowListener {
-            val neutralBtn = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL)
-            neutralBtn.setOnClickListener {
-                val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
-                val clipText = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
-                if (!clipText.isNullOrEmpty()) {
-                    editText.setText(clipText)
-                    editText.setSelection(clipText.length)
-                }
-            }
             editText.requestFocus()
             val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
             imm?.showSoftInput(editText, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
@@ -760,16 +810,16 @@ class FileListActivity : AppActivity() {
 
         fragmentA.onPathOrStatsChanged = { path, stats ->
             if (activePanelIndex == 0) {
-                val pathStr = path.toString()
-                tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
+                val pathStr = path.toDisplayPath(trailingSlash = true)
+                tvPathTitle.text = pathStr
                 val disk = getDiskStats()
                 tvStatsSubtitle.text = if (disk.isNotEmpty()) "$stats  $disk" else stats
             }
         }
         fragmentB.onPathOrStatsChanged = { path, stats ->
             if (activePanelIndex == 1) {
-                val pathStr = path.toString()
-                tvPathTitle.text = if (pathStr.endsWith("/")) pathStr else "$pathStr/"
+                val pathStr = path.toDisplayPath(trailingSlash = true)
+                tvPathTitle.text = pathStr
                 val disk = getDiskStats()
                 tvStatsSubtitle.text = if (disk.isNotEmpty()) "$stats  $disk" else stats
             }

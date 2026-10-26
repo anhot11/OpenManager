@@ -75,8 +75,8 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
                     val appInfo = packageInfo.applicationInfo
                     if (appInfo != null) {
                         try {
-                            appInfo.sourceDir = file.path.toString()
-                            appInfo.publicSourceDir = file.path.toString()
+                            appInfo.sourceDir = file.path.toUserFriendlyString()
+                            appInfo.publicSourceDir = file.path.toUserFriendlyString()
                         } catch (e: Exception) {
                             // Ignored
                         }
