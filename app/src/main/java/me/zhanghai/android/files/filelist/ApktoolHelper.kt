@@ -26,7 +26,7 @@ import java8.nio.file.Files
 import java8.nio.file.Path
 import java8.nio.file.Paths
 import me.zhanghai.android.files.R
-import me.zhanghai.android.files.app.InstalledAppsActivity
+import me.zhanghai.android.files.appmanager.InstalledAppsActivity
 import me.zhanghai.android.files.file.AxmlDecoder
 import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.provider.common.newOutputStream
