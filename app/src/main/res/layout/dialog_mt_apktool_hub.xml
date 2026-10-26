@@ -107,7 +107,7 @@
         <ImageView
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:src="@drawable/archive_file_icon"
+            android:src="@drawable/file_archive_icon"
             app:tint="#42A5F5" />
 
         <LinearLayout

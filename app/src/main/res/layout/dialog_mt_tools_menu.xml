@@ -432,7 +432,7 @@
                     android:id="@+id/ivRecompileApkIcon"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/archive_file_icon"
+                    android:src="@drawable/file_archive_icon"
                     app:tint="#42A5F5" />
 
                 <TextView
