@@ -36,6 +36,7 @@ import me.zhanghai.android.files.util.withChooser
 import me.zhanghai.android.files.viewer.audio.AudioPlayerDialogFragment
 import me.zhanghai.android.files.viewer.binary.ArscInfoDialogFragment
 import me.zhanghai.android.files.viewer.binary.DexInfoDialogFragment
+import me.zhanghai.android.files.viewer.dex.DexActionDialogFragment
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import me.zhanghai.android.files.viewer.video.VideoPlayerActivity
 
@@ -217,7 +218,7 @@ class OpenFileAsDialogFragment : AppCompatDialogFragment() {
 
             // 8. Dex Functions
             ToolItem("dex_functions", R.string.open_as_dex_functions, R.drawable.ic_open_as_dex) {
-                DexInfoDialogFragment.show(path, parentFragmentManager)
+                DexActionDialogFragment.show(path, parentFragmentManager)
                 dismissOrFinishActivity()
             },
 

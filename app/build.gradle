@@ -200,4 +200,16 @@ dependencies {
     }
     // Also a dependency of jCIFS-NG.
     implementation 'org.slf4j:slf4j-android:1.7.36'
+
+    // Dex Editor Plus: smali-dexlib2, smali-baksmali, and smali
+    def smali_version = '3.0.9'
+    implementation ("com.android.tools.smali:smali-dexlib2:$smali_version") {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+    implementation ("com.android.tools.smali:smali-baksmali:$smali_version") {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+    implementation ("com.android.tools.smali:smali:$smali_version") {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
 }

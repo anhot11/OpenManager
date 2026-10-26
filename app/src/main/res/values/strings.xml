@@ -1087,6 +1087,28 @@
     <string name="app_details">App Info</string>
     <string name="app_uninstall">Uninstall</string>
 
+    <!-- Dex Editor Plus -->
+    <string name="dex_editor_plus_title">DEX Editor+</string>
+    <string name="dex_class_editor_title">Smali Class Editor</string>
+    <string name="dex_open_dialog_title">Open DEX File</string>
+    <string name="dex_open_dialog_prompt">Choose DEX editor to use:</string>
+    <string name="dex_mode_editor_plus">DEX Editor+ (Full)</string>
+    <string name="dex_mode_editor_plus_desc">Browse packages, classes, methods, fields and Smali editor</string>
+    <string name="dex_mode_string_pool">String Pool Editor</string>
+    <string name="dex_mode_string_pool_desc">Search and modify text strings in DEX file</string>
+    <string name="dex_mode_summary">DEX Summary &amp; Info</string>
+    <string name="dex_mode_summary_desc">Header, class, method, field counts and version</string>
+    <string name="dex_tab_classes">Classes</string>
+    <string name="dex_tab_strings">Strings</string>
+    <string name="dex_tab_info">Summary</string>
+    <string name="dex_tab_smali">Smali</string>
+    <string name="dex_tab_methods">Methods</string>
+    <string name="dex_tab_fields">Fields</string>
+    <string name="dex_tab_class_details">Details</string>
+    <string name="dex_save_success">DEX saved and updated successfully</string>
+    <string name="dex_compile_success">Smali class compiled successfully</string>
+    <string name="dex_compile_failed">Syntax error compiling Smali</string>
+
     <string name="action_swap_file_names">Swap file names</string>
     <string name="swap_file_names_title">Swap file names</string>
     <string name="swap_file_names_select_second">Select the second file to swap names with \"%s\":</string>

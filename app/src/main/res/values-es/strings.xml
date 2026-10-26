@@ -983,6 +983,28 @@
     <string name="app_details">Info de la App</string>
     <string name="app_uninstall">Desinstalar</string>
 
+    <!-- Dex Editor Plus -->
+    <string name="dex_editor_plus_title">Editor DEX+</string>
+    <string name="dex_class_editor_title">Editor de Clase Smali</string>
+    <string name="dex_open_dialog_title">Abrir archivo DEX</string>
+    <string name="dex_open_dialog_prompt">Elige el editor DEX a utilizar:</string>
+    <string name="dex_mode_editor_plus">Editor DEX+ (Completo)</string>
+    <string name="dex_mode_editor_plus_desc">Navegador de paquetes, clases, métodos, campos y editor Smali</string>
+    <string name="dex_mode_string_pool">Editor de Cadenas</string>
+    <string name="dex_mode_string_pool_desc">Buscar y modificar cadenas de texto en el archivo DEX</string>
+    <string name="dex_mode_summary">Resumen e Información DEX</string>
+    <string name="dex_mode_summary_desc">Cabecera, conteo de clases, métodos, campos y versión</string>
+    <string name="dex_tab_classes">Clases</string>
+    <string name="dex_tab_strings">Cadenas</string>
+    <string name="dex_tab_info">Resumen</string>
+    <string name="dex_tab_smali">Smali</string>
+    <string name="dex_tab_methods">Métodos</string>
+    <string name="dex_tab_fields">Campos</string>
+    <string name="dex_tab_class_details">Detalles</string>
+    <string name="dex_save_success">DEX guardado y actualizado con éxito</string>
+    <string name="dex_compile_success">Clase Smali compilada correctamente</string>
+    <string name="dex_compile_failed">Error de sintaxis al compilar Smali</string>
+
     <string name="action_swap_file_names">Intercambiar nombres</string>
     <string name="swap_file_names_title">Intercambiar nombres</string>
     <string name="swap_file_names_select_second">Selecciona el segundo archivo para intercambiar nombres con \"%s\":</string>

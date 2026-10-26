@@ -85,6 +85,7 @@ import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.viewer.audio.AudioPlayerDialogFragment
 import me.zhanghai.android.files.viewer.binary.ArscInfoDialogFragment
 import me.zhanghai.android.files.viewer.binary.DexInfoDialogFragment
+import me.zhanghai.android.files.viewer.dex.DexActionDialogFragment
 import me.zhanghai.android.files.viewer.binary.ElfInfoDialogFragment
 import me.zhanghai.android.files.viewer.sqlite.SqliteViewerActivity
 import me.zhanghai.android.files.viewer.text.TextEditorActivity
@@ -1721,7 +1722,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             return
         }
         if (file.mimeType.isDex || fileName.endsWith(".dex", true)) {
-            DexInfoDialogFragment.show(file.path, childFragmentManager)
+            DexActionDialogFragment.show(file.path, childFragmentManager)
             return
         }
         if (file.mimeType.isArsc || fileName.endsWith(".arsc", true)) {
