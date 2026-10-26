@@ -15,7 +15,7 @@ import java8.nio.file.Path
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import me.zhanghai.android.files.databinding.DialogDexOpenChoiceBinding
-import me.zhanghai.android.files.editor.TextEditorActivity
+import me.zhanghai.android.files.viewer.text.TextEditorActivity
 import me.zhanghai.android.files.filelist.HexViewerDialogFragment
 import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.util.ParcelableArgs

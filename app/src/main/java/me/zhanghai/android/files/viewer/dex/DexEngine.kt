@@ -16,7 +16,9 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.smali.Smali
 import com.android.tools.smali.smali.SmaliOptions
-import com.android.tools.smali.util.IndentingWriter
+import com.android.tools.smali.baksmali.formatter.BaksmaliWriter
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java8.nio.file.Path
 import me.zhanghai.android.files.provider.common.newInputStream
 import me.zhanghai.android.files.provider.linux.isLinuxPath
@@ -84,15 +86,37 @@ object DexEngine {
         classModels.sortBy { "${it.packageName}.${it.simpleName}".lowercase() }
 
         val stringModels = mutableListOf<DexStringModel>()
-        val stringCount = dexBacked.stringCount
-        val limit = stringCount.coerceAtMost(10000)
-        for (i in 0 until limit) {
-            try {
-                val str = dexBacked.getString(i)
-                stringModels.add(DexStringModel(i, str))
-            } catch (e: Exception) {
-                // Ignore decoding error
+        try {
+            val bytes = dexFile.readBytes()
+            if (bytes.size >= 112) {
+                val bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+                val stringCount = bb.getInt(56)
+                val stringIdsOff = bb.getInt(60)
+                val limit = stringCount.coerceAtMost(10000)
+                for (i in 0 until limit) {
+                    val off = bb.getInt(stringIdsOff + i * 4)
+                    if (off in 0 until bytes.size) {
+                        var pos = off
+                        while (pos < bytes.size && (bytes[pos].toInt() and 0x80) != 0) {
+                            pos++
+                        }
+                        pos++
+                        val sb = StringBuilder()
+                        while (pos < bytes.size && bytes[pos].toInt() != 0) {
+                            val c = bytes[pos].toInt().toChar()
+                            if (c in ' '..'~' || c == '\n' || c == '\t') {
+                                sb.append(c)
+                            }
+                            pos++
+                        }
+                        if (sb.isNotEmpty()) {
+                            stringModels.add(DexStringModel(i, sb.toString()))
+                        }
+                    }
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         return Pair(classModels, stringModels)
@@ -110,9 +134,8 @@ object DexEngine {
 
             val classDefinition = ClassDefinition(options, classDef)
             val sw = StringWriter()
-            val writer = IndentingWriter(sw)
+            val writer = BaksmaliWriter(sw)
             classDefinition.writeTo(writer)
-            writer.close()
             sw.toString()
         } catch (e: Exception) {
             e.printStackTrace()
