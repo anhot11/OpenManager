@@ -27,6 +27,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -153,10 +154,15 @@ import android.widget.Button
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.zhanghai.android.files.file.asDocumentTreeUriOrNull
+import me.zhanghai.android.files.provider.common.createDirectories
 import me.zhanghai.android.files.provider.document.isDocumentPath
 import me.zhanghai.android.files.provider.root.LibSuFileServiceLauncher
+import me.zhanghai.android.files.provider.root.RootStrategy
+import me.zhanghai.android.files.settings.SettingsActivity
 import me.zhanghai.android.files.storage.DocumentTree
 import me.zhanghai.android.files.storage.Storages
 import me.zhanghai.android.files.viewer.image.ImageViewerActivity
@@ -406,6 +412,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
         binding.swipeRefreshLayout.setOnRefreshListener { this.refresh() }
         binding.errorText.setOnClickListener { viewModel.reload() }
+        binding.btnErrorBack.setOnClickListener { goBackSafely() }
         layoutManager = GridLayoutManager(activity, 1)
         binding.recyclerView.layoutManager = layoutManager
         adapter = FileListAdapter(this)
@@ -790,22 +797,12 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val hasFiles = !files.isNullOrEmpty()
         binding.swipeRefreshLayout.isRefreshing = stateful is Loading && (hasFiles || isSearching)
         binding.progress.fadeToVisibilityUnsafe(stateful is Loading && !(hasFiles || isSearching))
-        binding.errorText.fadeToVisibilityUnsafe(stateful is Failure && !hasFiles)
+        val isFailureWithoutFiles = stateful is Failure && !hasFiles
+        binding.layoutError.fadeToVisibilityUnsafe(isFailureWithoutFiles)
         val isAndroidDataOrObbCurrent = isAndroidDataOrObb(currentPath) && !currentPath.isDocumentPath
-        val shouldShowSafBtn = stateful is Failure && !hasFiles && isAndroidDataOrObbCurrent
-        binding.btnGrantSafPermission.fadeToVisibilityUnsafe(shouldShowSafBtn)
-        if (shouldShowSafBtn) {
-            binding.btnGrantSafPermission.setOnClickListener {
-                launchSafPermissionForAndroidDataOrObb(currentPath)
-            }
-        }
         val throwable = (stateful as? Failure)?.throwable
         if (throwable != null) {
             throwable.printStackTrace()
-            val isAccessDenied = throwable is java8.nio.file.AccessDeniedException ||
-                throwable is me.zhanghai.android.files.provider.remote.RemoteFileSystemException ||
-                throwable.message?.contains("Permission denied", ignoreCase = true) == true ||
-                throwable.message?.contains("Root isn't available", ignoreCase = true) == true
             if (isAndroidDataOrObbCurrent) {
                 val match = findMatchingDocumentTree(currentPath)
                 if (match != null) {
@@ -813,21 +810,88 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                     return
                 }
             }
-            val error = if (isAndroidDataOrObbCurrent) {
-                getString(if (isAndroidObb(currentPath)) R.string.android_obb_permission_message else R.string.android_data_permission_message)
-            } else if (isAccessDenied) {
-                getString(R.string.root_permission_required_message)
-            } else {
-                throwable.toString()
-            }
-            if (hasFiles) {
-                showToast(error)
-            } else {
-                binding.errorText.text = error
-                if (isAndroidDataOrObbCurrent && lastPromptedSafPath != currentPath) {
-                    lastPromptedSafPath = currentPath
-                    showSafPermissionPromptDialog(currentPath)
+
+            val isAccessDenied = throwable is java8.nio.file.AccessDeniedException ||
+                throwable is me.zhanghai.android.files.provider.remote.RemoteFileSystemException ||
+                throwable.message?.contains("Permission denied", ignoreCase = true) == true ||
+                throwable.message?.contains("Root isn't available", ignoreCase = true) == true
+
+            val isNotFound = throwable is java8.nio.file.NoSuchFileException ||
+                throwable is java.io.FileNotFoundException
+
+            val isNotDir = throwable is java8.nio.file.NotDirectoryException
+
+            val displayPathStr = currentPath.toDisplayPath(trailingSlash = true)
+
+            if (!hasFiles) {
+                when {
+                    isAndroidDataOrObbCurrent -> {
+                        val isObb = isAndroidObb(currentPath)
+                        binding.ivErrorIcon.setImageResource(R.drawable.directory_icon_white_24dp)
+                        binding.ivErrorIcon.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#2196F3"))
+                        binding.tvErrorTitle.text = getString(if (isObb) R.string.android_obb_permission_title else R.string.android_data_permission_title)
+                        binding.errorText.text = getString(if (isObb) R.string.android_obb_permission_message else R.string.android_data_permission_message)
+                        binding.btnGrantSafPermission.visibility = View.VISIBLE
+                        binding.btnGrantSafPermission.setOnClickListener {
+                            launchSafPermissionForAndroidDataOrObb(currentPath)
+                        }
+                        binding.btnErrorAction.visibility = View.GONE
+                        if (lastPromptedSafPath != currentPath) {
+                            lastPromptedSafPath = currentPath
+                            showSafPermissionPromptDialog(currentPath)
+                        }
+                    }
+                    isAccessDenied -> {
+                        binding.ivErrorIcon.setImageResource(R.drawable.shield_icon_white_24dp)
+                        binding.ivErrorIcon.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F44336"))
+                        binding.tvErrorTitle.setText(R.string.path_access_denied_title)
+                        binding.errorText.text = getString(R.string.path_access_denied_error, displayPathStr)
+                        binding.btnGrantSafPermission.visibility = View.GONE
+                        binding.btnErrorAction.visibility = View.VISIBLE
+                        binding.btnErrorAction.setText(R.string.action_retry_root)
+                        binding.btnErrorAction.setIconResource(R.drawable.shield_icon_white_24dp)
+                        binding.btnErrorAction.setOnClickListener {
+                            retryWithRoot()
+                        }
+                    }
+                    isNotFound -> {
+                        binding.ivErrorIcon.setImageResource(R.drawable.file_generic_icon)
+                        binding.ivErrorIcon.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF9800"))
+                        binding.tvErrorTitle.setText(R.string.path_not_found_title)
+                        binding.errorText.text = getString(R.string.path_not_found_error, displayPathStr)
+                        binding.btnGrantSafPermission.visibility = View.GONE
+                        binding.btnErrorAction.visibility = View.VISIBLE
+                        binding.btnErrorAction.setText(R.string.action_create_folder)
+                        binding.btnErrorAction.setIconResource(R.drawable.add_icon_white_24dp)
+                        binding.btnErrorAction.setOnClickListener {
+                            createCurrentFolderAndReload()
+                        }
+                    }
+                    isNotDir -> {
+                        binding.ivErrorIcon.setImageResource(R.drawable.file_generic_icon)
+                        binding.ivErrorIcon.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#9C27B0"))
+                        binding.tvErrorTitle.setText(R.string.path_not_directory_title)
+                        binding.errorText.text = getString(R.string.path_not_directory_error, displayPathStr)
+                        binding.btnGrantSafPermission.visibility = View.GONE
+                        binding.btnErrorAction.visibility = View.GONE
+                    }
+                    else -> {
+                        binding.ivErrorIcon.setImageResource(R.drawable.error_badge_icon_18dp)
+                        binding.ivErrorIcon.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F44336"))
+                        binding.tvErrorTitle.setText(R.string.path_error_title)
+                        val cleanMsg = cleanErrorMessage(throwable)
+                        binding.errorText.text = "No se pudo acceder a la ruta:\n\n$displayPathStr\n\nMotivo: $cleanMsg"
+                        binding.btnGrantSafPermission.visibility = View.GONE
+                        binding.btnErrorAction.visibility = View.VISIBLE
+                        binding.btnErrorAction.text = "Reintentar"
+                        binding.btnErrorAction.setIconResource(R.drawable.reset_icon_white_24dp)
+                        binding.btnErrorAction.setOnClickListener {
+                            viewModel.reload()
+                        }
+                    }
                 }
+            } else {
+                showToast("Error: ${cleanErrorMessage(throwable)}")
             }
         }
         binding.emptyView.fadeToVisibilityUnsafe(stateful is Success && !hasFiles)
@@ -913,8 +977,63 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             val parent = currentPath.parentOrArchiveParent
             if (parent != null) {
                 navigateTo(parent)
+            } else {
+                navigateTo(Paths.get("/storage/emulated/0"))
             }
         }
+    }
+
+    private fun goBackSafely() {
+        collapseSearchView()
+        if (!viewModel.navigateUp()) {
+            val parent = currentPath.parentOrArchiveParent
+            if (parent != null) {
+                navigateTo(parent)
+            } else {
+                navigateTo(Paths.get("/storage/emulated/0"))
+            }
+        }
+    }
+
+    private fun retryWithRoot() {
+        if (LibSuFileServiceLauncher.isSuAvailable()) {
+            Settings.ROOT_STRATEGY.valueCompat = RootStrategy.AUTOMATIC
+            showToast(getString(R.string.root_requesting_toast))
+            viewModel.reload()
+        } else {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.root_not_detected_title)
+                .setMessage(R.string.root_not_detected_message)
+                .setPositiveButton(R.string.settings) { _, _ ->
+                    startActivity(SettingsActivity::class.createIntent())
+                }
+                .setNegativeButton(android.R.string.ok, null)
+                .show()
+        }
+    }
+
+    private fun createCurrentFolderAndReload() {
+        val path = currentPath
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                path.createDirectories()
+                withContext(Dispatchers.Main) {
+                    showToast(getString(R.string.folder_created_success))
+                    viewModel.reload()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showToast("No se pudo crear la carpeta: ${cleanErrorMessage(e)}")
+                }
+            }
+        }
+    }
+
+    private fun cleanErrorMessage(throwable: Throwable?): String {
+        if (throwable == null) return "Error desconocido"
+        val msg = throwable.localizedMessage ?: throwable.message ?: ""
+        val stripped = msg.replace(Regex("^(java[a-z0-9.]*\\.[A-Za-z0-9]+Exception:?\\s*)"), "").trim()
+        return if (stripped.isNotEmpty()) stripped else throwable.javaClass.simpleName
     }
 
     fun reload() {
@@ -2013,7 +2132,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             if (pathStr == "/storage/emulated/0" || pathStr == "/storage/emulated/0/") {
                 return false
             }
-            return viewModel.canNavigateUpBreadcrumb
+            return viewModel.canNavigateUpBreadcrumb || viewModel.currentPath.parentOrArchiveParent != null
         }
 
     fun setDualPaneUiMode(enabled: Boolean) {
@@ -2258,8 +2377,13 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val breadcrumbLayout: BreadcrumbLayout,
         val contentLayout: ViewGroup,
         val progress: ProgressBar,
+        val layoutError: ViewGroup,
+        val ivErrorIcon: ImageView,
+        val tvErrorTitle: TextView,
         val errorText: TextView,
+        val btnErrorAction: MaterialButton,
         val btnGrantSafPermission: MaterialButton,
+        val btnErrorBack: MaterialButton,
         val emptyView: View,
         val swipeRefreshLayout: SwipeRefreshLayout,
         val recyclerView: RecyclerView,
@@ -2286,7 +2410,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                     includeBinding.persistentBarLayout, appBarBinding.appBarLayout,
                     appBarBinding.toolbar, appBarBinding.overlayToolbar,
                     appBarBinding.breadcrumbLayout, contentBinding.contentLayout,
-                    contentBinding.progress, contentBinding.errorText, contentBinding.btnGrantSafPermission,
+                    contentBinding.progress, contentBinding.layoutError, contentBinding.ivErrorIcon,
+                    contentBinding.tvErrorTitle, contentBinding.errorText,
+                    contentBinding.btnErrorAction, contentBinding.btnGrantSafPermission,
+                    contentBinding.btnErrorBack,
                     contentBinding.emptyView,
                     contentBinding.swipeRefreshLayout, contentBinding.recyclerView,
                     bottomBarBinding.bottomBarLayout, bottomBarBinding.bottomToolbar,

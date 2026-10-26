@@ -1143,4 +1143,22 @@
     <string name="action_grant_saf_permission">Grant permission (SAF)</string>
     <string name="grant_permission">Grant permission</string>
     <string name="saf_permission_granted_format">Permission granted for %1$s</string>
+
+    <!-- MT Manager Path Validation & Error Handling -->
+    <string name="path_not_found_title">Path not found</string>
+    <string name="path_not_found_prompt">The specified folder does not exist:\n\n%1$s\n\nDo you want to create this folder?</string>
+    <string name="path_not_found_error">The specified folder or file does not exist or was deleted:\n\n%1$s</string>
+    <string name="path_not_directory_title">Not a directory</string>
+    <string name="path_not_directory_error">The specified path is a regular file, not a directory:\n\n%1$s</string>
+    <string name="path_access_denied_title">Access Denied (Requires Root)</string>
+    <string name="path_access_denied_error">This folder is protected by the system and requires Superuser (Root) or Shizuku permissions to be read:\n\n%1$s</string>
+    <string name="path_error_title">Error opening folder</string>
+    <string name="action_retry_root">Retry with Root</string>
+    <string name="action_create_folder">Create folder</string>
+    <string name="action_create_and_enter">Create and enter</string>
+    <string name="action_go_back">Go back</string>
+    <string name="root_not_detected_title">Root not detected</string>
+    <string name="root_not_detected_message">No active superuser (su) binary was found on your device.\n\nTo access protected system partitions (such as /data or /system), your device must have Root (Magisk, KernelSU, or APatch) or Shizuku.</string>
+    <string name="root_requesting_toast">Requesting Root (Superuser) permissions…</string>
+    <string name="folder_created_success">Folder created successfully</string>
 </resources>

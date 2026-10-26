@@ -35,8 +35,16 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.commit
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import me.zhanghai.android.files.provider.common.createDirectories
+import me.zhanghai.android.files.provider.common.exists
+import me.zhanghai.android.files.provider.common.isDirectory
+import me.zhanghai.android.files.provider.common.isRegularFile
 import java8.nio.file.Path
 import java8.nio.file.Paths
 import me.zhanghai.android.files.R
@@ -801,13 +809,7 @@ class FileListActivity : AppActivity() {
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 val target = editText.text?.toString()?.trim() ?: ""
                 if (target.isNotEmpty()) {
-                    try {
-                        val resolved = PathNavigator.resolve(target, activeFragment.currentPath)
-                        activeFragment.navigateTo(resolved)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        android.widget.Toast.makeText(context, "Error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
-                    }
+                    jumpToPathWithValidation(target)
                 }
             }
             .create()
@@ -819,6 +821,95 @@ class FileListActivity : AppActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun jumpToPathWithValidation(target: String) {
+        try {
+            val resolved = PathNavigator.resolve(target, activeFragment.currentPath)
+            if (resolved == activeFragment.currentPath) {
+                activeFragment.reload()
+                return
+            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                var exists = false
+                var isDirectory = false
+                var isRegularFile = false
+                var accessDenied = false
+
+                try {
+                    exists = resolved.exists()
+                    if (exists) {
+                        isDirectory = resolved.isDirectory()
+                        isRegularFile = resolved.isRegularFile()
+                    }
+                } catch (e: Exception) {
+                    val msg = e.message ?: ""
+                    if (e is java8.nio.file.AccessDeniedException ||
+                        e is me.zhanghai.android.files.provider.remote.RemoteFileSystemException ||
+                        msg.contains("Permission denied", ignoreCase = true) ||
+                        msg.contains("Root isn't available", ignoreCase = true)) {
+                        accessDenied = true
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (isFinishing || isDestroyed) return@withContext
+
+                    if (accessDenied) {
+                        // Permission restricted path (e.g. /data, /system, or Android/data)
+                        // Navigate directly so FileListFragment displays the proper SAF or Root action card!
+                        activeFragment.navigateTo(resolved)
+                    } else if (!exists) {
+                        val displayPath = resolved.toDisplayPath(trailingSlash = true)
+                        com.google.android.material.dialog.MaterialAlertDialogBuilder(this@FileListActivity)
+                            .setTitle(R.string.path_not_found_title)
+                            .setMessage(getString(R.string.path_not_found_prompt, displayPath))
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setPositiveButton(R.string.action_create_and_enter) { _, _ ->
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    try {
+                                        resolved.createDirectories()
+                                        withContext(Dispatchers.Main) {
+                                            activeFragment.navigateTo(resolved)
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            android.widget.Toast.makeText(
+                                                this@FileListActivity,
+                                                "No se pudo crear la carpeta: ${e.localizedMessage ?: e.message}",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }
+                            }
+                            .show()
+                    } else if (isRegularFile) {
+                        val parent = resolved.parent
+                        if (parent != null) {
+                            activeFragment.navigateTo(parent)
+                            android.widget.Toast.makeText(
+                                this@FileListActivity,
+                                "Archivo en: ${parent.toDisplayPath()}",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            activeFragment.navigateTo(resolved)
+                        }
+                    } else {
+                        activeFragment.navigateTo(resolved)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            android.widget.Toast.makeText(
+                this,
+                "Error en la ruta: ${e.localizedMessage ?: e.message}",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     private fun syncBottomBarSelectionState() {

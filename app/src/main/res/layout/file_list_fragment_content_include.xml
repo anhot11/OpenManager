@@ -22,28 +22,83 @@
             android:layout_gravity="center"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/errorText"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/layoutError"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:paddingTop="12dp"
-            android:paddingBottom="32dp"
-            android:drawablePadding="8dp"
+            android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:textAppearance="?textAppearanceListItem"
-            android:visibility="gone"
-            app:drawableTopCompat="@drawable/error_icon_240dp" />
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="24dp"
+            android:visibility="gone">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGrantSafPermission"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_marginBottom="48dp"
-            android:text="@string/action_grant_saf_permission"
-            android:visibility="gone"
-            app:icon="@drawable/directory_icon_white_24dp" />
+            <ImageView
+                android:id="@+id/ivErrorIcon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/shield_icon_white_24dp"
+                app:tint="?colorError" />
+
+            <TextView
+                android:id="@+id/tvErrorTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="?android:textColorPrimary"
+                android:gravity="center"
+                tools:text="Acceso denegado" />
+
+            <TextView
+                android:id="@+id/errorText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_horizontal"
+                android:textAppearance="?textAppearanceListItem"
+                android:textSize="13sp"
+                android:textColor="?android:textColorSecondary"
+                tools:text="Se requieren permisos de Superusuario para acceder." />
+
+            <LinearLayout
+                android:id="@+id/layoutErrorButtons"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnErrorAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="Reintentar con Root"
+                    android:visibility="gone"
+                    app:icon="@drawable/shield_icon_white_24dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGrantSafPermission"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/action_grant_saf_permission"
+                    android:visibility="gone"
+                    app:icon="@drawable/directory_icon_white_24dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnErrorBack"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Volver"
+                    app:icon="@drawable/arrow_back_icon_white_24dp" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/emptyView"

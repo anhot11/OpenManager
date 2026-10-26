@@ -1039,4 +1039,22 @@
     <string name="action_grant_saf_permission">Conceder permiso (SAF)</string>
     <string name="grant_permission">Conceder permiso</string>
     <string name="saf_permission_granted_format">Permiso concedido para %1$s</string>
+
+    <!-- MT Manager Path Validation & Error Handling -->
+    <string name="path_not_found_title">Ruta no encontrada</string>
+    <string name="path_not_found_prompt">La carpeta especificada no existe:\n\n%1$s\n\n¿Deseas crear esta carpeta?</string>
+    <string name="path_not_found_error">La carpeta o archivo especificado no existe o fue eliminado:\n\n%1$s</string>
+    <string name="path_not_directory_title">No es una carpeta</string>
+    <string name="path_not_directory_error">La ruta especificada corresponde a un archivo regular, no a un directorio:\n\n%1$s</string>
+    <string name="path_access_denied_title">Acceso denegado (Requiere Root)</string>
+    <string name="path_access_denied_error">Esta carpeta está protegida por el sistema y requiere permisos de Superusuario (Root) o Shizuku para ser leída:\n\n%1$s</string>
+    <string name="path_error_title">Error al abrir la carpeta</string>
+    <string name="action_retry_root">Reintentar con Root</string>
+    <string name="action_create_folder">Crear carpeta</string>
+    <string name="action_create_and_enter">Crear y entrar</string>
+    <string name="action_go_back">Volver</string>
+    <string name="root_not_detected_title">Root no detectado</string>
+    <string name="root_not_detected_message">No se encontró ningún gestor de superusuario (su) activo en tu dispositivo.\n\nPara acceder a particiones protegidas del sistema (como /data o /system), tu dispositivo debe contar con Root (Magisk, KernelSU o APatch) o Shizuku.</string>
+    <string name="root_requesting_toast">Solicitando permisos de Root (Superusuario)…</string>
+    <string name="folder_created_success">Carpeta creada correctamente</string>
 </resources>

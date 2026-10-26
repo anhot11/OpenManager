@@ -51,6 +51,11 @@ abstract class PathDialogFragment : NameDialogFragment() {
         if (startsWith('/')) {
             return Paths.get(this)
         }
+        try {
+            return PathNavigator.resolve(this, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         return null
     }
 
