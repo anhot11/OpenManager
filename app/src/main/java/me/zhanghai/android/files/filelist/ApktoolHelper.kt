@@ -46,7 +46,7 @@ object ApktoolHelper {
 
     /**
      * Decompiles an APK into a project folder:
-     * - Decodes AndroidManifest.xml and res/*.xml to readable text
+     * - Decodes AndroidManifest.xml and res XML files to readable text
      * - Preserves binaries for lossless recompilation
      * - Extracts dex, assets, and generates apktool.yml
      */
