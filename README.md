@@ -1,9 +1,16 @@
-# OpenManager (Open Source Edition)
+<p align="center">
+  <img src="art/launcher_icon.png" width="128" height="128" alt="OpenManager App Icon" />
+</p>
 
-[![Android CI status](https://github.com/anhot11/OpenManager/workflows/OpenManager%20CI/badge.svg)](https://github.com/anhot11/OpenManager/actions)
-[![GitHub release](https://img.shields.io/github/v/release/anhot11/OpenManager?color=green)](https://github.com/anhot11/OpenManager/releases)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Platform: Android](https://img.shields.io/badge/Platform-Android%205.0%2B-brightgreen.svg)](https://android.com)
+<h1 align="center">OpenManager</h1>
+<p align="center"><b>Open Source Dual-Panel File Manager for Android</b></p>
+
+<p align="center">
+  <a href="https://github.com/anhot11/OpenManager/actions"><img src="https://github.com/anhot11/OpenManager/workflows/OpenManager%20CI/badge.svg" alt="Android CI status" /></a>
+  <a href="https://github.com/anhot11/OpenManager/releases"><img src="https://img.shields.io/github/v/release/anhot11/OpenManager?color=green" alt="GitHub release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" /></a>
+  <a href="https://android.com"><img src="https://img.shields.io/badge/Platform-Android%205.0%2B-brightgreen.svg" alt="Platform: Android" /></a>
+</p>
 
 Un potente administrador de archivos de **código abierto**, moderno y con soporte de **doble panel (estilo MT Manager)** para Android 5.0+, equipado con herramientas integradas de ingeniería inversa, edición DEX Plus, editor HEX, descompilación Apktool, reproductor de audio flotante y soporte completo de superusuario (Root) y SAF.
 
