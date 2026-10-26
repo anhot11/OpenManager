@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2026 OpenManager
-  ~ All Rights Reserved.
+  ~ MT Manager Style Application Details & Actions Menu
   -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -12,19 +14,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
+        <!-- App Header Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="12dp">
 
             <ImageView
                 android:id="@+id/dialogAppIcon"
-                android:layout_width="54dp"
-                android:layout_height="54dp" />
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:scaleType="fitCenter"
+                tools:src="@drawable/file_apk_icon" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -38,137 +46,596 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="?textAppearanceHeadline6"
-                    android:textStyle="bold" />
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    tools:text="WhatsApp" />
 
                 <TextView
-                    android:id="@+id/dialogAppVersion"
+                    android:id="@+id/dialogAppVersionSize"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?textAppearanceBody2"
-                    android:textColor="?android:attr/textColorSecondary" />
-            </LinearLayout>
-        </LinearLayout>
+                    android:layout_marginTop="2dp"
+                    android:textSize="12.5sp"
+                    android:textColor="#BBBBBB"
+                    tools:text="v2.24.1.75 (240175001) • 45.2 MB" />
 
-        <TableLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:stretchColumns="1">
-
-            <TableRow android:layout_marginBottom="6dp">
-                <TextView
-                    android:text="Package:"
-                    android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
                 <TextView
                     android:id="@+id/dialogAppPackage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:fontFamily="monospace"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
+                    android:textSize="11sp"
+                    android:textColor="#888888"
+                    tools:text="com.whatsapp" />
 
-            <TableRow android:layout_marginBottom="6dp">
                 <TextView
-                    android:text="Version code:"
-                    android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
-                <TextView
-                    android:id="@+id/dialogAppVersionCode"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
+                    android:id="@+id/dialogAppSdk"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="11sp"
+                    android:textColor="#666666"
+                    tools:text="Min SDK: 24 • Target SDK: 34" />
 
-            <TableRow android:layout_marginBottom="6dp">
                 <TextView
-                    android:text="File size:"
+                    android:id="@+id/dialogAppSplits"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="APKS: 4 archivos divididos"
+                    android:textSize="10.5sp"
                     android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
-                <TextView
-                    android:id="@+id/dialogAppSize"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
-
-            <TableRow android:layout_marginBottom="6dp">
-                <TextView
-                    android:text="Target SDK:"
-                    android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
-                <TextView
-                    android:id="@+id/dialogAppTargetSdk"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
-
-            <TableRow android:layout_marginBottom="6dp">
-                <TextView
-                    android:text="Min SDK:"
-                    android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
-                <TextView
-                    android:id="@+id/dialogAppMinSdk"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
-
-            <TableRow android:layout_marginBottom="6dp">
-                <TextView
-                    android:text="APK path:"
-                    android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
-                <TextView
-                    android:id="@+id/dialogAppApkPath"
-                    android:fontFamily="monospace"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
-
-            <TableRow android:layout_marginBottom="6dp">
-                <TextView
-                    android:text="Data path:"
-                    android:textStyle="bold"
-                    android:paddingEnd="12dp"
-                    android:textAppearance="?textAppearanceCaption" />
-                <TextView
-                    android:id="@+id/dialogAppDataPath"
-                    android:fontFamily="monospace"
-                    android:textAppearance="?textAppearanceCaption" />
-            </TableRow>
-        </TableLayout>
+                    android:textColor="#2196F3"
+                    android:background="@drawable/badge_apks_bg"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </LinearLayout>
+        </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:background="?android:attr/listDivider" />
+            android:background="#2E2E2E" />
 
+        <!-- Actions List -->
+        <!-- 1. Extraer APK -->
         <LinearLayout
+            android:id="@+id/btnActionExtract"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/extract_icon_control_normal_24dp"
+                app:tint="#2196F3" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Extraer APK"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Guardar instalador APK / APKS en la memoria"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 2. Localizar APK en el explorador -->
+        <LinearLayout
+            android:id="@+id/btnActionLocateApk"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/directory_icon_white_24dp"
+                app:tint="#4CAF50" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Localizar APK en el explorador"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Abrir la carpeta del APK instalado en el panel"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 3. Localizar Datos en el explorador -->
+        <LinearLayout
+            android:id="@+id/btnActionLocateData"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/shared_directory_icon_white_24dp"
+                app:tint="#FF9800" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Localizar Datos (Data)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Abrir carpeta de datos (/data/data o Android/data)"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 4. Abrir aplicación -->
+        <LinearLayout
+            android:id="@+id/btnActionLaunch"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/exit_to_app_icon_white_24dp"
+                app:tint="#00BCD4" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Abrir aplicación"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ejecutar la aplicación"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 5. Ajustes del sistema -->
+        <LinearLayout
+            android:id="@+id/btnActionDetails"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/settings_icon_white_24dp"
+                app:tint="#9E9E9E" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ajustes de la aplicación"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Permisos, almacenamiento y notificaciones en Ajustes"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 6. Copiar información -->
+        <LinearLayout
+            android:id="@+id/btnActionCopyInfo"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/copy_icon_control_normal_24dp"
+                app:tint="#AB47BC" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Copiar información"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Paquete, rutas, versión o firma SHA-256"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 7. Compartir APK -->
+        <LinearLayout
+            android:id="@+id/btnActionShare"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/people_icon_control_normal_24dp"
+                app:tint="#26A69A" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Compartir APK"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enviar archivo APK por Telegram, Drive, etc."
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 8. Google Play Store -->
+        <LinearLayout
+            android:id="@+id/btnActionPlayStore"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/about_icon_white_24dp"
+                app:tint="#64B5F6" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Google Play Store"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ver ficha oficial de la aplicación"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 9. Desinstalar -->
+        <LinearLayout
+            android:id="@+id/btnActionUninstall"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="?selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/delete_icon_white_24dp"
+                app:tint="#F44336" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Desinstalar aplicación"
+                    android:textColor="#FF5252"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Eliminar del dispositivo"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 10. Root Actions Container -->
+        <LinearLayout
+            android:id="@+id/layoutRootActions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAppLaunch"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_launch" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="#2E2E2E" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAppDetails"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/app_details" />
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:text="HERRAMIENTAS ROOT"
+                android:textColor="#2196F3"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAppExtract"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/extract_apk" />
+            <LinearLayout
+                android:id="@+id/btnActionForceStop"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="?selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/stop_icon_white_24dp"
+                    app:tint="#FFA726" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Forzar detención (Root)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Detener procesos de la app con am force-stop"
+                        android:textColor="#888888"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnActionClearData"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="?selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/delete_icon_control_normal_24dp"
+                    app:tint="#EF5350" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Limpiar datos (Root)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Restablecer la app a estado inicial con pm clear"
+                        android:textColor="#888888"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnActionToggleEnable"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="?selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/shield_icon_white_24dp"
+                    app:tint="#AB47BC" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvToggleEnableTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Inhabilitar / Congelar (Root)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvToggleEnableSubtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Desactivar paquete con pm disable"
+                        android:textColor="#888888"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

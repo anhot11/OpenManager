@@ -686,8 +686,8 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_apps_white_24dp"
-                            app:tint="#DCDCDC" />
+                            android:src="@drawable/file_apk_icon"
+                            app:tint="#4CAF50" />
                     </FrameLayout>
 
                     <TextView

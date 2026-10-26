@@ -973,9 +973,9 @@
     <string name="open_as_html_edit">Editar</string>
 
     <!-- MT Manager Features: Installed Apps, Swap Names, Split & Merge, Symlink, Export List -->
-    <string name="navigation_installed_apps">Aplicaciones Instaladas</string>
-    <string name="user_apps">Apps de Usuario</string>
-    <string name="system_apps">Apps del Sistema</string>
+    <string name="navigation_installed_apps">Extraer APK</string>
+    <string name="user_apps">Usuario</string>
+    <string name="system_apps">Sistema</string>
     <string name="extract_apk">Extraer APK</string>
     <string name="extract_apk_success">APK extraído en %s</string>
     <string name="extract_apk_failed">Error al extraer el APK</string>
