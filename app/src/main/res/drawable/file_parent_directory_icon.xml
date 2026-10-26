@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 OpenManager
+  ~ Parent Directory (..) Icon matching MT Manager
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Dark rounded badge background matching MT Manager -->
+    <path
+        android:fillColor="#151515"
+        android:pathData="M3,1.5 h18 c1.1,0 2,0.9 2,2 v17 c0,1.1 -0.9,2 -2,2 H3 c-1.1,0 -2,-0.9 -2,-2 V3.5 c0,-1.1 0.9,-2 2,-2 z" />
+
+    <!-- Solid folder silhouette in MT Manager warm amber/gold -->
+    <path
+        android:fillColor="#FFA000"
+        android:pathData="M5,6.5 h4.5 l1.8,1.8 H19 c0.6,0 1,0.4 1,1 v7.2 c0,0.6 -0.4,1 -1,1 H5 c-0.6,0 -1,-0.4 -1,-1 V7.5 c0,-0.6 0.4,-1 1,-1 z" />
+
+    <!-- Upward arrow indicator inside folder indicating "Go up / parent directory" -->
+    <path
+        android:fillColor="#151515"
+        android:pathData="M12,9.2 L8.8,12.4 H10.8 V15.8 H13.2 V12.4 H15.2 L12,9.2 Z" />
+</vector>

@@ -316,13 +316,25 @@ class FileListAdapter(
             holder.itemLayout.setOnLongClickListener { false }
             holder.iconImage.apply {
                 isVisible = true
-                setImageResource(R.drawable.directory_icon_white_24dp)
+                setImageResource(R.drawable.file_parent_directory_icon)
             }
             holder.directoryThumbnailImage?.isVisible = false
             holder.thumbnailOutlineView?.isVisible = false
-            holder.thumbnailIconImage?.isVisible = false
-            holder.thumbnailImage.isVisible = false
-            holder.appIconBadgeImage.isVisible = false
+            holder.thumbnailIconImage?.apply {
+                dispose()
+                isVisible = false
+                setImageDrawable(null)
+            }
+            holder.thumbnailImage.apply {
+                dispose()
+                isVisible = false
+                setImageDrawable(null)
+            }
+            holder.appIconBadgeImage.apply {
+                dispose()
+                isVisible = false
+                setImageDrawable(null)
+            }
             holder.badgeImage.isVisible = false
             return
         }
