@@ -17,7 +17,10 @@ import me.zhanghai.android.files.util.ParcelableArgs
 import me.zhanghai.android.files.util.ParcelableParceler
 import me.zhanghai.android.files.util.args
 import me.zhanghai.android.files.util.putArgs
+import me.zhanghai.android.files.provider.common.newInputStream
+import me.zhanghai.android.files.provider.linux.isLinuxPath
 import java.io.File
+import java.io.FileOutputStream
 
 class FontViewerDialogFragment : AppCompatDialogFragment() {
     private val args by args<Args>()
@@ -25,8 +28,26 @@ class FontViewerDialogFragment : AppCompatDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
         val customTypeface = try {
-            Typeface.createFromFile(File(args.path.toString()))
+            val path = args.path
+            val file = if (path.isLinuxPath) {
+                path.toFile()
+            } else {
+                val tempFile = File(context.cacheDir, "preview_font_${System.currentTimeMillis()}.ttf")
+                tempFile.deleteOnExit()
+                path.newInputStream().use { input ->
+                    FileOutputStream(tempFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                tempFile
+            }
+            if (file.exists() && file.length() > 0) {
+                Typeface.createFromFile(file)
+            } else {
+                Typeface.DEFAULT
+            }
         } catch (e: Exception) {
+            e.printStackTrace()
             Typeface.DEFAULT
         }
 

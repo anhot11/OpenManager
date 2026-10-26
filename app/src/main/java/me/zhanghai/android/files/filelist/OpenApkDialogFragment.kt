@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.parcelize.Parcelize
@@ -23,11 +24,13 @@ import me.zhanghai.android.files.app.packageManager
 import me.zhanghai.android.files.compat.longVersionCodeCompat
 import me.zhanghai.android.files.file.FileItem
 import me.zhanghai.android.files.file.fileSize
+import me.zhanghai.android.files.settings.Settings
 import me.zhanghai.android.files.util.ParcelableArgs
 import me.zhanghai.android.files.util.args
 import me.zhanghai.android.files.util.getPackageArchiveInfoCompat
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.show
+import me.zhanghai.android.files.util.valueCompat
 
 class OpenApkDialogFragment : AppCompatDialogFragment() {
     private val args by args<Args>()
@@ -53,6 +56,7 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
 
         val btnFunction = view.findViewById<Button>(R.id.btnApkFunction)
         val btnView = view.findViewById<Button>(R.id.btnApkView)
+        val btnRootInstall = view.findViewById<Button>(R.id.btnApkRootInstall)
         val btnInstall = view.findViewById<Button>(R.id.btnApkInstall)
 
         val file = args.file
@@ -156,6 +160,9 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
             tvInstalled.text = "No instalado"
         }
 
+        val isRootAvailable = ApkInstallHelper.isRootAvailable()
+        btnRootInstall.isVisible = isRootAvailable
+
         val dialog = MaterialAlertDialogBuilder(context)
             .setView(view)
             .create()
@@ -165,31 +172,51 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
             listener.viewApk(file)
         }
 
+        btnRootInstall.setOnClickListener {
+            dialog.dismiss()
+            listener.installApkWithRoot(file)
+        }
+
         btnInstall.setOnClickListener {
             dialog.dismiss()
-            listener.installApk(file)
+            if (isRootAvailable && Settings.USE_ROOT_INSTALL.valueCompat) {
+                listener.installApkWithRoot(file)
+            } else {
+                listener.installApk(file)
+            }
         }
 
         btnFunction.setOnClickListener {
-            val options = arrayOf(
-                getString(R.string.view),
+            val optionsList = mutableListOf(
+                getString(R.string.view)
+            )
+            if (isRootAvailable) {
+                optionsList.add(getString(R.string.install_root))
+            }
+            optionsList.addAll(listOf(
                 getString(R.string.apk_sign),
                 getString(R.string.apk_clone),
                 getString(R.string.apk_optimize),
                 getString(R.string.apk_convert_apks)
-            )
+            ))
+            val options = optionsList.toTypedArray()
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.apk_function)
                 .setItems(options) { _, which ->
-                    when (which) {
-                        0 -> {
+                    val chosen = options[which]
+                    when (chosen) {
+                        getString(R.string.view) -> {
                             dialog.dismiss()
                             listener.viewApk(file)
                         }
-                        1 -> Toast.makeText(context, "Firma de APK seleccionada", Toast.LENGTH_SHORT).show()
-                        2 -> Toast.makeText(context, "Clonación de APK seleccionada", Toast.LENGTH_SHORT).show()
-                        3 -> Toast.makeText(context, "Optimización zipalign seleccionada", Toast.LENGTH_SHORT).show()
-                        4 -> Toast.makeText(context, "Conversión de APKS a APK seleccionada", Toast.LENGTH_SHORT).show()
+                        getString(R.string.install_root) -> {
+                            dialog.dismiss()
+                            listener.installApkWithRoot(file)
+                        }
+                        getString(R.string.apk_sign) -> Toast.makeText(context, "Firma de APK seleccionada", Toast.LENGTH_SHORT).show()
+                        getString(R.string.apk_clone) -> Toast.makeText(context, "Clonación de APK seleccionada", Toast.LENGTH_SHORT).show()
+                        getString(R.string.apk_optimize) -> Toast.makeText(context, "Optimización zipalign seleccionada", Toast.LENGTH_SHORT).show()
+                        getString(R.string.apk_convert_apks) -> Toast.makeText(context, "Conversión de APKS a APK seleccionada", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .show()
@@ -228,6 +255,7 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
 
     interface Listener {
         fun installApk(file: FileItem)
+        fun installApkWithRoot(file: FileItem)
         fun viewApk(file: FileItem)
     }
 }

@@ -35,6 +35,16 @@
             android:visibility="gone"
             app:drawableTopCompat="@drawable/error_icon_240dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGrantSafPermission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="48dp"
+            android:text="@string/action_grant_saf_permission"
+            android:visibility="gone"
+            app:icon="@drawable/directory_icon_white_24dp" />
+
         <TextView
             android:id="@+id/emptyView"
             android:layout_width="wrap_content"

@@ -1026,4 +1026,17 @@
     <string name="export_file_list_save_file">Guardar en file_list.txt</string>
     <string name="export_file_list_copied">%d elementos copiados al portapapeles</string>
     <string name="export_file_list_saved">Lista de archivos guardada en %s</string>
+
+    <string name="install_root">Instalar (Root)</string>
+    <string name="installing_with_root">Instalando con Root…</string>
+    <string name="root_install_success">Aplicación instalada exitosamente (Root)</string>
+    <string name="root_install_failed">Error al instalar con Root: %1$s</string>
+
+    <string name="android_data_permission_title">Acceso a Android/data</string>
+    <string name="android_data_permission_message">Para acceder a Android/data en Android 11 o superior sin root, debe conceder permiso mediante el administrador de archivos del sistema como en MT Manager.</string>
+    <string name="android_obb_permission_title">Acceso a Android/obb</string>
+    <string name="android_obb_permission_message">Para acceder a Android/obb en Android 11 o superior sin root, debe conceder permiso mediante el administrador de archivos del sistema como en MT Manager.</string>
+    <string name="action_grant_saf_permission">Conceder permiso (SAF)</string>
+    <string name="grant_permission">Conceder permiso</string>
+    <string name="saf_permission_granted_format">Permiso concedido para %1$s</string>
 </resources>

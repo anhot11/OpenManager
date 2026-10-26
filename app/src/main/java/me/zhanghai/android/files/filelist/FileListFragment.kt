@@ -148,6 +148,14 @@ import me.zhanghai.android.files.util.takeIfNotEmpty
 import me.zhanghai.android.files.util.valueCompat
 import me.zhanghai.android.files.util.viewModels
 import me.zhanghai.android.files.util.withChooser
+import android.provider.DocumentsContract
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import me.zhanghai.android.files.file.asDocumentTreeUriOrNull
+import me.zhanghai.android.files.provider.document.isDocumentPath
+import me.zhanghai.android.files.provider.root.LibSuFileServiceLauncher
+import me.zhanghai.android.files.storage.DocumentTree
+import me.zhanghai.android.files.storage.Storages
 import me.zhanghai.android.files.viewer.image.ImageViewerActivity
 
 class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.Listener,
@@ -179,6 +187,125 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         RequestPermissionInSettingsContract(android.Manifest.permission.POST_NOTIFICATIONS),
         this::onRequestNotificationPermissionInSettingsResult
     )
+
+    private var pendingSafIsObb = false
+    private var lastPromptedSafPath: Path? = null
+
+    private val requestSafPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            try {
+                requireContext().contentResolver.takePersistableUriPermission(uri, flags)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            val treeUri = uri.asDocumentTreeUriOrNull()
+            if (treeUri != null) {
+                val isObb = pendingSafIsObb
+                val name = if (isObb) "Android/obb" else "Android/data"
+                val documentTree = DocumentTree(null, name, treeUri)
+                Storages.addOrReplace(documentTree)
+                navigateTo(documentTree.path)
+                showToast(getString(R.string.saf_permission_granted_format, name))
+            }
+        }
+    }
+
+    private fun isAndroidData(path: Path): Boolean {
+        val pathStr = path.toString()
+        return pathStr.contains("/Android/data", ignoreCase = true) ||
+               pathStr.endsWith("/Android/data", ignoreCase = true) ||
+               pathStr.equals("/Android/data", ignoreCase = true)
+    }
+
+    private fun isAndroidObb(path: Path): Boolean {
+        val pathStr = path.toString()
+        return pathStr.contains("/Android/obb", ignoreCase = true) ||
+               pathStr.endsWith("/Android/obb", ignoreCase = true) ||
+               pathStr.equals("/Android/obb", ignoreCase = true)
+    }
+
+    private fun isAndroidDataOrObb(path: Path): Boolean = isAndroidData(path) || isAndroidObb(path)
+
+    private fun findMatchingDocumentTree(path: Path): Pair<Path, DocumentTree>? {
+        val storages = Settings.STORAGES.valueCompat
+        val isData = isAndroidData(path)
+        val isObb = isAndroidObb(path)
+        if (!isData && !isObb) return null
+
+        val pathStr = path.toString()
+        val marker = if (isObb) "/Android/obb" else "/Android/data"
+        val idx = pathStr.indexOf(marker, ignoreCase = true)
+        val subPathStr = if (idx != -1) {
+            pathStr.substring(idx + marker.length).trimStart('/')
+        } else ""
+
+        val tree = storages.filterIsInstance<DocumentTree>().firstOrNull { t ->
+            val uriStr = t.uri.value.toString()
+            val customName = t.customName ?: ""
+            if (isData) {
+                uriStr.contains("Android%2Fdata", ignoreCase = true) ||
+                uriStr.contains("Android:data", ignoreCase = true) ||
+                customName.contains("Android/data", ignoreCase = true)
+            } else {
+                uriStr.contains("Android%2Fobb", ignoreCase = true) ||
+                uriStr.contains("Android:obb", ignoreCase = true) ||
+                customName.contains("Android/obb", ignoreCase = true)
+            }
+        } ?: return null
+
+        val targetPath = if (subPathStr.isEmpty()) {
+            tree.path
+        } else {
+            try {
+                tree.path.resolve(subPathStr)
+            } catch (e: Exception) {
+                tree.path
+            }
+        }
+        return targetPath to tree
+    }
+
+    private fun launchSafPermissionForAndroidDataOrObb(path: Path) {
+        val isObb = isAndroidObb(path)
+        pendingSafIsObb = isObb
+        val documentId = if (isObb) "primary:Android/obb" else "primary:Android/data"
+        val initialUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                DocumentsContract.buildDocumentUri(
+                    "com.android.externalstorage.documents",
+                    documentId
+                )
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+        try {
+            requestSafPermissionLauncher.launch(initialUri)
+        } catch (e: Exception) {
+            try {
+                requestSafPermissionLauncher.launch(null)
+            } catch (e2: Exception) {
+                showToast("No se pudo abrir el administrador de archivos: ${e2.message}")
+            }
+        }
+    }
+
+    private fun showSafPermissionPromptDialog(path: Path) {
+        val isObb = isAndroidObb(path)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(if (isObb) R.string.android_obb_permission_title else R.string.android_data_permission_title)
+            .setMessage(if (isObb) R.string.android_obb_permission_message else R.string.android_data_permission_message)
+            .setPositiveButton(R.string.grant_permission) { _, _ ->
+                launchSafPermissionForAndroidDataOrObb(path)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
 
     private val args by args<Args>()
     private val argsPath by lazy { args.intent.extraPath }
@@ -661,6 +788,14 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         binding.swipeRefreshLayout.isRefreshing = stateful is Loading && (hasFiles || isSearching)
         binding.progress.fadeToVisibilityUnsafe(stateful is Loading && !(hasFiles || isSearching))
         binding.errorText.fadeToVisibilityUnsafe(stateful is Failure && !hasFiles)
+        val isAndroidDataOrObbCurrent = isAndroidDataOrObb(currentPath) && !currentPath.isDocumentPath
+        val shouldShowSafBtn = stateful is Failure && !hasFiles && isAndroidDataOrObbCurrent
+        binding.btnGrantSafPermission.fadeToVisibilityUnsafe(shouldShowSafBtn)
+        if (shouldShowSafBtn) {
+            binding.btnGrantSafPermission.setOnClickListener {
+                launchSafPermissionForAndroidDataOrObb(currentPath)
+            }
+        }
         val throwable = (stateful as? Failure)?.throwable
         if (throwable != null) {
             throwable.printStackTrace()
@@ -668,7 +803,16 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                 throwable is me.zhanghai.android.files.provider.remote.RemoteFileSystemException ||
                 throwable.message?.contains("Permission denied", ignoreCase = true) == true ||
                 throwable.message?.contains("Root isn't available", ignoreCase = true) == true
-            val error = if (isAccessDenied) {
+            if (isAndroidDataOrObbCurrent) {
+                val match = findMatchingDocumentTree(currentPath)
+                if (match != null) {
+                    navigateTo(match.first)
+                    return
+                }
+            }
+            val error = if (isAndroidDataOrObbCurrent) {
+                getString(if (isAndroidObb(currentPath)) R.string.android_obb_permission_message else R.string.android_data_permission_message)
+            } else if (isAccessDenied) {
                 getString(R.string.root_permission_required_message)
             } else {
                 throwable.toString()
@@ -677,6 +821,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                 showToast(error)
             } else {
                 binding.errorText.text = error
+                if (isAndroidDataOrObbCurrent && lastPromptedSafPath != currentPath) {
+                    lastPromptedSafPath = currentPath
+                    showSafPermissionPromptDialog(currentPath)
+                }
             }
         }
         binding.emptyView.fadeToVisibilityUnsafe(stateful is Success && !hasFiles)
@@ -1381,9 +1529,32 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
             return
         }
-        val fileName = file.path.fileName.toString()
-        if (file.mimeType.isApk || fileName.endsWith(".apk", true)) {
+        val fileName = file.name
+        val pathName = file.path.fileName?.toString() ?: ""
+        val pathString = file.path.toString()
+        val isApk = file.mimeType.isApk ||
+            fileName.endsWith(".apk", ignoreCase = true) ||
+            pathName.endsWith(".apk", ignoreCase = true) ||
+            pathString.endsWith(".apk", ignoreCase = true) ||
+            file.mimeType.value == "application/vnd.android.package-archive" ||
+            file.extension.equals("apk", ignoreCase = true)
+        if (isApk) {
             openApk(file)
+            return
+        }
+        if (file.attributes.isDirectory) {
+            if (isAndroidDataOrObb(file.path) && !file.path.isDocumentPath) {
+                val match = findMatchingDocumentTree(file.path)
+                if (match != null) {
+                    navigateTo(match.first)
+                    return
+                }
+                if (!LibSuFileServiceLauncher.isSuAvailable()) {
+                    showSafPermissionPromptDialog(file.path)
+                    return
+                }
+            }
+            navigateTo(file.path)
             return
         }
         if (file.isListable) {
@@ -1392,6 +1563,16 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
         if (ScriptRunnerHelper.isExecutableOrScript(file)) {
             ScriptRunnerHelper.showScriptActionDialog(requireActivity(), file)
+            return
+        }
+        val fontExtensions = setOf("ttf", "otf", "woff", "woff2", "ttc")
+        val fileExtension = file.extension.lowercase()
+        val isFont = fileExtension in fontExtensions ||
+            fileName.endsWith(".ttf", true) || fileName.endsWith(".otf", true) ||
+            fileName.endsWith(".woff", true) || fileName.endsWith(".woff2", true) ||
+            fileName.endsWith(".ttc", true) || file.mimeType.value.startsWith("font/")
+        if (isFont) {
+            FontViewerDialogFragment.show(file.path, childFragmentManager)
             return
         }
         val hasExtension = fileName.contains('.') && fileName.substringAfterLast('.', "").isNotBlank()
@@ -1441,6 +1622,19 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     private fun isTextFileOrProbableText(path: Path): Boolean {
         val name = path.fileName?.toString()?.lowercase() ?: ""
+        val ext = name.substringAfterLast('.', "")
+        val binaryExtensions = setOf(
+            "ttf", "otf", "woff", "woff2", "ttc", "eot",
+            "apk", "apks", "xapk", "jar", "zip", "rar", "7z", "tar", "gz", "xz",
+            "dex", "so", "dll", "exe", "bin", "dat", "o", "a",
+            "png", "jpg", "jpeg", "gif", "webp", "bmp", "ico",
+            "mp3", "ogg", "wav", "flac", "m4a", "aac",
+            "mp4", "mkv", "avi", "mov", "flv", "webm",
+            "pdf", "db", "sqlite", "arsc"
+        )
+        if (ext in binaryExtensions) {
+            return false
+        }
         val textExtensions = setOf(
             "txt", "log", "md", "markdown", "json", "xml", "html", "htm", "css",
             "js", "ts", "jsx", "tsx", "py", "c", "cpp", "cc", "cxx", "h", "hpp",
@@ -1450,7 +1644,6 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             "lua", "rb", "swift", "cmake", "proto", "diff", "patch", "info",
             "cfg", "nfo", "prop", "list"
         )
-        val ext = name.substringAfterLast('.', "")
         if (ext.isNotEmpty() && ext in textExtensions) {
             return true
         }
@@ -1509,6 +1702,28 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             startActivitySafe(uri.createInstallPackageIntent())
         } else {
             FileJobService.installApk(path, requireContext())
+        }
+    }
+
+    override fun installApkWithRoot(file: FileItem) {
+        val progressDialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.installing_with_root)
+            .setMessage(R.string.loading)
+            .setCancelable(false)
+            .show()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val (success, message) = ApkInstallHelper.installWithRoot(requireContext(), file)
+            progressDialog.dismiss()
+            if (success) {
+                showToast(getString(R.string.root_install_success))
+            } else {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.error)
+                    .setMessage(getString(R.string.root_install_failed, message))
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
         }
     }
 
@@ -2036,6 +2251,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val contentLayout: ViewGroup,
         val progress: ProgressBar,
         val errorText: TextView,
+        val btnGrantSafPermission: Button,
         val emptyView: View,
         val swipeRefreshLayout: SwipeRefreshLayout,
         val recyclerView: RecyclerView,
@@ -2062,7 +2278,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                     includeBinding.persistentBarLayout, appBarBinding.appBarLayout,
                     appBarBinding.toolbar, appBarBinding.overlayToolbar,
                     appBarBinding.breadcrumbLayout, contentBinding.contentLayout,
-                    contentBinding.progress, contentBinding.errorText, contentBinding.emptyView,
+                    contentBinding.progress, contentBinding.errorText, contentBinding.btnGrantSafPermission,
+                    contentBinding.emptyView,
                     contentBinding.swipeRefreshLayout, contentBinding.recyclerView,
                     bottomBarBinding.bottomBarLayout, bottomBarBinding.bottomToolbar,
                     bottomBarBinding.bottomCreateFileNameEdit, speedDialBinding.speedDialView

@@ -1130,4 +1130,17 @@
     <string name="export_file_list_save_file">Save to file_list.txt</string>
     <string name="export_file_list_copied">Copied %d entries to clipboard</string>
     <string name="export_file_list_saved">File list saved to %s</string>
+
+    <string name="install_root">Install (Root)</string>
+    <string name="installing_with_root">Installing with Root…</string>
+    <string name="root_install_success">Application installed successfully (Root)</string>
+    <string name="root_install_failed">Failed to install with Root: %1$s</string>
+
+    <string name="android_data_permission_title">Access to Android/data</string>
+    <string name="android_data_permission_message">To access Android/data on Android 11 or higher without root, you must grant permission using the system file manager as in MT Manager.</string>
+    <string name="android_obb_permission_title">Access to Android/obb</string>
+    <string name="android_obb_permission_message">To access Android/obb on Android 11 or higher without root, you must grant permission using the system file manager as in MT Manager.</string>
+    <string name="action_grant_saf_permission">Grant permission (SAF)</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="saf_permission_granted_format">Permission granted for %1$s</string>
 </resources>

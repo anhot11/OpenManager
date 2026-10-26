@@ -179,6 +179,11 @@ object Settings {
             OpenApkDefaultAction::class.java
         )
 
+    val USE_ROOT_INSTALL: SettingLiveData<Boolean> = BooleanSettingLiveData(
+        R.string.pref_key_use_root_install,
+        R.bool.pref_default_value_use_root_install
+    )
+
     val SHOW_PDF_THUMBNAIL_PRE_28: SettingLiveData<Boolean> = BooleanSettingLiveData(
         R.string.pref_key_show_pdf_thumbnail_pre_28,
         R.bool.pref_default_value_show_pdf_thumbnail_pre_28
