@@ -718,9 +718,14 @@ class FileListActivity : AppActivity() {
                     this.text = text
                     setTextColor(android.graphics.Color.parseColor("#90CAF9"))
                     textSize = 12f
-                    setPadding((8 * resources.displayMetrics.density).toInt(), (4 * resources.displayMetrics.density).toInt(), (8 * resources.displayMetrics.density).toInt(), (4 * resources.displayMetrics.density).toInt())
-                    setBackgroundResource(R.drawable.rounded_white_background)
-                    backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#252525"))
+                    val padH = (10 * resources.displayMetrics.density).toInt()
+                    val padV = (5 * resources.displayMetrics.density).toInt()
+                    setPadding(padH, padV, padH, padV)
+                    background = android.graphics.drawable.GradientDrawable().apply {
+                        setColor(android.graphics.Color.parseColor("#262626"))
+                        cornerRadius = 8 * resources.displayMetrics.density
+                        setStroke((1 * resources.displayMetrics.density).toInt(), android.graphics.Color.parseColor("#444444"))
+                    }
                     val params = android.widget.LinearLayout.LayoutParams(
                         android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
                         android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
