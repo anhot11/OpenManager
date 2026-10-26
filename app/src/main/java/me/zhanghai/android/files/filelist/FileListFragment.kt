@@ -1122,17 +1122,17 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         pickFiles(fileItemSetOf(file))
     }
 
-    private fun cutFiles(files: FileItemSet) {
+    fun cutFiles(files: FileItemSet) {
         viewModel.addToPasteState(false, files)
         viewModel.selectFiles(files, false)
     }
 
-    private fun copyFiles(files: FileItemSet) {
+    fun copyFiles(files: FileItemSet) {
         viewModel.addToPasteState(true, files)
         viewModel.selectFiles(files, false)
     }
 
-    private fun confirmDeleteFiles(files: FileItemSet) {
+    fun confirmDeleteFiles(files: FileItemSet) {
         if (!Settings.SHOW_DELETION_WARNING.valueCompat) {
             deleteFiles(files)
         } else {
@@ -1163,7 +1163,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         viewModel.selectFiles(files, false)
     }
 
-    private fun showCreateArchiveDialog(files: FileItemSet) {
+    fun showCreateArchiveDialog(files: FileItemSet) {
         CreateArchiveDialogFragment.show(files, this)
     }
 
@@ -1181,7 +1181,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         viewModel.selectFiles(files, false)
     }
 
-    private fun shareFiles(files: FileItemSet) {
+    fun shareFiles(files: FileItemSet) {
         shareFiles(files.map { it.path }, files.map { it.mimeType })
         viewModel.selectFiles(files, false)
     }
@@ -1721,6 +1721,13 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     override fun createSymlink(file: FileItem) {
         CreateSymlinkHelper.showDialog(requireActivity(), file, currentPath) { viewModel.reload() }
+    }
+
+    override fun showMtMenu(file: FileItem) {
+        if (viewModel.selectedFiles.isEmpty()) {
+            viewModel.selectFile(file, true)
+        }
+        MtFileMenuHelper.show(this, file)
     }
 
     fun showCreateFileDialog() {

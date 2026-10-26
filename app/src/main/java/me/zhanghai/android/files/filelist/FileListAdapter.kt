@@ -318,11 +318,7 @@ class FileListAdapter(
                 }
             }
             setOnLongClickListener {
-                if (selectedFiles.isEmpty()) {
-                    holder.popupMenu.show()
-                } else {
-                    selectFile(file)
-                }
+                listener.showMtMenu(file)
                 true
             }
         }
@@ -626,5 +622,6 @@ class FileListAdapter(
         fun createSymlink(file: FileItem)
         fun showPermissionsDialog(file: FileItem)
         fun showPropertiesDialog(file: FileItem)
+        fun showMtMenu(file: FileItem)
     }
 }
