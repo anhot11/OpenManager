@@ -395,7 +395,7 @@ class HexEditorActivity : AppActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.hex_editor_edit_byte)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.ok) { _, _ ->
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val text = dialogBinding.etValue.text.toString()
                 val bytes = if (dialogBinding.rbHex.isChecked) {
                     parseHexPattern(text)
@@ -446,7 +446,7 @@ class HexEditorActivity : AppActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.hex_editor_goto_offset)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.ok) { _, _ ->
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val target = parseOffset(dialogBinding.etOffset.text.toString())
                 if (target == null || target < 0 || target >= buffer.size) {
                     showToast(R.string.hex_editor_invalid_offset)
@@ -470,7 +470,7 @@ class HexEditorActivity : AppActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.hex_editor_insert_bytes)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.ok) { _, _ ->
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val off = parseOffset(dialogBinding.etOffset.text.toString()) ?: currentOffset
                 val count = dialogBinding.etCount.text.toString().toIntOrNull() ?: 1
                 val fillByte = parseByte(dialogBinding.etFillByte.text.toString()) ?: 0
@@ -521,7 +521,7 @@ class HexEditorActivity : AppActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.hex_editor_fill_range)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.ok) { _, _ ->
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val start = parseOffset(dialogBinding.etStartOffset.text.toString()) ?: currentOffset
                 val end = parseOffset(dialogBinding.etEndOffset.text.toString()) ?: currentOffset
                 val fillByte = parseByte(dialogBinding.etFillByte.text.toString()) ?: 0
