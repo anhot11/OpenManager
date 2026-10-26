@@ -16,20 +16,21 @@
         android:orientation="horizontal"
         android:paddingBottom="16dp">
 
-        <androidx.cardview.widget.CardView
+        <FrameLayout
+            android:id="@+id/layoutApkIconContainer"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="#FFFFFF">
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/ivApkIcon"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitCenter"
-                android:padding="4dp" />
-        </androidx.cardview.widget.CardView>
+                android:padding="2dp" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"

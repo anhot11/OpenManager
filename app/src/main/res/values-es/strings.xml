@@ -58,11 +58,14 @@
         <item quantity="other">%1$,d bytes</item>
     </plurals>
 
+    <string name="all_files_access_title">Acceso a todos los archivos</string>
     <string name="all_files_access_rationale_message">La aplicación necesita poder administrar todos los archivos. Permite el acceso en el siguiente ajuste del sistema.</string>
     <!-- The allow button before Android 10 was in all-caps. -->
+    <string name="storage_permission_title">Permiso de almacenamiento</string>
     <string name="storage_permission_rationale_message">La aplicación necesita permiso para acceder a los archivos. Presiona “PERMITIR” en el diálogo del sistema.</string>
     <string name="storage_permission_permanently_denied_message">La aplicación necesita permiso para acceder a los archivos. Concede el permiso de “Almacenamiento” en los ajustes del sistema.</string>
     <!-- The allow button is in sentence case now. -->
+    <string name="notification_permission_title">Permiso de notificaciones</string>
     <string name="notification_permission_rationale_message">La aplicación necesita permiso para mostrar notificaciones sobre las operaciones en archivos. Presiona “Permitir” en el diálogo del sistema a continuación.</string>
     <string name="notification_permission_permanently_denied_message">La aplicación necesita permiso para mostrar notificaciones sobre las operaciones en archivos. Concede el permiso de “Notificaciones” en los ajustes del sistema.</string>
 

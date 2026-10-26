@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.zhanghai.android.files.R
+import android.content.pm.PackageManager
+import android.os.Build
 import me.zhanghai.android.files.util.show
 
 class ShowRequestNotificationPermissionInSettingsRationaleDialogFragment : AppCompatDialogFragment() {
@@ -20,6 +22,8 @@ class ShowRequestNotificationPermissionInSettingsRationaleDialogFragment : AppCo
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MaterialAlertDialogBuilder(requireContext(), theme)
+            .setIcon(R.drawable.notification_icon_white_24dp)
+            .setTitle(R.string.notification_permission_title)
             .setMessage(R.string.notification_permission_permanently_denied_message)
             .setPositiveButton(R.string.open_settings) { _, _ ->
                 listener.onShowRequestNotificationPermissionInSettingsRationaleResult(true)
@@ -28,6 +32,17 @@ class ShowRequestNotificationPermissionInSettingsRationaleDialogFragment : AppCo
                 listener.onShowRequestNotificationPermissionInSettingsRationaleResult(false)
             }
             .create()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (requireContext().checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED) {
+                dismissAllowingStateLoss()
+            }
+        }
     }
 
     override fun onCancel(dialog: DialogInterface) {

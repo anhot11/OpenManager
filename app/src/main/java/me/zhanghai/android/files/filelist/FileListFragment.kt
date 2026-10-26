@@ -555,11 +555,13 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     override fun onResume() {
         super.onResume()
 
-        if (!viewModel.isNotificationPermissionRequested) {
-            ensureStorageAccess()
-        }
-        if (!viewModel.isStorageAccessRequested) {
-            ensureNotificationPermission()
+        if (activity !is FileListActivity) {
+            if (!viewModel.isNotificationPermissionRequested) {
+                ensureStorageAccess()
+            }
+            if (!viewModel.isStorageAccessRequested) {
+                ensureNotificationPermission()
+            }
         }
         if (viewModel.fileListStateful is Failure) {
             viewModel.reload()
@@ -2266,6 +2268,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     }
 
     private fun ensureNotificationPermission() {
+        if (activity is FileListActivity) {
+            return
+        }
         if (viewModel.isNotificationPermissionRequested) {
             return
         }
@@ -2300,15 +2305,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun onRequestNotificationPermissionResult(isGranted: Boolean) {
-        if (isGranted) {
-            viewModel.isNotificationPermissionRequested = false
-        } else if (shouldShowRequestPermissionRationale(
-            android.Manifest.permission.POST_NOTIFICATIONS
-        )) {
-            ShowRequestNotificationPermissionRationaleDialogFragment.show(this)
-        } else {
-            ShowRequestNotificationPermissionInSettingsRationaleDialogFragment.show(this)
-        }
+        viewModel.isNotificationPermissionRequested = !isGranted
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)

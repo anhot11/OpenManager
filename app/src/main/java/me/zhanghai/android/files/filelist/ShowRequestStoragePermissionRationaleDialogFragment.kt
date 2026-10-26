@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.zhanghai.android.files.R
+import android.content.pm.PackageManager
 import me.zhanghai.android.files.util.show
 
 class ShowRequestStoragePermissionRationaleDialogFragment : AppCompatDialogFragment() {
@@ -20,6 +21,8 @@ class ShowRequestStoragePermissionRationaleDialogFragment : AppCompatDialogFragm
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MaterialAlertDialogBuilder(requireContext(), theme)
+            .setIcon(R.drawable.sd_card_icon_white_24dp)
+            .setTitle(R.string.storage_permission_title)
             .setMessage(R.string.storage_permission_rationale_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 listener.onShowRequestStoragePermissionRationaleResult(true)
@@ -28,6 +31,15 @@ class ShowRequestStoragePermissionRationaleDialogFragment : AppCompatDialogFragm
                 listener.onShowRequestStoragePermissionRationaleResult(false)
             }
             .create()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (requireContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+            PackageManager.PERMISSION_GRANTED) {
+            dismissAllowingStateLoss()
+        }
     }
 
     override fun onCancel(dialog: DialogInterface) {

@@ -10,12 +10,17 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TableRow
 import android.widget.TextView
@@ -37,6 +42,8 @@ import me.zhanghai.android.files.util.getPackageArchiveInfoCompat
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.show
 import me.zhanghai.android.files.util.valueCompat
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -99,6 +106,13 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
         tvDataDir?.setOnClickListener { copyToClipboard("Ruta de datos", tvDataDir.text) }
         tvApkPath?.setOnClickListener { copyToClipboard("Ruta de APK", tvApkPath.text) }
         tvUid?.setOnClickListener { copyToClipboard("UID", tvUid.text) }
+
+        val layoutIconContainer = view.findViewById<View>(R.id.layoutApkIconContainer) ?: ivIcon
+        val openViewerListener = View.OnClickListener {
+            showAppIconViewer(ivIcon.drawable, tvLabel.text.toString(), tvPackage.text.toString())
+        }
+        ivIcon.setOnClickListener(openViewerListener)
+        layoutIconContainer.setOnClickListener(openViewerListener)
 
         var parsedPackageName: String? = null
 
@@ -354,6 +368,68 @@ class OpenApkDialogFragment : AppCompatDialogFragment() {
         34 -> "14"
         35 -> "15"
         else -> "$apiLevel"
+    }
+
+    private fun showAppIconViewer(icon: Drawable?, appName: String, packageName: String) {
+        val context = requireContext()
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_app_icon_viewer, null)
+        val ivLarge = dialogView.findViewById<ImageView>(R.id.ivLargeAppIcon)
+        val tvName = dialogView.findViewById<TextView>(R.id.tvViewerAppName)
+        val tvPkg = dialogView.findViewById<TextView>(R.id.tvViewerAppPackage)
+        val tvDimensions = dialogView.findViewById<TextView>(R.id.tvViewerIconDimensions)
+        val btnClose = dialogView.findViewById<ImageButton>(R.id.btnCloseIconViewer)
+        val btnSave = dialogView.findViewById<Button>(R.id.btnSaveAppIcon)
+
+        tvName.text = appName
+        tvPkg.text = packageName
+
+        val bitmap = if (icon != null) {
+            val w = if (icon.intrinsicWidth > 0) icon.intrinsicWidth else 512
+            val h = if (icon.intrinsicHeight > 0) icon.intrinsicHeight else 512
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            icon.setBounds(0, 0, canvas.width, canvas.height)
+            icon.draw(canvas)
+            bmp
+        } else null
+
+        if (bitmap != null) {
+            ivLarge.setImageBitmap(bitmap)
+            tvDimensions.text = "${bitmap.width} × ${bitmap.height} px"
+        } else {
+            ivLarge.setImageResource(R.drawable.file_apk_icon)
+            tvDimensions.text = "Vector / Default"
+        }
+
+        val viewerDialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogView)
+            .create()
+
+        btnClose?.setOnClickListener { viewerDialog.dismiss() }
+
+        btnSave?.setOnClickListener {
+            if (bitmap == null) {
+                Toast.makeText(context, "No hay icono para exportar", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            try {
+                val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadDir.exists()) {
+                    downloadDir.mkdirs()
+                }
+                val cleanPkg = packageName.replace("[^a-zA-Z0-9._-]".toRegex(), "_")
+                val targetFile = File(downloadDir, "${cleanPkg}_icon.png")
+                FileOutputStream(targetFile).use { fos ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                }
+                Toast.makeText(context, "Icono guardado en:\n${targetFile.absolutePath}", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        viewerDialog.show()
     }
 
     companion object {

@@ -106,6 +106,8 @@ class FileListActivity : AppActivity() {
     private lateinit var tvInternalStorageStats: TextView
     private lateinit var layoutCustomStorages: LinearLayout
     private var hasRequestedPermissionThisSession = false
+    private var hasRequestedNotificationThisSession = false
+    private var allFilesDialog: androidx.appcompat.app.AlertDialog? = null
 
     private var activePanelIndex = 0 // 0 = Panel A, 1 = Panel B
 
@@ -242,10 +244,13 @@ class FileListActivity : AppActivity() {
                     showAllFilesPermissionDialog()
                 }
             } else {
+                allFilesDialog?.dismiss()
+                allFilesDialog = null
                 if (::fragmentA.isInitialized && ::fragmentB.isInitialized) {
                     fragmentA.reload()
                     fragmentB.reload()
                 }
+                checkAndRequestNotificationPermission()
             }
         } else {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
@@ -266,15 +271,19 @@ class FileListActivity : AppActivity() {
                     fragmentA.reload()
                     fragmentB.reload()
                 }
+                checkAndRequestNotificationPermission()
             }
         }
     }
 
     private fun showAllFilesPermissionDialog() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Permiso de almacenamiento")
+        if (allFilesDialog?.isShowing == true) return
+        allFilesDialog = MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.sd_card_icon_white_24dp)
+            .setTitle(R.string.all_files_access_title)
             .setMessage("OpenManager necesita acceso total a todos los archivos para poder gestionar, copiar, mover, crear y editar archivos en tu dispositivo.")
             .setPositiveButton("Conceder permiso") { _, _ ->
+                allFilesDialog = null
                 try {
                     val intent = Intent(AndroidSettings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
                         data = Uri.fromParts("package", packageName, null)
@@ -289,9 +298,23 @@ class FileListActivity : AppActivity() {
                     }
                 }
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+                allFilesDialog = null
+            }
             .setCancelable(false)
             .show()
+    }
+
+    private fun checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                if (!hasRequestedNotificationThisSession) {
+                    hasRequestedNotificationThisSession = true
+                    requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
+                }
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -306,7 +329,10 @@ class FileListActivity : AppActivity() {
                     fragmentA.reload()
                     fragmentB.reload()
                 }
+                checkAndRequestNotificationPermission()
             }
+        } else if (requestCode == 1002) {
+            // Notification response received from Android prompt. Handled cleanly without nagging settings dialog.
         }
     }
 

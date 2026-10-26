@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.zhanghai.android.files.R
+import android.os.Build
+import android.os.Environment
 import me.zhanghai.android.files.util.show
 
 class ShowRequestAllFilesAccessRationaleDialogFragment : AppCompatDialogFragment() {
@@ -20,6 +22,8 @@ class ShowRequestAllFilesAccessRationaleDialogFragment : AppCompatDialogFragment
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MaterialAlertDialogBuilder(requireContext(), theme)
+            .setIcon(R.drawable.sd_card_icon_white_24dp)
+            .setTitle(R.string.all_files_access_title)
             .setMessage(R.string.all_files_access_rationale_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 listener.onShowRequestAllFilesAccessRationaleResult(true)
@@ -28,6 +32,14 @@ class ShowRequestAllFilesAccessRationaleDialogFragment : AppCompatDialogFragment
                 listener.onShowRequestAllFilesAccessRationaleResult(false)
             }
             .create()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) {
+            dismissAllowingStateLoss()
+        }
     }
 
     override fun onCancel(dialog: DialogInterface) {
