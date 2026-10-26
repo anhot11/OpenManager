@@ -51,7 +51,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:padding="6dp"
-            android:src="@drawable/edit_icon_white_24dp"
+            android:src="@drawable/edit_icon"
             app:tint="#4CAF50"
             android:background="?selectableItemBackgroundBorderless" />
     </LinearLayout>
