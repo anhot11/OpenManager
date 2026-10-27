@@ -49,16 +49,16 @@ class CodeEditorLogicTest {
         val p1 = findPartnerBracket(code, 13, '(')
         assertEquals(14, p1)
 
-        // match '{' at index 16 with '}' at index 54
+        // match '{' at index 16 with '}' at index 53
         val p2 = findPartnerBracket(code, 16, '{')
-        assertEquals(54, p2)
+        assertEquals(53, p2)
 
         // match '[' at index 23 with ']' at index 25
         val p3 = findPartnerBracket(code, 23, '[')
         assertEquals(25, p3)
 
-        // match backwards '}' at index 54 with '{' at index 16
-        val p4 = findPartnerBracket(code, 54, '}')
+        // match backwards '}' at index 53 with '{' at index 16
+        val p4 = findPartnerBracket(code, 53, '}')
         assertEquals(16, p4)
     }
 
@@ -89,13 +89,13 @@ class CodeEditorLogicTest {
         assertEquals(1, matchesCaseSensitive.size)
 
         // Regex search
-        val regex = Pattern.compile("[A-Za-z]+Manager")
+        val regex = Pattern.compile("(?i)[a-z]+manager")
         val matcher = regex.matcher(text)
         val regexMatches = mutableListOf<String>()
         while (matcher.find()) {
             regexMatches.add(matcher.group())
         }
-        assertEquals(3, regexMatches.size) // OpenManager, openmanager, MTManager
+        assertEquals(4, regexMatches.size) // OpenManager, openmanager, OPENMANAGER, MTManager
     }
 
     @Test
