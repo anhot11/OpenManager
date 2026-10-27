@@ -620,8 +620,7 @@ class InstalledAppsActivity : AppActivity() {
                     """.trimIndent()
                     else -> ""
                 }
-                copyText(textToCopy)
-                Toast.makeText(this, "Copiado al portapapeles", Toast.LENGTH_SHORT).show()
+                clipboardManager.copyText(textToCopy, this)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
