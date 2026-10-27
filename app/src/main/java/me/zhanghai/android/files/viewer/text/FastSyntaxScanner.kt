@@ -74,7 +74,8 @@ object FastSyntaxScanner {
     /**
      * In-place span application for live editing on main thread.
      */
-    fun applyHighlightTo(editable: Editable, language: SyntaxLanguage) {
+    fun applyHighlightTo(editable: Editable?, language: SyntaxLanguage) {
+        if (editable == null) return
         val existingColorSpans = editable.getSpans(0, editable.length, SyntaxColorSpan::class.java)
         for (span in existingColorSpans) {
             editable.removeSpan(span)
