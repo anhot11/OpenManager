@@ -14,6 +14,12 @@
 
 ## Bugs Resueltos Recientemente
 
+### [RESUELTO - P1] Lentitud, falta de iconos y diálogo genérico al pulsar el botón '+'
+- **Archivos**: `CreateChoiceBottomSheetDialogFragment.kt`, `ThemedSpeedDialView.kt`, `FileListActivity.kt`, `name_dialog_name_include.xml`, `CreateFileDialogFragment.kt`, `CreateDirectoryDialogFragment.kt`, `RenameFileDialogFragment.kt`
+- **Causa**: Al tocar el botón `+`, se construía un `MaterialAlertDialogBuilder` genérico con lista de texto plano sin iconos y con retraso perceptible de inicialización. Además, en `ThemedSpeedDialView` se invocaba `getFabImageDrawable(null)` pasando `null`, lo que impedía resolver el recurso drawable dejando los botones vacíos. La ventana de texto para nombrar archivos carecía de diseño moderno, iconos, botón de borrado rápido y chips de extensión rápida.
+- **Solución**: Se implementó `CreateChoiceBottomSheetDialogFragment` (Bottom Sheet Material 3 instantáneo con insignias circulares e iconos dedicados para carpeta, archivo y archivo ZIP), se corrigió la resolución de drawables en `ThemedSpeedDialView` con colores temáticos ámbar/azul, y se modernizó `name_dialog_name_include.xml` con `OutlinedBox` redondeado (14dp), icono de inicio contextual, botón de borrado (`clear_text`), barra de chips de extensiones rápidas (`.txt`, `.json`, `.xml`, etc.) y autoenfoque del teclado.
+- **Estado**: ✅ Corregido y validado con pruebas y compilación en CI.
+
 ### [RESUELTO - P0] Congelamiento y lentitud extrema en editor de código
 - **Archivos**: `me/zhanghai/android/files/viewer/text/FastSyntaxScanner.kt`, `CodeEditText.kt`, `LineNumberView.kt`, `TextEditorFragment.kt`
 - **Causa**: El resaltador de sintaxis ejecutaba múltiples expresiones regulares recompiladas en el hilo principal de la interfaz al cargar y en cada pulsación de tecla, aplicando y eliminando miles de spans en vivo sobre el `Editable`, lo que provocaba bloqueos de UI, pérdidas de caracteres y carecía de números de línea y auto-indentación.
