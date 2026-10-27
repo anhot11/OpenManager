@@ -128,19 +128,52 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
         jint cell_height)
 {
     jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
-    char** argv = NULL;
-    if (size > 0) {
-        argv = (char**) malloc((size + 1) * sizeof(char*));
-        if (!argv) return throw_runtime_exception(env, "Couldn't allocate argv array");
-        for (int i = 0; i < size; ++i) {
-            jstring arg_java_string = (jstring) (*env)->GetObjectArrayElement(env, args, i);
-            char const* arg_utf8 = (*env)->GetStringUTFChars(env, arg_java_string, NULL);
-            if (!arg_utf8) return throw_runtime_exception(env, "GetStringUTFChars() failed for argv");
-            argv[i] = strdup(arg_utf8);
-            (*env)->ReleaseStringUTFChars(env, arg_java_string, arg_utf8);
+    int prepend_cmd = 0;
+    if (size == 0) {
+        prepend_cmd = 1;
+    } else {
+        jstring first_arg = (jstring) (*env)->GetObjectArrayElement(env, args, 0);
+        if (first_arg) {
+            char const* first_utf8 = (*env)->GetStringUTFChars(env, first_arg, NULL);
+            if (first_utf8) {
+                // If the first argument begins with '-' (e.g. "-c", "-i", "--norc"), it's an option flag,
+                // meaning argv[0] (the program name) was omitted by the caller.
+                if (first_utf8[0] == '-') {
+                    prepend_cmd = 1;
+                }
+                (*env)->ReleaseStringUTFChars(env, first_arg, first_utf8);
+            }
         }
-        argv[size] = NULL;
     }
+
+    int total_args = size + (prepend_cmd ? 1 : 0);
+    char** argv = (char**) malloc((total_args + 1) * sizeof(char*));
+    if (!argv) return throw_runtime_exception(env, "Couldn't allocate argv array");
+
+    int cur = 0;
+    if (prepend_cmd) {
+        char const* cmd_utf8_temp = (*env)->GetStringUTFChars(env, cmd, NULL);
+        if (cmd_utf8_temp) {
+            char const* slash = strrchr(cmd_utf8_temp, '/');
+            argv[cur++] = strdup(slash ? slash + 1 : cmd_utf8_temp);
+            (*env)->ReleaseStringUTFChars(env, cmd, cmd_utf8_temp);
+        } else {
+            argv[cur++] = strdup("sh");
+        }
+    }
+
+    for (int i = 0; i < size; ++i) {
+        jstring arg_java_string = (jstring) (*env)->GetObjectArrayElement(env, args, i);
+        char const* arg_utf8 = (*env)->GetStringUTFChars(env, arg_java_string, NULL);
+        if (!arg_utf8) {
+            for (int k = 0; k < cur; ++k) free(argv[k]);
+            free(argv);
+            return throw_runtime_exception(env, "GetStringUTFChars() failed for argv");
+        }
+        argv[cur++] = strdup(arg_utf8);
+        (*env)->ReleaseStringUTFChars(env, arg_java_string, arg_utf8);
+    }
+    argv[cur] = NULL;
 
     size = envVars ? (*env)->GetArrayLength(env, envVars) : 0;
     char** envp = NULL;

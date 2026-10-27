@@ -89,9 +89,10 @@ object TerminalExpansionManager {
         val useTermex = forceTermex ?: (isTermexInstalled(context) && !asRoot)
         val targetCwd = overrideCwd ?: TerminalSettings.getStartPath(context)
         val validCwd = if (File(targetCwd).isDirectory) targetCwd else "/storage/emulated/0"
+        val escapedCwd = validCwd.replace("'", "'\\''")
 
         val shellCmd = if (initialCommand != null) {
-            "cd '$validCwd' && ($initialCommand); _mt_status=\$?; exit \$_mt_status"
+            "cd '$escapedCwd' && ($initialCommand); _mt_status=\$?; exit \$_mt_status"
         } else null
 
         if (asRoot && isRootAvailable()) {
@@ -101,9 +102,9 @@ object TerminalExpansionManager {
                 "PATH=/system/bin:/system/xbin:/sbin:/vendor/bin"
             )
             val args = if (shellCmd != null) {
-                arrayOf("-c", shellCmd)
+                arrayOf("su", "-c", shellCmd)
             } else {
-                arrayOf("-")
+                arrayOf("su", "-")
             }
             return LaunchConfig(
                 executable = "su",
@@ -145,9 +146,9 @@ object TerminalExpansionManager {
                         "PS1=$prompt"
                     )
                     val args = if (shellCmd != null) {
-                        arrayOf("--norc", "-c", shellCmd)
+                        arrayOf("bash", "--norc", "-c", shellCmd)
                     } else {
-                        arrayOf("--norc", "-i")
+                        arrayOf("bash", "--norc", "-i")
                     }
                     return LaunchConfig(
                         executable = bashBin.absolutePath,
@@ -171,9 +172,9 @@ object TerminalExpansionManager {
             "PS1=: \\w $ "
         )
         val args = if (shellCmd != null) {
-            arrayOf("-c", shellCmd)
+            arrayOf("sh", "-c", shellCmd)
         } else {
-            arrayOf("-i")
+            arrayOf("sh", "-i")
         }
         return LaunchConfig(
             executable = "/system/bin/sh",

@@ -88,15 +88,15 @@ class TerminalPreferencesDialog : DialogFragment() {
 
         // Font size click
         container.findViewById<View>(R.id.layoutFontSize).setOnClickListener {
-            val sizes = arrayOf("10sp", "11sp", "12sp", "14sp", "16sp", "18sp", "20sp", "24sp")
+            val sizes = arrayOf("11sp", "12sp", "13sp", "14sp", "15sp", "16sp", "18sp", "20sp", "24sp")
             val current = TerminalSettings.getFontSize(ctx)
             var selectedIdx = sizes.indexOfFirst { it.startsWith(current.toString()) }
-            if (selectedIdx < 0) selectedIdx = 2
+            if (selectedIdx < 0) selectedIdx = 3
 
             MaterialAlertDialogBuilder(ctx)
                 .setTitle(R.string.terminal_pref_font_size)
                 .setSingleChoiceItems(sizes, selectedIdx) { dialog, which ->
-                    val sizeVal = sizes[which].replace("sp", "").toIntOrNull() ?: 12
+                    val sizeVal = sizes[which].replace("sp", "").toIntOrNull() ?: 14
                     TerminalSettings.setFontSize(ctx, sizeVal)
                     textFontSizeValue.text = "${sizeVal}sp"
                     onSettingsChanged?.invoke()

@@ -13,6 +13,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.os.PowerManager
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -20,6 +21,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import kotlin.math.roundToInt
 import androidx.appcompat.widget.PopupMenu
 import com.google.android.material.appbar.MaterialToolbar
 import com.termux.terminal.TerminalEmulator
@@ -109,8 +111,13 @@ class TerminalActivity : AppActivity() {
     }
 
     private fun applyPreferences() {
-        val fontSize = TerminalSettings.getFontSize(this)
-        terminalView.setTextSize(fontSize)
+        val fontSizeSp = TerminalSettings.getFontSize(this)
+        val fontSizePx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP,
+            fontSizeSp.toFloat(),
+            resources.displayMetrics
+        ).roundToInt().coerceAtLeast(14)
+        terminalView.setTextSize(fontSizePx)
         terminalView.setTypeface(Typeface.MONOSPACE)
 
         if (TerminalSettings.isKeepBlackTheme(this)) {
@@ -204,13 +211,13 @@ class TerminalActivity : AppActivity() {
 
         val viewClient = object : TerminalViewClient {
             override fun onScale(scale: Float): Float {
-                if (scale < 0.9f || scale > 1.1f) {
+                if (scale < 0.95f || scale > 1.05f) {
                     val currentSize = TerminalSettings.getFontSize(this@TerminalActivity)
-                    val newSize = if (scale > 1.0f) currentSize + 1 else currentSize - 1
-                    val clamped = newSize.coerceIn(8, 32)
-                    if (clamped != currentSize) {
-                        TerminalSettings.setFontSize(this@TerminalActivity, clamped)
-                        terminalView.setTextSize(clamped)
+                    val delta = if (scale > 1.0f) 1 else -1
+                    val newSize = (currentSize + delta).coerceIn(10, 30)
+                    if (newSize != currentSize) {
+                        TerminalSettings.setFontSize(this@TerminalActivity, newSize)
+                        applyPreferences()
                     }
                 }
                 return 1.0f

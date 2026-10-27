@@ -202,7 +202,19 @@ object ScriptRunnerHelper {
             execCmd = if (withRoot) {
                 "chmod 777 \"$scriptPath\" 2>/dev/null; \"$scriptPath\""
             } else {
-                "\"$scriptPath\""
+                if (scriptPath.startsWith("/storage/") || scriptPath.startsWith("/sdcard/")) {
+                    val execDir = File(activity.cacheDir, "bin_exec").apply { mkdirs() }
+                    val target = File(execDir, File(scriptPath).name)
+                    try {
+                        File(scriptPath).copyTo(target, overwrite = true)
+                        target.setExecutable(true, false)
+                        "\"${target.absolutePath}\""
+                    } catch (e: Exception) {
+                        "\"$scriptPath\""
+                    }
+                } else {
+                    "\"$scriptPath\""
+                }
             }
         } else {
             val shell = if (env == "termex") "bash" else "sh"

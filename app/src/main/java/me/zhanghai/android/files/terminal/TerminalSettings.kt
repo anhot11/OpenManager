@@ -37,11 +37,12 @@ object TerminalSettings {
 
     fun getFontSize(context: Context): Int {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        return sp.getInt(PREF_FONT_SIZE, 12)
+        val size = sp.getInt(PREF_FONT_SIZE, 14)
+        return if (size < 13) 14 else size
     }
 
     fun setFontSize(context: Context, size: Int) {
-        val clamped = size.coerceIn(8, 32)
+        val clamped = size.coerceIn(10, 32)
         PreferenceManager.getDefaultSharedPreferences(context).edit {
             putInt(PREF_FONT_SIZE, clamped)
         }
