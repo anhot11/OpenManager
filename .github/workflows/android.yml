@@ -21,26 +21,28 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
-
-    - name: Set up Gradle Cache
-      uses: gradle/actions/setup-gradle@v3
+        cache: 'gradle'
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Decode Release Keystore
-      if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
       env:
         RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
       run: |
-        echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > release.keystore
+        if [ -n "$RELEASE_KEYSTORE_BASE64" ]; then
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > release.keystore
+          echo "Release keystore decoded successfully"
+        else
+          echo "Warning: RELEASE_KEYSTORE_BASE64 not set, falling back to debug signing"
+        fi
 
     - name: Run Unit Tests
       run: ./gradlew testDebugUnitTest --stacktrace
 
     - name: Build Debug & Release APKs
       env:
-        STORE_FILE: ${{ github.workspace }}/release.keystore
+        STORE_FILE: release.keystore
         STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
