@@ -28,6 +28,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.annotation.DrawableRes
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
@@ -615,7 +616,9 @@ class FileListActivity : AppActivity() {
         }
 
         btnBottomUp.setOnClickListener {
-            activeFragment.navigateUp()
+            if (activeFragment.canNavigateUp) {
+                activeFragment.navigateUp()
+            }
         }
 
         // Selection Mode Buttons
@@ -670,6 +673,8 @@ class FileListActivity : AppActivity() {
         bottomBar.setPadding(0, 0, 0, marginPx)
     }
 
+    private var lastBackPressTime = 0L
+
     private fun setupBackPressedHandler() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -685,9 +690,13 @@ class FileListActivity : AppActivity() {
                     activeFragment.navigateUp()
                     return
                 }
-                isEnabled = false
-                onBackPressedDispatcher.onBackPressed()
-                isEnabled = true
+                val now = System.currentTimeMillis()
+                if (now - lastBackPressTime < 2000L) {
+                    finish()
+                } else {
+                    lastBackPressTime = now
+                    showToast(R.string.press_back_again_to_exit)
+                }
             }
         })
     }
@@ -773,14 +782,33 @@ class FileListActivity : AppActivity() {
                 setPadding(0, (8 * resources.displayMetrics.density).toInt(), 0, 0)
             }
 
-            fun createChip(text: String, onClick: () -> Unit): android.widget.TextView {
+            fun createChip(
+                text: String,
+                @DrawableRes iconRes: Int? = null,
+                iconTint: Int? = null,
+                chipTextColor: Int = android.graphics.Color.parseColor("#90CAF9"),
+                onClick: () -> Unit
+            ): android.widget.TextView {
                 return android.widget.TextView(context).apply {
                     this.text = text
-                    setTextColor(android.graphics.Color.parseColor("#90CAF9"))
+                    setTextColor(chipTextColor)
                     textSize = 12f
+                    gravity = android.view.Gravity.CENTER_VERTICAL
                     val padH = (10 * resources.displayMetrics.density).toInt()
-                    val padV = (5 * resources.displayMetrics.density).toInt()
+                    val padV = (6 * resources.displayMetrics.density).toInt()
                     setPadding(padH, padV, padH, padV)
+                    if (iconRes != null) {
+                        val iconSize = (16 * resources.displayMetrics.density).toInt()
+                        val drawable = androidx.core.content.ContextCompat.getDrawable(context, iconRes)?.mutate()
+                        if (drawable != null) {
+                            if (iconTint != null) {
+                                androidx.core.graphics.drawable.DrawableCompat.setTint(drawable, iconTint)
+                            }
+                            drawable.setBounds(0, 0, iconSize, iconSize)
+                            setCompoundDrawables(drawable, null, null, null)
+                            compoundDrawablePadding = (6 * resources.displayMetrics.density).toInt()
+                        }
+                    }
                     background = android.graphics.drawable.GradientDrawable().apply {
                         setColor(android.graphics.Color.parseColor("#262626"))
                         cornerRadius = 8 * resources.displayMetrics.density
@@ -796,28 +824,62 @@ class FileListActivity : AppActivity() {
             }
 
             val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
-            buttonBar.addView(createChip("Copiar") {
+            buttonBar.addView(createChip(
+                "Copiar",
+                iconRes = R.drawable.copy_icon_control_normal_24dp,
+                iconTint = android.graphics.Color.parseColor("#B0BEC5"),
+                chipTextColor = android.graphics.Color.parseColor("#CFD8DC")
+            ) {
                 val text = editText.text?.toString() ?: ""
                 clipboard?.setPrimaryClip(android.content.ClipData.newPlainText("path", text))
                 android.widget.Toast.makeText(context, "Ruta copiada", android.widget.Toast.LENGTH_SHORT).show()
             })
-            buttonBar.addView(createChip("Pegar") {
+            buttonBar.addView(createChip(
+                "Pegar",
+                iconRes = R.drawable.paste_icon_control_normal_24dp,
+                iconTint = android.graphics.Color.parseColor("#B0BEC5"),
+                chipTextColor = android.graphics.Color.parseColor("#CFD8DC")
+            ) {
                 val clipText = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
                 if (!clipText.isNullOrEmpty()) {
                     editText.setText(clipText)
                     editText.setSelection(clipText.length)
                 }
             })
-            buttonBar.addView(createChip("Interno") {
+            buttonBar.addView(createChip(
+                "Interna",
+                iconRes = R.drawable.home_icon_white_24dp,
+                iconTint = android.graphics.Color.parseColor("#FFB300"),
+                chipTextColor = android.graphics.Color.parseColor("#FFD54F")
+            ) {
                 editText.setText("/storage/emulated/0/")
                 editText.setSelection(editText.text?.length ?: 0)
             })
-            buttonBar.addView(createChip("Descargas") {
+            buttonBar.addView(createChip(
+                "Descargas",
+                iconRes = R.drawable.download_icon_white_24dp,
+                iconTint = android.graphics.Color.parseColor("#42A5F5"),
+                chipTextColor = android.graphics.Color.parseColor("#90CAF9")
+            ) {
                 editText.setText("/storage/emulated/0/Download/")
                 editText.setSelection(editText.text?.length ?: 0)
             })
-            buttonBar.addView(createChip("Android/data") {
+            buttonBar.addView(createChip(
+                "Android/data",
+                iconRes = R.drawable.directory_icon_white_24dp,
+                iconTint = android.graphics.Color.parseColor("#66BB6A"),
+                chipTextColor = android.graphics.Color.parseColor("#A5D6A7")
+            ) {
                 editText.setText("/storage/emulated/0/Android/data/")
+                editText.setSelection(editText.text?.length ?: 0)
+            })
+            buttonBar.addView(createChip(
+                "Raíz (/)",
+                iconRes = R.drawable.device_icon_white_24dp,
+                iconTint = android.graphics.Color.parseColor("#FF7043"),
+                chipTextColor = android.graphics.Color.parseColor("#FFAB91")
+            ) {
+                editText.setText("/")
                 editText.setSelection(editText.text?.length ?: 0)
             })
 

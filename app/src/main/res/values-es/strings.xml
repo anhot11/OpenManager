@@ -936,6 +936,8 @@
     <string name="settings_user_agreement_title">Acuerdo de usuario y Política de privacidad</string>
     <string name="settings_user_agreement_summary">Ya leído y aceptado. 100% Libre y Código Abierto (GPLv3).</string>
     <string name="jump_to_path">Ir a la ruta</string>
+    <string name="press_back_again_to_exit">Presione atrás de nuevo para salir</string>
+    <string name="action_go_to_home">Volver al Home</string>
     <string name="apk_function">FUNCIÓN</string>
     <string name="apk_sign">Firmar APK</string>
     <string name="apk_clone">Clonar APK</string>

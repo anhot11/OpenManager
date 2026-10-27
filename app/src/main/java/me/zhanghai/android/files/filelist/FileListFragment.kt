@@ -413,6 +413,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
         binding.swipeRefreshLayout.setOnRefreshListener { this.refresh() }
         binding.errorText.setOnClickListener { viewModel.reload() }
+        binding.btnErrorHome.setOnClickListener { navigateToHome() }
         binding.btnErrorBack.setOnClickListener { goBackSafely() }
         layoutManager = GridLayoutManager(activity, 1)
         binding.recyclerView.layoutManager = layoutManager
@@ -443,13 +444,17 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val viewLifecycleOwner = viewLifecycleOwner
         val callback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
-                viewModel.navigateUp()
+                if (canNavigateUp) {
+                    navigateUp()
+                }
             }
         }.also { cb ->
-            viewModel.breadcrumbLiveData.observe(viewLifecycleOwner) {
+            val updateCb = {
                 val isPanelActive = (activity as? FileListActivity)?.activeFragment == this@FileListFragment
-                cb.isEnabled = isPanelActive && viewModel.canNavigateUpBreadcrumb
+                cb.isEnabled = isPanelActive && canNavigateUp
             }
+            viewModel.currentPathLiveData.observe(viewLifecycleOwner) { updateCb() }
+            viewModel.breadcrumbLiveData.observe(viewLifecycleOwner) { updateCb() }
             addOnBackPressedCallback(cb)
         }
         navigateUpCallback = callback
@@ -974,26 +979,41 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         menuBinding.viewSortPathSpecificItem.isChecked = viewModel.isViewSortPathSpecific
     }
 
+    fun isHomeOrRootPath(path: Path): Boolean {
+        val s = path.toString().trimEnd('/')
+        return s == "/storage/emulated/0" || s == "/sdcard" || s.isEmpty() || s == "/"
+    }
+
+    fun navigateToHome() {
+        collapseSearchView()
+        navigateTo(Paths.get("/storage/emulated/0"))
+    }
+
     override fun navigateUp() {
+        if (!canNavigateUp) return
         collapseSearchView()
         if (!viewModel.navigateUp()) {
             val parent = currentPath.parentOrArchiveParent
-            if (parent != null) {
+            if (parent != null && !isHomeOrRootPath(parent)) {
                 navigateTo(parent)
             } else {
-                navigateTo(Paths.get("/storage/emulated/0"))
+                navigateToHome()
             }
         }
     }
 
     private fun goBackSafely() {
         collapseSearchView()
+        if (isHomeOrRootPath(currentPath)) {
+            navigateToHome()
+            return
+        }
         if (!viewModel.navigateUp()) {
             val parent = currentPath.parentOrArchiveParent
-            if (parent != null) {
+            if (parent != null && !isHomeOrRootPath(parent)) {
                 navigateTo(parent)
             } else {
-                navigateTo(Paths.get("/storage/emulated/0"))
+                navigateToHome()
             }
         }
     }
@@ -1109,7 +1129,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             files = files.filterNot { it.isHidden }
         }
         val isSearching = viewModel.searchState.isSearching
-        val hasParent = currentPath.parentOrArchiveParent != null
+        val hasParent = !isHomeOrRootPath(currentPath) && currentPath.parentOrArchiveParent != null
         val displayFiles = if (!isSearching && hasParent) {
             listOf(createParentDirectoryItem(currentPath)) + files
         } else {
@@ -2134,8 +2154,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     val canNavigateUp: Boolean
         get() {
             if (!isAdded) return false
-            val pathStr = viewModel.currentPath.toString()
-            if (pathStr == "/storage/emulated/0" || pathStr == "/storage/emulated/0/") {
+            if (isHomeOrRootPath(viewModel.currentPath)) {
                 return false
             }
             return viewModel.canNavigateUpBreadcrumb || viewModel.currentPath.parentOrArchiveParent != null
@@ -2171,7 +2190,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     fun updateBackCallbackState() {
         val isPanelActive = (activity as? FileListActivity)?.activeFragment == this
-        navigateUpCallback?.isEnabled = isPanelActive && viewModel.canNavigateUpBreadcrumb
+        navigateUpCallback?.isEnabled = isPanelActive && canNavigateUp
     }
 
     override fun closeNavigationDrawer() {
@@ -2384,6 +2403,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val errorText: TextView,
         val btnErrorAction: MaterialButton,
         val btnGrantSafPermission: MaterialButton,
+        val btnErrorHome: MaterialButton,
         val btnErrorBack: MaterialButton,
         val emptyView: View,
         val swipeRefreshLayout: SwipeRefreshLayout,
@@ -2414,7 +2434,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                     contentBinding.progress, contentBinding.layoutError, contentBinding.ivErrorIcon,
                     contentBinding.tvErrorTitle, contentBinding.errorText,
                     contentBinding.btnErrorAction, contentBinding.btnGrantSafPermission,
-                    contentBinding.btnErrorBack,
+                    contentBinding.btnErrorHome, contentBinding.btnErrorBack,
                     contentBinding.emptyView,
                     contentBinding.swipeRefreshLayout, contentBinding.recyclerView,
                     bottomBarBinding.bottomBarLayout, bottomBarBinding.bottomToolbar,

@@ -91,6 +91,14 @@
                     app:icon="@drawable/directory_icon_white_24dp" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnErrorHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/action_go_to_home"
+                    app:icon="@drawable/home_icon_white_24dp" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnErrorBack"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="wrap_content"

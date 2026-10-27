@@ -14,6 +14,18 @@
 
 ## Bugs Resueltos Recientemente
 
+### [RESUELTO - P1] Al presionar atrás en el Home de archivos navegaba hasta la raíz (/) y falta de botón volver al Home en pantalla de error root
+- **Archivos**: `FileListFragment.kt`, `FileListActivity.kt`, `file_list_fragment_content_include.xml`, `strings.xml`, `strings-es.xml`
+- **Causa**: Al presionar la tecla física/sistema atrás en el almacenamiento principal (`/storage/emulated/0`), el callback `navigateUpCallback` comprobaba `viewModel.canNavigateUpBreadcrumb` (el cual contenía los segmentos padres `/storage/emulated`, `/storage`, `/`), retrocediendo por dichos directorios hasta alcanzar la raíz del sistema `/`, mostrando la pantalla de error de permisos root en dispositivos sin root. Tampoco existía botón de retorno directo a Home en dicha pantalla de error, ni iconos en los accesos directos predeterminados del diálogo de saltar a ruta.
+- **Solución**:
+  1. Se implementó `isHomeOrRootPath()` y se ajustó `canNavigateUp` para retornar `false` cuando el usuario se encuentra en Home (`/storage/emulated/0`, `/sdcard`) o raíz `/`.
+  2. Se actualizó `navigateUpCallback` y `updateBackCallbackState()` para respetar `canNavigateUp`, evitando salir de Home hacia rutas del sistema.
+  3. En `FileListActivity`, se añadió doble pulsación atrás para salir con ventana de 2 segundos y Toast informativo (`R.string.press_back_again_to_exit`).
+  4. Se integró el botón `btnErrorHome` ("Volver al Home" con icono `home_icon_white_24dp`) en `file_list_fragment_content_include.xml` conectado a `navigateToHome()`.
+  5. En el diálogo "Ir a la ruta", se enriquecieron los chips predeterminados con iconos y tintes Material: "Interna" (casa ámbar), "Descargas" (descarga azul), "Android/data" (carpeta verde), "Raíz (/)" (dispositivo naranja), "Copiar" y "Pegar".
+  6. Suite de tests unitarios `NavigationLogicTest.kt` validando todas las condiciones.
+- **Estado**: ✅ Corregido y verificado con tests automatizados.
+
 ### [RESUELTO - P1] Lentitud, falta de iconos y diálogo genérico al pulsar el botón '+'
 - **Archivos**: `CreateChoiceBottomSheetDialogFragment.kt`, `ThemedSpeedDialView.kt`, `FileListActivity.kt`, `name_dialog_name_include.xml`, `CreateFileDialogFragment.kt`, `CreateDirectoryDialogFragment.kt`, `RenameFileDialogFragment.kt`
 - **Causa**: Al tocar el botón `+`, se construía un `MaterialAlertDialogBuilder` genérico con lista de texto plano sin iconos y con retraso perceptible de inicialización. Además, en `ThemedSpeedDialView` se invocaba `getFabImageDrawable(null)` pasando `null`, lo que impedía resolver el recurso drawable dejando los botones vacíos. La ventana de texto para nombrar archivos carecía de diseño moderno, iconos, botón de borrado rápido y chips de extensión rápida.

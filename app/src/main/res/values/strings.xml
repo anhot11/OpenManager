@@ -1040,6 +1040,8 @@
     <string name="settings_user_agreement_title">User Agreement and Privacy Policy</string>
     <string name="settings_user_agreement_summary">Already read and agree. 100% Free &amp; Open Source (GPLv3).</string>
     <string name="jump_to_path">Jump to path</string>
+    <string name="press_back_again_to_exit">Press back again to exit</string>
+    <string name="action_go_to_home">Go to Home</string>
     <string name="apk_function">FUNCTION</string>
     <string name="apk_sign">Sign APK</string>
     <string name="apk_clone">Clone APK</string>
