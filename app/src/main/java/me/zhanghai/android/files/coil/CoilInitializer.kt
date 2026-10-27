@@ -21,6 +21,8 @@ fun initializeCoil() {
                 add(AppIconApplicationInfoFetcherFactory(application))
                 add(AppIconPackageNameKeyer())
                 add(AppIconPackageNameFetcherFactory(application))
+                add(InstalledAppIconKeyer())
+                add(InstalledAppIconFetcherFactory(application))
                 add(PathAttributesKeyer())
                 add(PathAttributesFetcher.Factory(application))
                 add(

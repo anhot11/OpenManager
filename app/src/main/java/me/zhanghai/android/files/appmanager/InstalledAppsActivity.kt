@@ -23,6 +23,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,11 +35,14 @@ import com.google.android.material.tabs.TabLayout
 import com.topjohnwu.superuser.Shell
 import java8.nio.file.Paths
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.app.clipboardManager
+import me.zhanghai.android.files.coil.InstalledAppIcon
 import me.zhanghai.android.files.compat.longVersionCodeCompat
 import me.zhanghai.android.files.databinding.ActivityInstalledAppsBinding
 import me.zhanghai.android.files.databinding.DialogInstalledAppDetailsBinding
@@ -45,11 +51,11 @@ import me.zhanghai.android.files.file.fileProviderUri
 import me.zhanghai.android.files.filelist.ApkInstallHelper
 import me.zhanghai.android.files.filelist.FileListActivity
 import me.zhanghai.android.files.file.MimeType
+import me.zhanghai.android.files.ui.ThemedFastScroller
 import me.zhanghai.android.files.util.copyText
 import me.zhanghai.android.files.util.createSendStreamIntent
 import me.zhanghai.android.files.util.withChooser
 import coil.load
-import me.zhanghai.android.files.coil.AppIconPackageName
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -93,10 +99,26 @@ class InstalledAppsActivity : AppActivity() {
         val splitCount: Int get() = if (splitSourceDirs.isNotEmpty()) splitSourceDirs.size + 1 else 1
     }
 
+    companion object {
+        @Volatile
+        private var sAppCache: List<AppModel>? = null
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityInstalledAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView) { view, insets ->
+            val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            view.updatePadding(bottom = navBar.bottom + (16 * resources.displayMetrics.density).toInt())
+            insets
+        }
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -127,90 +149,110 @@ class InstalledAppsActivity : AppActivity() {
         adapter = AppsAdapter(displayedApps) { app ->
             showAppDetails(app)
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+        adapter.setHasStableIds(true)
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@InstalledAppsActivity)
+            setHasFixedSize(true)
+            setItemViewCacheSize(25)
+            adapter = this@InstalledAppsActivity.adapter
+            ThemedFastScroller.create(this)
+        }
     }
 
-    private fun loadApps() {
-        binding.progressBar.visibility = View.VISIBLE
+    private fun loadApps(forceRefresh: Boolean = false) {
+        val cached = sAppCache
+        if (!forceRefresh && cached != null && cached.isNotEmpty()) {
+            allApps.clear()
+            allApps.addAll(cached)
+            applySort()
+            updateTabCounts()
+            filterApps()
+            binding.progressBar.visibility = View.GONE
+            return
+        }
+
+        if (allApps.isEmpty()) {
+            binding.progressBar.visibility = View.VISIBLE
+        }
         binding.emptyText.visibility = View.GONE
 
         lifecycleScope.launch(Dispatchers.IO) {
             val pm = packageManager
             val packages = try {
-                pm.getInstalledPackages(PackageManager.GET_META_DATA)
+                pm.getInstalledPackages(0)
             } catch (e: Exception) {
                 emptyList<PackageInfo>()
             }
 
-            val list = mutableListOf<AppModel>()
+            val list = packages.chunked(25).map { chunk ->
+                async(Dispatchers.Default) {
+                    chunk.mapNotNull { pkg ->
+                        val appInfo = pkg.applicationInfo ?: return@mapNotNull null
+                        val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        val isEnabled = appInfo.enabled
+                        val label = appInfo.nonLocalizedLabel?.toString()
+                            ?: try {
+                                pm.getApplicationLabel(appInfo).toString()
+                            } catch (e: Exception) {
+                                pkg.packageName
+                            }
 
-            for (pkg in packages) {
-                val appInfo = pkg.applicationInfo ?: continue
-                val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                val isEnabled = appInfo.enabled
-                val label = try {
-                    appInfo.loadLabel(pm).toString()
-                } catch (e: Exception) {
-                    pkg.packageName
-                }
+                        val splits = appInfo.splitSourceDirs?.toList() ?: emptyList()
+                        var size = 0L
+                        val src = appInfo.sourceDir
+                        if (!src.isNullOrEmpty()) {
+                            val baseFile = File(src)
+                            size += baseFile.length()
+                        }
+                        for (splitPath in splits) {
+                            val splitFile = File(splitPath)
+                            size += splitFile.length()
+                        }
 
-                val splits = appInfo.splitSourceDirs?.toList() ?: emptyList()
-                var size = try {
-                    val baseFile = File(appInfo.sourceDir)
-                    if (baseFile.exists()) baseFile.length() else 0L
-                } catch (e: Exception) {
-                    0L
-                }
-                for (splitPath in splits) {
-                    try {
-                        val splitFile = File(splitPath)
-                        if (splitFile.exists()) size += splitFile.length()
-                    } catch (e: Exception) {
-                        // Ignore
+                        val minSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            appInfo.minSdkVersion
+                        } else {
+                            0
+                        }
+
+                        AppModel(
+                            label = label,
+                            packageName = pkg.packageName,
+                            versionName = pkg.versionName ?: "1.0",
+                            versionCode = pkg.longVersionCodeCompat,
+                            sourceDir = src ?: "",
+                            splitSourceDirs = splits,
+                            dataDir = appInfo.dataDir ?: "",
+                            targetSdkVersion = appInfo.targetSdkVersion,
+                            minSdkVersion = minSdk,
+                            sizeBytes = size,
+                            isSystem = isSystem,
+                            isEnabled = isEnabled,
+                            firstInstallTime = pkg.firstInstallTime,
+                            lastUpdateTime = pkg.lastUpdateTime
+                        )
                     }
                 }
+            }.awaitAll().flatten()
 
-                val minSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    appInfo.minSdkVersion
-                } else {
-                    0
-                }
-
-                list.add(
-                    AppModel(
-                        label = label,
-                        packageName = pkg.packageName,
-                        versionName = pkg.versionName ?: "1.0",
-                        versionCode = pkg.longVersionCodeCompat,
-                        sourceDir = appInfo.sourceDir ?: "",
-                        splitSourceDirs = splits,
-                        dataDir = appInfo.dataDir ?: "",
-                        targetSdkVersion = appInfo.targetSdkVersion,
-                        minSdkVersion = minSdk,
-                        sizeBytes = size,
-                        isSystem = isSystem,
-                        isEnabled = isEnabled,
-                        firstInstallTime = pkg.firstInstallTime,
-                        lastUpdateTime = pkg.lastUpdateTime
-                    )
-                )
-            }
+            sAppCache = list
 
             withContext(Dispatchers.Main) {
                 allApps.clear()
                 allApps.addAll(list)
                 applySort()
-
-                val userCount = allApps.count { !it.isSystem }
-                val systemCount = allApps.count { it.isSystem }
-                binding.tabLayout.getTabAt(0)?.text = "${getString(R.string.user_apps)} ($userCount)"
-                binding.tabLayout.getTabAt(1)?.text = "${getString(R.string.system_apps)} ($systemCount)"
-
+                updateTabCounts()
                 binding.progressBar.visibility = View.GONE
                 filterApps()
             }
         }
+    }
+
+    private fun updateTabCounts() {
+        val userCount = allApps.count { !it.isSystem }
+        val systemCount = allApps.count { it.isSystem }
+        binding.tabLayout.getTabAt(0)?.text = "${getString(R.string.user_apps)} ($userCount)"
+        binding.tabLayout.getTabAt(1)?.text = "${getString(R.string.system_apps)} ($systemCount)"
     }
 
     private fun applySort() {
@@ -270,7 +312,8 @@ class InstalledAppsActivity : AppActivity() {
 
     private fun showAppDetails(app: AppModel) {
         val dialogBinding = DialogInstalledAppDetailsBinding.inflate(layoutInflater)
-        dialogBinding.dialogAppIcon.load(AppIconPackageName(app.packageName)) {
+        dialogBinding.dialogAppIcon.load(InstalledAppIcon(app.packageName, app.lastUpdateTime)) {
+            crossfade(150)
             placeholder(R.drawable.file_apk_icon)
             error(R.drawable.file_apk_icon)
         }
@@ -609,12 +652,16 @@ class InstalledAppsActivity : AppActivity() {
         return try {
             val src = File(sourcePath)
             if (src.canRead()) {
-                FileInputStream(src).use { input ->
-                    FileOutputStream(destFile).use { output ->
-                        input.copyTo(output)
+                FileInputStream(src).channel.use { inChannel ->
+                    FileOutputStream(destFile).channel.use { outChannel ->
+                        val size = inChannel.size()
+                        var transferred = 0L
+                        while (transferred < size) {
+                            transferred += inChannel.transferTo(transferred, size - transferred, outChannel)
+                        }
                     }
                 }
-                true
+                destFile.exists() && destFile.length() > 0
             } else if (ApkInstallHelper.isRootAvailable()) {
                 val cmd = Shell.cmd("cp \"$sourcePath\" \"${destFile.absolutePath}\" && chmod 644 \"${destFile.absolutePath}\"").exec()
                 cmd.isSuccess
@@ -633,13 +680,15 @@ class InstalledAppsActivity : AppActivity() {
 
     private fun extractSplitApk(app: AppModel, destFile: File): Boolean {
         return try {
-            FileOutputStream(destFile).use { fos ->
+            java.io.BufferedOutputStream(FileOutputStream(destFile), 128 * 1024).use { fos ->
                 ZipOutputStream(fos).use { zos ->
+                    zos.setLevel(java.util.zip.Deflater.BEST_SPEED)
+
                     // 1. base.apk
                     val baseFile = File(app.sourceDir)
                     if (baseFile.canRead()) {
                         zos.putNextEntry(ZipEntry("base.apk"))
-                        baseFile.inputStream().use { it.copyTo(zos) }
+                        baseFile.inputStream().buffered(64 * 1024).use { it.copyTo(zos, bufferSize = 64 * 1024) }
                         zos.closeEntry()
                     } else if (ApkInstallHelper.isRootAvailable()) {
                         val tmpBase = File(cacheDir, "tmp_base_${System.currentTimeMillis()}.apk")
@@ -647,7 +696,7 @@ class InstalledAppsActivity : AppActivity() {
                             Shell.cmd("cp \"${app.sourceDir}\" \"${tmpBase.absolutePath}\" && chmod 644 \"${tmpBase.absolutePath}\"").exec()
                             if (tmpBase.exists()) {
                                 zos.putNextEntry(ZipEntry("base.apk"))
-                                tmpBase.inputStream().use { it.copyTo(zos) }
+                                tmpBase.inputStream().buffered(64 * 1024).use { it.copyTo(zos, bufferSize = 64 * 1024) }
                                 zos.closeEntry()
                             }
                         } finally {
@@ -661,7 +710,7 @@ class InstalledAppsActivity : AppActivity() {
                         val entryName = splitFile.name
                         if (splitFile.canRead()) {
                             zos.putNextEntry(ZipEntry(entryName))
-                            splitFile.inputStream().use { it.copyTo(zos) }
+                            splitFile.inputStream().buffered(64 * 1024).use { it.copyTo(zos, bufferSize = 64 * 1024) }
                             zos.closeEntry()
                         } else if (ApkInstallHelper.isRootAvailable()) {
                             val tmpSplit = File(cacheDir, "tmp_split_${System.currentTimeMillis()}_$entryName")
@@ -669,7 +718,7 @@ class InstalledAppsActivity : AppActivity() {
                                 Shell.cmd("cp \"$splitPath\" \"${tmpSplit.absolutePath}\" && chmod 644 \"${tmpSplit.absolutePath}\"").exec()
                                 if (tmpSplit.exists()) {
                                     zos.putNextEntry(ZipEntry(entryName))
-                                    tmpSplit.inputStream().use { it.copyTo(zos) }
+                                    tmpSplit.inputStream().buffered(64 * 1024).use { it.copyTo(zos, bufferSize = 64 * 1024) }
                                     zos.closeEntry()
                                 }
                             } finally {
@@ -749,7 +798,7 @@ class InstalledAppsActivity : AppActivity() {
                 return true
             }
             R.id.action_refresh -> {
-                loadApps()
+                loadApps(forceRefresh = true)
                 return true
             }
         }
@@ -774,6 +823,8 @@ class InstalledAppsActivity : AppActivity() {
 
         inner class ViewHolder(val binding: InstalledAppItemBinding) : RecyclerView.ViewHolder(binding.root)
 
+        override fun getItemId(position: Int): Long = items[position].packageName.hashCode().toLong()
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val b = InstalledAppItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return ViewHolder(b)
@@ -796,7 +847,8 @@ class InstalledAppsActivity : AppActivity() {
                 val dateStr = formatDate(app.lastUpdateTime)
                 appMetaInfo.text = "SDK: $minSdkStr - ${app.targetSdkVersion}  •  $dateStr"
 
-                appIcon.load(AppIconPackageName(app.packageName)) {
+                appIcon.load(InstalledAppIcon(app.packageName, app.lastUpdateTime)) {
+                    crossfade(150)
                     placeholder(R.drawable.file_apk_icon)
                     error(R.drawable.file_apk_icon)
                 }
