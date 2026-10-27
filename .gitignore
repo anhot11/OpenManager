@@ -11,4 +11,6 @@
 downloaded_apk/
 build_out/
 /out/
+*.apk
+release.keystore
 
