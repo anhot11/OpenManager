@@ -1728,7 +1728,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             return
         }
         if (file.mimeType.isArsc || fileName.endsWith(".arsc", true)) {
-            ArscInfoDialogFragment.show(file.path, childFragmentManager)
+            val intent = Intent(requireContext(), me.zhanghai.android.files.viewer.arsc.ArscEditorActivity::class.java).apply {
+                extraPath = file.path
+            }
+            startActivity(intent)
             return
         }
         if (file.mimeType.isSharedLibrary || fileName.endsWith(".so", true)) {

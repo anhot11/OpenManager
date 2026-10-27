@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 OpenManager
+  ~ All Rights Reserved.
+  -->
+<resources>
+    <string name="arsc_editor_title">Editor de Recursos ARSC</string>
+    <string name="arsc_tab_strings">Cadenas</string>
+    <string name="arsc_tab_resources">Recursos</string>
+    <string name="arsc_tab_packages">Paquetes</string>
+    <string name="arsc_save_success">Recursos ARSC guardados con éxito</string>
+    <string name="arsc_save_failed">Error al guardar ARSC: %s</string>
+    <string name="arsc_edit_dialog_title">Modificar cadena #%d</string>
+    <string name="arsc_unsaved_changes">Tienes cambios sin guardar en la tabla de recursos. ¿Deseas guardarlos antes de salir?</string>
+    <string name="arsc_empty_list">No se encontraron resultados</string>
+    <string name="open_as_arsc_editor">Editor de ARSC</string>
+</resources>

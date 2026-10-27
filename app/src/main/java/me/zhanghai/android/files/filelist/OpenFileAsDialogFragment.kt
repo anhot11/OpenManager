@@ -225,7 +225,10 @@ class OpenFileAsDialogFragment : AppCompatDialogFragment() {
 
             // 9. ARSC Functions
             ToolItem("arsc_functions", R.string.open_as_arsc_functions, R.drawable.ic_open_as_arsc) {
-                ArscInfoDialogFragment.show(path, parentFragmentManager)
+                val intent = Intent(requireContext(), me.zhanghai.android.files.viewer.arsc.ArscEditorActivity::class.java).apply {
+                    extraPath = path
+                }
+                requireContext().startActivity(intent)
                 dismissOrFinishActivity()
             },
 

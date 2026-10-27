@@ -22,15 +22,48 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
+    - name: Set up Gradle Cache
+      uses: gradle/actions/setup-gradle@v3
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle
-      run: ./gradlew assembleDebug --stacktrace
+    - name: Decode Release Keystore
+      if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
+      env:
+        RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      run: |
+        echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > release.keystore
 
-    - name: Upload artifact
+    - name: Run Unit Tests
+      run: ./gradlew testDebugUnitTest --stacktrace
+
+    - name: Build Debug & Release APKs
+      env:
+        STORE_FILE: ${{ github.workspace }}/release.keystore
+        STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      run: ./gradlew assembleDebug assembleRelease --stacktrace
+
+    - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: OpenManager-debug.apk
         path: app/build/outputs/apk/debug/app-debug.apk
         retention-days: 10
+
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: OpenManager-release.apk
+        path: app/build/outputs/apk/release/app-release.apk
+        retention-days: 10
+
+    - name: Upload Test Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-test-results
+        path: app/build/reports/tests/testDebugUnitTest/
+        retention-days: 5

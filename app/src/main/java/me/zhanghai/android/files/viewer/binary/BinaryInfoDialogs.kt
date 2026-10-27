@@ -188,6 +188,12 @@ class ArscInfoDialogFragment : AppCompatDialogFragment() {
             .setIcon(R.drawable.file_arsc_icon)
             .setTitle(fileName)
             .setMessage(message)
+            .setNeutralButton("Editor ARSC") { _, _ ->
+                val intent = Intent(context, me.zhanghai.android.files.viewer.arsc.ArscEditorActivity::class.java).apply {
+                    extraPath = path
+                }
+                context.startActivity(intent)
+            }
             .setNegativeButton("Abrir como texto") { _, _ ->
                 val intent = Intent(context, TextEditorActivity::class.java).apply {
                     extraPath = path
