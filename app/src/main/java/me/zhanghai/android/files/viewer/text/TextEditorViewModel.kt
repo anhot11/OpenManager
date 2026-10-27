@@ -23,6 +23,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import me.zhanghai.android.files.file.AxmlDecoder
 import me.zhanghai.android.files.filejob.FileJobService
 import me.zhanghai.android.files.provider.common.readAllBytes
 import me.zhanghai.android.files.provider.common.size
@@ -32,8 +33,8 @@ import me.zhanghai.android.files.util.isFinished
 import me.zhanghai.android.files.util.isReady
 import me.zhanghai.android.files.util.toError
 import me.zhanghai.android.files.util.toLoading
-import me.zhanghai.android.files.file.AxmlDecoder
 import java.io.IOException
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 class TextEditorViewModel(file: Path) : ViewModel() {
@@ -41,6 +42,10 @@ class TextEditorViewModel(file: Path) : ViewModel() {
     val file = _file.asStateFlow()
 
     private val _bytesState = MutableStateFlow<DataState<ByteArray>>(DataState.Loading())
+
+    val fileSize = MutableStateFlow(0L)
+    val isCrlf = MutableStateFlow(false)
+    val syntaxLanguage = MutableStateFlow(SyntaxLanguage.detectFromFileName(file.fileName.toString()))
 
     private var loadJob: Job? = null
     private var reloadJob: Job? = null
@@ -73,8 +78,6 @@ class TextEditorViewModel(file: Path) : ViewModel() {
         }
     }
 
-    val fileSize = MutableStateFlow(0L)
-
     private suspend fun mapFileToBytesState(file: Path) {
         _bytesState.value = _bytesState.value.toLoading()
         try {
@@ -82,7 +85,7 @@ class TextEditorViewModel(file: Path) : ViewModel() {
                 val size = file.size()
                 fileSize.value = size
                 if (size > MAX_FILE_SIZE) {
-                    throw IOException("File size $size is too large (max 10MB)")
+                    throw IOException("File size $size is too large (max 20MB)")
                 }
                 file.readAllBytes()
             }
@@ -97,42 +100,51 @@ class TextEditorViewModel(file: Path) : ViewModel() {
 
     val encoding = MutableStateFlow(StandardCharsets.UTF_8)
 
-    private val _textState = MutableStateFlow<DataState<String>>(DataState.Loading())
+    private val _textState = MutableStateFlow<DataState<CharSequence>>(DataState.Loading())
     val textState = _textState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            _bytesState.combine(encoding) { bytesState, encoding -> bytesState to encoding }
-                .collectLatest { (bytesState, encoding) ->
-                    when (bytesState) {
-                        is DataState.Loading -> _textState.value = _textState.value.toLoading()
-                        is DataState.Success -> {
-                            _textState.value = _textState.value.toLoading()
-                            try {
-                                val text = withContext(Dispatchers.Default) {
-                                    if (AxmlDecoder.isAxml(bytesState.data)) {
-                                        try {
-                                            AxmlDecoder.decode(bytesState.data)
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                            String(bytesState.data, encoding)
-                                        }
-                                    } else {
+            combine(_bytesState, encoding, syntaxLanguage) { bytesState, encoding, language ->
+                Triple(bytesState, encoding, language)
+            }.collectLatest { (bytesState, encoding, language) ->
+                when (bytesState) {
+                    is DataState.Loading -> _textState.value = _textState.value.toLoading()
+                    is DataState.Success -> {
+                        _textState.value = _textState.value.toLoading()
+                        try {
+                            val highlighted = withContext(Dispatchers.Default) {
+                                val rawText = if (AxmlDecoder.isAxml(bytesState.data)) {
+                                    try {
+                                        AxmlDecoder.decode(bytesState.data)
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
                                         String(bytesState.data, encoding)
                                     }
+                                } else {
+                                    String(bytesState.data, encoding)
                                 }
-                                currentCoroutineContext().ensureActive()
-                                _textState.value = DataState.Success(text)
-                            } catch (e: CancellationException) {
-                                e.printStackTrace()
-                            } catch (e: Exception) {
-                                _textState.value = _textState.value.toError(e)
+
+                                // Detect and normalize line endings
+                                val hasCrlf = rawText.contains("\r\n")
+                                isCrlf.value = hasCrlf
+                                val normalized = if (hasCrlf) rawText.replace("\r\n", "\n") else rawText
+
+                                // Background pre-highlighting
+                                FastSyntaxScanner.highlightToSpannable(normalized, language)
                             }
+                            currentCoroutineContext().ensureActive()
+                            _textState.value = DataState.Success(highlighted)
+                        } catch (e: CancellationException) {
+                            e.printStackTrace()
+                        } catch (e: Exception) {
+                            _textState.value = _textState.value.toError(e)
                         }
-                        is DataState.Error ->
-                            _textState.value = _textState.value.toError(bytesState.throwable)
                     }
+                    is DataState.Error ->
+                        _textState.value = _textState.value.toError(bytesState.throwable)
                 }
+            }
         }
     }
 
@@ -142,14 +154,29 @@ class TextEditorViewModel(file: Path) : ViewModel() {
         MutableStateFlow<ActionState<Pair<Path, String>, Unit>>(ActionState.Ready())
     val writeFileState = _writeFileState.asStateFlow()
 
+    fun setLineEndings(toCrlf: Boolean) {
+        if (isCrlf.value != toCrlf) {
+            isCrlf.value = toCrlf
+            isTextChanged.value = true
+        }
+    }
+
     fun writeFile(path: Path, text: String, context: Context) {
         viewModelScope.launch {
             check(_writeFileState.value.isReady)
             val argument = path to text
             _writeFileState.value = ActionState.Running(argument)
+
             val bytes = withContext(Dispatchers.Default) {
-                text.toByteArray(encoding.value)
+                // Restore line endings if CRLF
+                val textToSave = if (isCrlf.value) {
+                    text.replace("\r\n", "\n").replace("\n", "\r\n")
+                } else {
+                    text.replace("\r\n", "\n")
+                }
+                textToSave.toByteArray(encoding.value)
             }
+
             FileJobService.write(path, bytes, context) { successful ->
                 if (successful) {
                     loadJob?.cancel()?.also { loadJob = null }
@@ -159,8 +186,6 @@ class TextEditorViewModel(file: Path) : ViewModel() {
                 _writeFileState.value = if (successful) {
                     ActionState.Success(argument, Unit)
                 } else {
-                    // The error will be toasted by service so we should never show it in UI, but we
-                    // need a non-null value here.
                     ActionState.Error(argument, Throwable())
                 }
             }
@@ -187,6 +212,6 @@ class TextEditorViewModel(file: Path) : ViewModel() {
     }
 
     companion object {
-        private const val MAX_FILE_SIZE = 10 * 1024 * 1024L
+        private const val MAX_FILE_SIZE = 20 * 1024 * 1024L
     }
 }

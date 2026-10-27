@@ -14,6 +14,12 @@
 
 ## Bugs Resueltos Recientemente
 
+### [RESUELTO - P0] Congelamiento y lentitud extrema en editor de código
+- **Archivos**: `me/zhanghai/android/files/viewer/text/FastSyntaxScanner.kt`, `CodeEditText.kt`, `LineNumberView.kt`, `TextEditorFragment.kt`
+- **Causa**: El resaltador de sintaxis ejecutaba múltiples expresiones regulares recompiladas en el hilo principal de la interfaz al cargar y en cada pulsación de tecla, aplicando y eliminando miles de spans en vivo sobre el `Editable`, lo que provocaba bloqueos de UI, pérdidas de caracteres y carecía de números de línea y auto-indentación.
+- **Solución**: Se diseñó un analizador léxico lineal $O(N)$ (`FastSyntaxScanner`) con pre-resaltado asíncrono en `Dispatchers.Default`, renderizado de búsqueda y línea activa en Canvas (`CodeEditText`), números de línea fijados a la izquierda (`LineNumberView`), auto-indentación y emparejamiento de llaves.
+- **Estado**: ✅ Corregido y validado con pruebas unitarias.
+
 ### [RESUELTO - P0] Desbordamiento de límites en búsqueda del Editor Hex
 - **Archivo**: `me/zhanghai/android/files/viewer/hex/HexBuffer.kt`
 - **Causa**: Al buscar hacia atrás con un patrón de mayor longitud que el búfer o con archivos vacíos, se ejecutaba `data[i + j]` provocando `ArrayIndexOutOfBoundsException`.

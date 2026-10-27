@@ -23,3 +23,7 @@ Este archivo documenta todas las decisiones arquitecturales, técnicas y de dise
 ## 5. Pruebas Unitarias Integradas
 - **Decisión**: Añadir `junit:junit:4.13.2` y librerías de prueba en `app/build.gradle` para comprobar mecánicamente los componentes de parsing (`HexBufferTest`, `AxmlTest`, `ArscTest`) dentro del pipeline de CI con `./gradlew testDebugUnitTest`.
 - **Motivo**: Prevenir regresiones de código y asegurar que cada modificación esté avalada por pruebas antes de los lanzamientos.
+
+## 6. Arquitectura del Editor de Código de Alto Rendimiento
+- **Decisión**: Reemplazar el antiguo motor de expresiones regulares re-compiladas por `FastSyntaxScanner`, un tokenizador lineal $O(N)$ con pre-resaltado en segundo plano (`Dispatchers.Default`), `CodeEditText` con renderizado de búsqueda y resaltado de línea activa en Canvas, y `LineNumberView` fijado al lateral para números de línea sincronizados.
+- **Motivo**: Resolver de raíz los bloqueos del hilo principal de UI al cargar archivos de código o al teclear en tiempo real, brindando soporte fluido de 60fps, emparejamiento de llaves/paréntesis, auto-indentación inteligente y navegación rápida.

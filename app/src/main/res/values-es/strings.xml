@@ -661,6 +661,14 @@
     <string name="text_editor_undo">Deshacer</string>
     <string name="text_editor_redo">Rehacer</string>
     <string name="text_editor_large_file_warning">Archivo grande (%1$s): La edición de archivos mayores a 3MB puede presentar lentitud</string>
+    <string name="text_editor_line_numbers">Números de línea</string>
+    <string name="text_editor_line_endings">Fin de línea</string>
+    <string name="text_editor_line_endings_unix">Unix (LF)</string>
+    <string name="text_editor_line_endings_windows">Windows (CRLF)</string>
+    <string name="text_editor_line_endings_changed">Fin de línea: %1$s</string>
+    <string name="text_editor_search_regex">Expresión regular</string>
+    <string name="text_editor_search_word">Palabra completa</string>
+    <string name="text_editor_cursor_pos">Lín %1$d, Col %2$d</string>
     <string name="navigation_terminal">Simulador de Terminal</string>
     <string name="terminal_title">Terminal</string>
     <string name="terminal_wakelock">WakeLock</string>

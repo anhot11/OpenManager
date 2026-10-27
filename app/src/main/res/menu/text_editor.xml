@@ -54,8 +54,16 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_word_wrap"
+        android:id="@+id/action_line_numbers"
         android:orderInCategory="101"
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/text_editor_line_numbers"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_word_wrap"
+        android:orderInCategory="102"
         android:checkable="true"
         android:checked="true"
         android:title="@string/text_editor_word_wrap"
@@ -63,11 +71,26 @@
 
     <item
         android:id="@+id/action_read_only"
-        android:orderInCategory="102"
+        android:orderInCategory="103"
         android:checkable="true"
         android:checked="false"
         android:title="@string/text_editor_read_only"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_line_endings"
+        android:orderInCategory="104"
+        android:title="@string/text_editor_line_endings"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_line_endings_lf"
+                android:title="@string/text_editor_line_endings_unix" />
+            <item
+                android:id="@+id/action_line_endings_crlf"
+                android:title="@string/text_editor_line_endings_windows" />
+        </menu>
+    </item>
 
     <item
         android:id="@+id/action_font_size"

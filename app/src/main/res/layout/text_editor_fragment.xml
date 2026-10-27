@@ -92,12 +92,36 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/searchCaseBtn"
                     style="?borderlessButtonStyle"
-                    android:layout_width="36dp"
+                    android:layout_width="32dp"
                     android:layout_height="36dp"
                     android:minWidth="0dp"
                     android:padding="0dp"
                     android:text="Aa"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="?android:textColorSecondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/searchRegexBtn"
+                    style="?borderlessButtonStyle"
+                    android:layout_width="32dp"
+                    android:layout_height="36dp"
+                    android:minWidth="0dp"
+                    android:padding="0dp"
+                    android:text=".*"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="?android:textColorSecondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/searchWordBtn"
+                    style="?borderlessButtonStyle"
+                    android:layout_width="32dp"
+                    android:layout_height="36dp"
+                    android:minWidth="0dp"
+                    android:padding="0dp"
+                    android:text="\\b"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:textColor="?android:textColorSecondary" />
 
@@ -192,34 +216,52 @@
                     android:visibility="gone"
                     app:drawableTopCompat="@drawable/error_icon_240dp" />
 
-                <me.zhanghai.android.fastscroll.FastScrollNestedScrollView
-                    android:id="@+id/scrollView"
+                <LinearLayout
+                    android:id="@+id/editorContainer"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:fillViewport="true">
+                    android:orientation="horizontal"
+                    android:background="#1E1E1E">
 
-                    <HorizontalScrollView
-                        android:id="@+id/horizontalScrollView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fillViewport="true"
-                        android:scrollbars="none">
+                    <me.zhanghai.android.files.viewer.text.LineNumberView
+                        android:id="@+id/lineNumberView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
 
-                        <me.zhanghai.android.files.ui.ScrollingChildEditText
-                            android:id="@+id/textEdit"
+                    <me.zhanghai.android.fastscroll.FastScrollNestedScrollView
+                        android:id="@+id/scrollView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:clipToPadding="false"
+                        android:fillViewport="true">
+
+                        <HorizontalScrollView
+                            android:id="@+id/horizontalScrollView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:padding="@dimen/screen_edge_margin"
-                            android:background="@null"
-                            android:gravity="top"
-                            android:importantForAutofill="no"
-                            android:inputType="textMultiLine"
-                            android:textAppearance="?textAppearanceListItemSecondary">
-                            <requestFocus />
-                        </me.zhanghai.android.files.ui.ScrollingChildEditText>
-                    </HorizontalScrollView>
-                </me.zhanghai.android.fastscroll.FastScrollNestedScrollView>
+                            android:fillViewport="true"
+                            android:scrollbars="none">
+
+                            <me.zhanghai.android.files.viewer.text.CodeEditText
+                                android:id="@+id/textEdit"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="16dp"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="48dp"
+                                android:background="@null"
+                                android:gravity="top"
+                                android:importantForAutofill="no"
+                                android:inputType="textMultiLine|textNoSuggestions"
+                                android:textColor="#DCDFE4"
+                                android:textSize="14sp">
+                                <requestFocus />
+                            </me.zhanghai.android.files.viewer.text.CodeEditText>
+                        </HorizontalScrollView>
+                    </me.zhanghai.android.fastscroll.FastScrollNestedScrollView>
+                </LinearLayout>
             </FrameLayout>
 
             <!-- Bottom Symbol Bar -->
