@@ -53,6 +53,10 @@ class HexBuffer(initialData: ByteArray) {
         redoStack.clear()
     }
 
+    fun modifyByte(offset: Int, b: Byte) {
+        modifyBytes(offset, byteArrayOf(b))
+    }
+
     fun insertBytes(offset: Int, bytesToInsert: ByteArray) {
         if (offset < 0 || offset > data.size || bytesToInsert.isEmpty()) return
         val newArr = ByteArray(data.size + bytesToInsert.size)
