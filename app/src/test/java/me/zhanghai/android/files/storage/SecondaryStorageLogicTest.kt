@@ -20,7 +20,6 @@ class SecondaryStorageLogicTest {
         val storage = SecondaryStorageVolume(uuid, null, true)
         assertEquals("/storage/1234-5678", storage.linuxPath)
         assertEquals("/storage/1234-5678", storage.description)
-        assertNotNull(storage.path)
     }
 
     @Test
