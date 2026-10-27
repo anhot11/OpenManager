@@ -14,7 +14,19 @@
 
 ## Bugs Resueltos Recientemente
 
-### [RESUELTO - P1] Opciones inválidas de Android/data y Android/obb en Añadir Almacenamiento, bloqueo de raíz en selección de MicroSD y falta de iconos
+### [RESUELTO - P1] Error en ejecución de scripts/comandos en terminal (código 127 'No such file or directory') y texto microscópico
+- **Archivos**: `term.c`, `TerminalExpansionManager.kt`, `TerminalActivity.kt`, `TerminalSettings.kt`, `TerminalPreferencesDialog.kt`, `ScriptRunnerHelper.kt`, `TerminalLogicTest.kt`
+- **Causa**:
+  1. Al invocar la terminal con comandos (como `sh /storage/emulated/0/a.sh`), la lista de argumentos pasaba `arrayOf("-c", shellCmd)` omitiendo `argv[0]`. En POSIX, el ejecutable (`/system/bin/sh`) toma `argv[0]` como el nombre del proceso, por lo que interpretaba `-c` como su propio nombre (`c`) y consideraba la cadena completa de comando como el archivo de script a ejecutar, fallando con `c: cd ... No such file or directory: code 127`.
+  2. `TerminalActivity` pasaba el valor entero de preferencia (12) directamente a `TerminalView.setTextSize()`, el cual alimentaba a `Paint.setTextSize()` en píxeles crudos de pantalla sin multiplicar por la densidad (`DisplayMetrics`), renderizando un texto de apenas 12px (equivalente a 4sp) prácticamente ilegible.
+  3. `TerminalViewClient.onScale` asignaba el tamaño escalado directamente en píxeles crudos sin conversión SP, impidiendo un zoom fluido.
+- **Solución**:
+  1. En `term.c` (JNI nativo) se agregó detección e inyección automática del nombre del ejecutable como `argv[0]` si los argumentos inician con bandera `-` o si la lista está vacía, garantizando la convención POSIX.
+  2. En `TerminalExpansionManager.kt` se estructuró `args` incluyendo explícitamente el nombre del intérprete (`sh`, `bash`, `su`) como primer elemento antes de `-c`, además de escapar comillas simples en el directorio de trabajo (`escapedCwd`).
+  3. En `TerminalActivity.kt` se implementó la conversión estricta de SP a píxeles de pantalla mediante `TypedValue.applyDimension(COMPLEX_UNIT_SP, ...)`.
+  4. Se actualizó el tamaño base predeterminado a 14sp y se calibró el escalado por pellizco (pinch-to-zoom) para actualizar el tamaño de forma suave y persistente.
+  5. En `ScriptRunnerHelper.kt`, los binarios ELF en almacenamiento externo (`/storage/` o `/sdcard/`) se copian a un directorio interno ejecutable de caché si no hay root, superando la restricción `noexec` del kernel.
+- **Estado**: ✅ Corregido y validado con suite de tests `TerminalLogicTest.kt`.
 - **Archivos**: `AddStorageDialogFragment.kt`, `DeviceStorage.kt`, `FileListActivity.kt`, `FileListFragment.kt`, `dialog_add_storage.xml`, `item_add_storage_choice.xml`, `SecondaryStorageLogicTest.kt`
 - **Causa**:
   1. `AddStorageDialogFragment` mostraba opciones directas de `Android/data` y `Android/obb` asociadas a `AddExternalStorageShortcutActivity` que fallaban en Android 11+ debido a restricciones de seguridad del sistema.

@@ -114,14 +114,17 @@ class TerminalLogicTest {
 
     @Test
     fun testDefaultFontSizeIsReadable() {
-        fun sanitizeFontSize(size: Int): Int {
-            return if (size < 13) 14 else size.coerceIn(10, 32)
+        fun getFontSize(storedSize: Int): Int {
+            return if (storedSize < 13) 14 else storedSize
+        }
+        fun setFontSize(size: Int): Int {
+            return size.coerceIn(10, 32)
         }
 
-        assertEquals(14, sanitizeFontSize(12)) // upgrades legacy 12 to 14
-        assertEquals(14, sanitizeFontSize(14))
-        assertEquals(16, sanitizeFontSize(16))
-        assertEquals(10, sanitizeFontSize(8))  // clamps minimum
-        assertEquals(32, sanitizeFontSize(40)) // clamps maximum
+        assertEquals(14, getFontSize(12)) // upgrades legacy 12 to 14
+        assertEquals(14, getFontSize(14))
+        assertEquals(16, getFontSize(16))
+        assertEquals(10, setFontSize(8))  // clamps minimum
+        assertEquals(32, setFontSize(40)) // clamps maximum
     }
 }
