@@ -998,17 +998,18 @@ class FileListActivity : AppActivity() {
     }
 
     private fun showCreateDialog() {
-        val items = arrayOf("Nueva carpeta", "Nuevo archivo")
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Nuevo")
-            .setItems(items) { _, which ->
-                if (which == 0) {
-                    activeFragment.showCreateDirectoryDialog()
-                } else {
-                    activeFragment.showCreateFileDialog()
-                }
-            }
-            .show()
+        val currentPathStr = try {
+            activeFragment.currentPath.toFile().absolutePath
+        } catch (e: Exception) {
+            activeFragment.currentPath.toString()
+        }
+        CreateChoiceBottomSheetDialogFragment.show(
+            supportFragmentManager,
+            currentPath = currentPathStr,
+            onFolder = { activeFragment.showCreateDirectoryDialog() },
+            onFile = { activeFragment.showCreateFileDialog() },
+            onZip = { activeFragment.showCreateArchiveDialog(fileItemSetOf()) }
+        )
     }
 
     fun showSearchDialog() {

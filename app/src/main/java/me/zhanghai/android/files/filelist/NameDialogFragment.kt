@@ -6,10 +6,13 @@
 package me.zhanghai.android.files.filelist
 
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -39,7 +42,9 @@ abstract class NameDialogFragment : AppCompatDialogFragment() {
                     val initialName = initialName
                     if (initialName != null) {
                         binding.nameEdit.setText(initialName)
-                        binding.nameEdit.setSelection(0, initialName.length)
+                        val dotIndex = initialName.lastIndexOf('.')
+                        val selectEnd = if (dotIndex > 0) dotIndex else initialName.length
+                        binding.nameEdit.setSelection(0, selectEnd)
                     }
                 }
                 binding.nameEdit.hideTextInputLayoutErrorOnTextChange(binding.nameLayout)
@@ -54,6 +59,11 @@ abstract class NameDialogFragment : AppCompatDialogFragment() {
                 // Override the listener here so that we have control over when to close the dialog.
                 setOnShowListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener { onOk() }
+                    binding.nameEdit.postDelayed({
+                        binding.nameEdit.requestFocus()
+                        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm?.showSoftInput(binding.nameEdit, InputMethodManager.SHOW_IMPLICIT)
+                    }, 100)
                 }
             }
 
@@ -90,14 +100,22 @@ abstract class NameDialogFragment : AppCompatDialogFragment() {
     protected open class Binding protected constructor(
         val root: View,
         val nameLayout: TextInputLayout,
-        val nameEdit: EditText
+        val nameEdit: EditText,
+        val extensionsScrollView: View? = null,
+        val extensionsLayout: ViewGroup? = null
     ) {
         companion object {
             fun inflate(inflater: LayoutInflater): Binding {
                 val binding = NameDialogBinding.inflate(inflater)
                 val bindingRoot = binding.root
                 val nameBinding = NameDialogNameIncludeBinding.bind(bindingRoot)
-                return Binding(bindingRoot, nameBinding.nameLayout, nameBinding.nameEdit)
+                return Binding(
+                    bindingRoot,
+                    nameBinding.nameLayout,
+                    nameBinding.nameEdit,
+                    nameBinding.extensionsScrollView,
+                    nameBinding.extensionsLayout
+                )
             }
         }
     }

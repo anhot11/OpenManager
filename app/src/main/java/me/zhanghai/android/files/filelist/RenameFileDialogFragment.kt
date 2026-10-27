@@ -26,6 +26,20 @@ class RenameFileDialogFragment : FileNameDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
 
+        val isDir = args.file.attributes.isDirectory
+        binding.nameLayout.apply {
+            if (isDir) {
+                setStartIconDrawable(R.drawable.directory_icon_white_24dp)
+                setStartIconTintList(android.content.res.ColorStateList.valueOf(0xFFFFB300.toInt()))
+                hint = "Nombre de la carpeta"
+            } else {
+                setStartIconDrawable(R.drawable.file_icon_white_24dp)
+                setStartIconTintList(android.content.res.ColorStateList.valueOf(0xFF42A5F5.toInt()))
+                hint = "Nombre del archivo"
+            }
+        }
+        binding.extensionsScrollView?.visibility = android.view.View.GONE
+
         if (savedInstanceState == null) {
             binding.nameEdit.setSelection(0, args.file.baseName.length)
         }

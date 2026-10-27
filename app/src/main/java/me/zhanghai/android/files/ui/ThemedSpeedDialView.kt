@@ -29,6 +29,7 @@ import com.leinardi.android.speeddial.FabWithLabelView
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.parcelize.Parcelize
+import me.zhanghai.android.files.R
 import me.zhanghai.android.files.compat.foregroundCompat
 import me.zhanghai.android.files.compat.setTextAppearanceCompat
 import me.zhanghai.android.files.util.ParcelableState
@@ -149,10 +150,14 @@ class ThemedSpeedDialView : SpeedDialView {
     ): FabWithLabelView? {
         val context = context
         val isMaterial3Theme = context.isMaterial3Theme
-        val fabImageTintColor = if (isMaterial3Theme) {
-            context.getColorByAttr(androidx.appcompat.R.attr.colorPrimary)
-        } else {
-            context.getColorByAttr(com.google.android.material.R.attr.colorSecondary)
+        val fabImageTintColor = when (actionItem.id) {
+            R.id.action_create_directory -> 0xFFFFB300.toInt()
+            R.id.action_create_file -> 0xFF42A5F5.toInt()
+            else -> if (isMaterial3Theme) {
+                context.getColorByAttr(androidx.appcompat.R.attr.colorPrimary)
+            } else {
+                context.getColorByAttr(com.google.android.material.R.attr.colorSecondary)
+            }
         }
         val fabBackgroundColor =
             context.getColorByAttr(com.google.android.material.R.attr.colorSurface)
@@ -164,10 +169,10 @@ class ThemedSpeedDialView : SpeedDialView {
             // well.
             context.getColorByAttr(androidx.appcompat.R.attr.colorBackgroundFloating)
         }
+        val actionDrawable = actionItem.getFabImageDrawable(context)
         val actionItem = SpeedDialActionItem.Builder(
             actionItem.id,
-            // Should not be a resource, pass null to fail fast.
-            actionItem.getFabImageDrawable(null)
+            actionDrawable
         )
             .setLabel(actionItem.getLabel(context))
             .setFabImageTintColor(fabImageTintColor)
