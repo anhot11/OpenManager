@@ -492,7 +492,7 @@ class InstalledAppsActivity : AppActivity() {
             val apkFile = File(app.sourceDir)
             if (apkFile.exists() && apkFile.canRead()) {
                 try {
-                    val uri = apkFile.fileProviderUri
+                    val uri = Paths.get(apkFile.absolutePath).fileProviderUri
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = MimeType.APK.value
                         putExtra(Intent.EXTRA_STREAM, uri)
