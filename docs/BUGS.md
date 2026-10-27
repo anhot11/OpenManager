@@ -14,6 +14,20 @@
 
 ## Bugs Resueltos Recientemente
 
+### [RESUELTO - P1] Opciones inválidas de Android/data y Android/obb en Añadir Almacenamiento, bloqueo de raíz en selección de MicroSD y falta de iconos
+- **Archivos**: `AddStorageDialogFragment.kt`, `DeviceStorage.kt`, `FileListActivity.kt`, `FileListFragment.kt`, `dialog_add_storage.xml`, `item_add_storage_choice.xml`, `SecondaryStorageLogicTest.kt`
+- **Causa**:
+  1. `AddStorageDialogFragment` mostraba opciones directas de `Android/data` y `Android/obb` asociadas a `AddExternalStorageShortcutActivity` que fallaban en Android 11+ debido a restricciones de seguridad del sistema.
+  2. Al intentar añadir una tarjeta MicroSD mediante 'Árbol de documentos (SAF)', el selector de archivos del sistema (DocumentsUI) prohibía seleccionar la raíz de la tarjeta MicroSD forzando a elegir una subcarpeta interna. Además, `DeviceStorage` carecía de una clase para volúmenes extraíbles secundarios.
+  3. El diálogo de añadir almacenamiento utilizaba un listado de texto plano genérico sin iconos, sin descripciones y sin detección de medios extraíbles.
+- **Solución**:
+  1. Se eliminaron las opciones no funcionales de `Android/data` y `Android/obb` del diálogo de añadir almacenamiento.
+  2. Se creó la clase `@Parcelize data class SecondaryStorageVolume(val uuid, ...)` en `DeviceStorage.kt` que apunta directamente a `/storage/$uuid`, aprovechando `MANAGE_EXTERNAL_STORAGE` para lectura y escritura directa a nivel de sistema de archivos sin restricciones de SAF ni de subcarpetas.
+  3. Se rediseñó el diálogo `AddStorageDialogFragment` con una vista dedicada, detección en vivo de tarjetas MicroSD y memorias USB conectadas con insignia 'DETECTADA', e iconos vibrantes para cada protocolo de red y almacenamiento (MicroSD, SAF, SMB, FTP, SFTP, WebDAV).
+  4. En `FileListActivity`, el menú lateral ahora detecta y presenta automáticamente las tarjetas MicroSD conectadas sin necesidad de agregarlas a mano.
+  5. En `FileListFragment`, al navegar a `Android/data` o `Android/obb`, si el dispositivo cuenta con Root (`su`), se conmuta de inmediato a ejecución Root para listar el contenido sin bloqueos, y se integró la opción 'Reintentar con Root' en los avisos del sistema.
+- **Estado**: ✅ Corregido y validado con tests unitarios.
+
 ### [RESUELTO - P1] Superposición de barra de notificaciones, iconos borrosos y lentitud en pantalla de Extracción de APK
 - **Archivos**: `InstalledAppsActivity.kt`, `NativeAppIconLoader.kt`, `AppModel.kt`, `activity_installed_apps.xml`, `AppManagerLogicTest.kt`
 - **Causa**:

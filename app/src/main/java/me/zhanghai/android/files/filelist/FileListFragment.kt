@@ -284,7 +284,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val documentId = if (isObb) "primary:Android/obb" else "primary:Android/data"
         val initialUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                DocumentsContract.buildDocumentUri(
+                DocumentsContract.buildTreeDocumentUri(
                     "com.android.externalstorage.documents",
                     documentId
                 )
@@ -307,14 +307,19 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     private fun showSafPermissionPromptDialog(path: Path) {
         val isObb = isAndroidObb(path)
-        MaterialAlertDialogBuilder(requireContext())
+        val builder = MaterialAlertDialogBuilder(requireContext())
             .setTitle(if (isObb) R.string.android_obb_permission_title else R.string.android_data_permission_title)
             .setMessage(if (isObb) R.string.android_obb_permission_message else R.string.android_data_permission_message)
             .setPositiveButton(R.string.grant_permission) { _, _ ->
                 launchSafPermissionForAndroidDataOrObb(path)
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        if (LibSuFileServiceLauncher.isSuAvailable()) {
+            builder.setNeutralButton(R.string.action_retry_root) { _, _ ->
+                retryWithRoot()
+            }
+        }
+        builder.show()
     }
 
     private val args by args<Args>()
@@ -835,6 +840,17 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                 when {
                     isAndroidDataOrObbCurrent -> {
                         val isObb = isAndroidObb(currentPath)
+                        if (LibSuFileServiceLauncher.isSuAvailable()) {
+                            if (Settings.ROOT_STRATEGY.valueCompat != RootStrategy.ALWAYS) {
+                                Settings.ROOT_STRATEGY.putValue(RootStrategy.AUTOMATIC)
+                            }
+                            if (lastPromptedSafPath != currentPath) {
+                                lastPromptedSafPath = currentPath
+                                showToast(getString(R.string.root_requesting_toast))
+                                viewModel.reload()
+                                return
+                            }
+                        }
                         binding.ivErrorIcon.setImageResource(R.drawable.directory_icon_white_24dp)
                         binding.ivErrorIcon.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#2196F3"))
                         binding.tvErrorTitle.text = getString(if (isObb) R.string.android_obb_permission_title else R.string.android_data_permission_title)
@@ -843,7 +859,12 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                         binding.btnGrantSafPermission.setOnClickListener {
                             launchSafPermissionForAndroidDataOrObb(currentPath)
                         }
-                        binding.btnErrorAction.visibility = View.GONE
+                        binding.btnErrorAction.visibility = View.VISIBLE
+                        binding.btnErrorAction.setText(R.string.action_retry_root)
+                        binding.btnErrorAction.setIconResource(R.drawable.shield_icon_white_24dp)
+                        binding.btnErrorAction.setOnClickListener {
+                            retryWithRoot()
+                        }
                         if (lastPromptedSafPath != currentPath) {
                             lastPromptedSafPath = currentPath
                             showSafPermissionPromptDialog(currentPath)

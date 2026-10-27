@@ -16,6 +16,7 @@ import me.zhanghai.android.files.R
 import me.zhanghai.android.files.compat.getDescriptionCompat
 import me.zhanghai.android.files.compat.isPrimaryCompat
 import me.zhanghai.android.files.compat.pathCompat
+import me.zhanghai.android.files.compat.uuidCompat
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.valueCompat
@@ -40,6 +41,7 @@ sealed class DeviceStorage : Storage() {
         when (this) {
             is FileSystemRoot -> copy(customName, isVisible)
             is PrimaryStorageVolume -> copy(customName, isVisible)
+            is SecondaryStorageVolume -> copy(customName = customName, isVisible = isVisible)
         }
 }
 
@@ -87,3 +89,30 @@ data class PrimaryStorageVolume(
     private val storageVolume: StorageVolume
         get() = StorageVolumeListLiveData.valueCompat.find { it.isPrimaryCompat }!!
 }
+
+@Parcelize
+data class SecondaryStorageVolume(
+    val uuid: String,
+    override val customName: String?,
+    override val isVisible: Boolean
+) : DeviceStorage() {
+    override val id: Long
+        get() = ("SecondaryStorageVolume:$uuid").hashCode().toLong()
+
+    override val iconRes: Int
+        @DrawableRes
+        get() = R.drawable.sd_card_icon_white_24dp
+
+    override fun getDefaultName(context: Context): String =
+        storageVolume?.getDescriptionCompat(context)
+            ?: context.getString(R.string.storage_secondary_storage_volume_default_name, uuid)
+
+    override val linuxPath: String
+        get() = storageVolume?.pathCompat ?: "/storage/$uuid"
+
+    private val storageVolume: StorageVolume?
+        get() = StorageVolumeListLiveData.valueCompat.find {
+            it.uuidCompat == uuid || it.pathCompat.endsWith(uuid)
+        }
+}
+

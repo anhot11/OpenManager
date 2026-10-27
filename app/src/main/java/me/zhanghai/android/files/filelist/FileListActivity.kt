@@ -48,6 +48,7 @@ import me.zhanghai.android.files.provider.common.isDirectory
 import me.zhanghai.android.files.provider.common.isRegularFile
 import java8.nio.file.Path
 import java8.nio.file.Paths
+import java.io.File
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.about.AboutActivity
 import me.zhanghai.android.files.app.AppActivity
@@ -57,12 +58,19 @@ import me.zhanghai.android.files.ftpserver.FtpServerActivity
 import me.zhanghai.android.files.ftpserver.FtpServerService
 import me.zhanghai.android.files.settings.Settings
 import me.zhanghai.android.files.settings.SettingsActivity
+import me.zhanghai.android.files.compat.getDescriptionCompat
+import me.zhanghai.android.files.compat.isPrimaryCompat
+import me.zhanghai.android.files.compat.pathCompat
+import me.zhanghai.android.files.compat.uuidCompat
 import me.zhanghai.android.files.storage.AddDocumentTreeActivity
 import me.zhanghai.android.files.storage.AddStorageDialogActivity
 import me.zhanghai.android.files.storage.FileSystemRoot
 import me.zhanghai.android.files.storage.PrimaryStorageVolume
+import me.zhanghai.android.files.storage.SecondaryStorageVolume
 import me.zhanghai.android.files.storage.Storage
+import me.zhanghai.android.files.storage.StorageVolumeListLiveData
 import me.zhanghai.android.files.storage.Storages
+import me.zhanghai.android.files.util.isMounted
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.extraPath
 import me.zhanghai.android.files.util.putArgs
@@ -431,12 +439,15 @@ class FileListActivity : AppActivity() {
     }
 
     private fun observeCustomStorages() {
-        Settings.STORAGES.observe(this) { storages ->
+        val update = {
             layoutCustomStorages.removeAllViews()
+            val storages = Settings.STORAGES.valueCompat
+            val addedPaths = mutableSetOf<String>()
             for (storage in storages) {
                 if (storage is FileSystemRoot || storage is PrimaryStorageVolume) {
                     continue
                 }
+                storage.linuxPath?.let { addedPaths.add(it) }
                 val itemView = layoutInflater.inflate(R.layout.drawer_custom_storage_item, layoutCustomStorages, false)
                 val iconView = itemView.findViewById<ImageView>(R.id.ivStorageIcon)
                 val titleView = itemView.findViewById<TextView>(R.id.tvStorageTitle)
@@ -456,7 +467,46 @@ class FileListActivity : AppActivity() {
                 }
                 layoutCustomStorages.addView(itemView)
             }
+
+            // Auto-detect mounted non-primary volumes (MicroSD card, USB drives)
+            val detectedVolumes = StorageVolumeListLiveData.valueCompat.filter {
+                !it.isPrimaryCompat && it.isMounted && it.pathCompat !in addedPaths
+            }
+            for (volume in detectedVolumes) {
+                val pathStr = volume.pathCompat
+                val itemView = layoutInflater.inflate(R.layout.drawer_custom_storage_item, layoutCustomStorages, false)
+                val iconView = itemView.findViewById<ImageView>(R.id.ivStorageIcon)
+                val titleView = itemView.findViewById<TextView>(R.id.tvStorageTitle)
+                val subtitleView = itemView.findViewById<TextView>(R.id.tvStorageSubtitle)
+
+                iconView.setImageResource(R.drawable.sd_card_icon_white_24dp)
+                titleView.text = volume.getDescriptionCompat(this)
+                subtitleView.text = pathStr
+
+                itemView.setOnClickListener {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    activeFragment.navigateTo(Paths.get(pathStr))
+                }
+                itemView.setOnLongClickListener {
+                    val options = arrayOf(getString(R.string.storage_add_to_my_storages))
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(volume.getDescriptionCompat(this))
+                        .setItems(options) { _, which ->
+                            if (which == 0) {
+                                val uuid = volume.uuidCompat ?: File(pathStr).name
+                                Storages.addOrReplace(SecondaryStorageVolume(uuid, null, true))
+                                showToast(getString(R.string.storage_added_success))
+                            }
+                        }
+                        .show()
+                    true
+                }
+                layoutCustomStorages.addView(itemView)
+            }
         }
+
+        Settings.STORAGES.observe(this) { update() }
+        StorageVolumeListLiveData.observe(this) { update() }
     }
 
     private fun showCustomStorageOptions(storage: Storage) {

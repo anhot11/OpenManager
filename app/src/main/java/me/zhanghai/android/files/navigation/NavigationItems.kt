@@ -144,9 +144,12 @@ private class IntentStorageItem(
 
 private val storageVolumeItems: List<NavigationItem>
     @Size(min = 0)
-    get() =
-        StorageVolumeListLiveData.valueCompat.filter { !it.isPrimaryCompat && it.isMounted }
-            .map { StorageVolumeItem(it) }
+    get() {
+        val existingPaths = Settings.STORAGES.valueCompat.mapNotNull { it.linuxPath }.toSet()
+        return StorageVolumeListLiveData.valueCompat.filter {
+            !it.isPrimaryCompat && it.isMounted && it.pathCompat !in existingPaths
+        }.map { StorageVolumeItem(it) }
+    }
 
 private class StorageVolumeItem(
     private val storageVolume: StorageVolume

@@ -548,16 +548,26 @@
     <string name="file_properties_checksum_sha_512" translatable="false">SHA-512</string>
 
     <string name="storage_file_system_root_title">Root</string>
+    <string name="storage_secondary_storage_volume_default_name">SD Card (%s)</string>
     <string name="storage_list_title">Storage</string>
     <string name="storage_list_empty">No storage</string>
     <string name="storage_add_storage_title">Add storage</string>
+    <string name="storage_add_storage_subtitle">Select storage type or service to link</string>
     <string name="storage_add_storage_android_data" translatable="false">Android/data</string>
     <string name="storage_add_storage_android_obb" translatable="false">Android/obb</string>
-    <string name="storage_add_storage_document_tree">External storage</string>
+    <string name="storage_add_storage_document_tree">External folder (SAF)</string>
+    <string name="storage_add_storage_document_tree_summary">Select folder via system file picker</string>
     <string name="storage_add_storage_ftp_server">FTP server</string>
+    <string name="storage_add_storage_ftp_server_summary">File transfer protocol (FTP)</string>
     <string name="storage_add_storage_sftp_server">SFTP server</string>
+    <string name="storage_add_storage_sftp_server_summary">Secure SSH file transfer (SFTP)</string>
     <string name="storage_add_storage_smb_server">SMB server</string>
+    <string name="storage_add_storage_smb_server_summary">Windows / Samba local network shares</string>
     <string name="storage_add_storage_webdav_server">WebDAV server</string>
+    <string name="storage_add_storage_webdav_server_summary">Remote cloud and WebDAV storage</string>
+    <string name="storage_add_storage_removable_badge">DETECTED</string>
+    <string name="storage_added_success">Storage added successfully</string>
+    <string name="storage_add_to_my_storages">Add to My Storages</string>
     <string name="storage_edit_device_storage_title">Edit device storage</string>
     <string name="storage_edit_device_storage_name">Name</string>
     <string name="storage_edit_device_storage_path">Path</string>
