@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
@@ -21,6 +22,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsetsController
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
@@ -35,14 +37,11 @@ import com.google.android.material.tabs.TabLayout
 import com.topjohnwu.superuser.Shell
 import java8.nio.file.Paths
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.app.AppActivity
 import me.zhanghai.android.files.app.clipboardManager
-import me.zhanghai.android.files.coil.InstalledAppIcon
 import me.zhanghai.android.files.compat.longVersionCodeCompat
 import me.zhanghai.android.files.databinding.ActivityInstalledAppsBinding
 import me.zhanghai.android.files.databinding.DialogInstalledAppDetailsBinding
@@ -55,7 +54,6 @@ import me.zhanghai.android.files.ui.ThemedFastScroller
 import me.zhanghai.android.files.util.copyText
 import me.zhanghai.android.files.util.createSendStreamIntent
 import me.zhanghai.android.files.util.withChooser
-import coil.load
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -79,26 +77,6 @@ class InstalledAppsActivity : AppActivity() {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    data class AppModel(
-        val label: String,
-        val packageName: String,
-        val versionName: String,
-        val versionCode: Long,
-        val sourceDir: String,
-        val splitSourceDirs: List<String>,
-        val dataDir: String,
-        val targetSdkVersion: Int,
-        val minSdkVersion: Int,
-        val sizeBytes: Long,
-        val isSystem: Boolean,
-        val isEnabled: Boolean,
-        val firstInstallTime: Long,
-        val lastUpdateTime: Long
-    ) {
-        val isSplit: Boolean get() = splitSourceDirs.isNotEmpty()
-        val splitCount: Int get() = if (splitSourceDirs.isNotEmpty()) splitSourceDirs.size + 1 else 1
-    }
-
     companion object {
         @Volatile
         private var sAppCache: List<AppModel>? = null
@@ -109,14 +87,32 @@ class InstalledAppsActivity : AppActivity() {
         binding = ActivityInstalledAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
-            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            view.updatePadding(top = statusBar.top)
-            insets
+        // 1. Consistent dark status bar
+        window.statusBarColor = Color.parseColor("#1F1F1F")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView) { view, insets ->
-            val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            view.updatePadding(bottom = navBar.bottom + (16 * resources.displayMetrics.density).toInt())
+
+        // 2. Query status bar height directly from framework dimensions
+        val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        val statusBarHeight = if (resId > 0) {
+            resources.getDimensionPixelSize(resId)
+        } else {
+            (28 * resources.displayMetrics.density).toInt()
+        }
+
+        // 3. Set top padding immediately so Toolbar is NEVER obscured by notifications/status bar
+        binding.appBarLayout.updatePadding(top = statusBarHeight)
+
+        // 4. React dynamically to window insets for display cutouts, notches, and navigation bar
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rootLayout) { _, insets ->
+            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            val topInset = maxOf(statusBars.top, displayCutout.top, statusBarHeight)
+            binding.appBarLayout.updatePadding(top = topInset)
+
+            val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            binding.recyclerView.updatePadding(bottom = navBars.bottom + (16 * resources.displayMetrics.density).toInt())
             insets
         }
 
@@ -153,17 +149,18 @@ class InstalledAppsActivity : AppActivity() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@InstalledAppsActivity)
             setHasFixedSize(true)
-            setItemViewCacheSize(25)
+            setItemViewCacheSize(30)
             adapter = this@InstalledAppsActivity.adapter
             ThemedFastScroller.create(this)
         }
     }
 
     private fun loadApps(forceRefresh: Boolean = false) {
-        val cached = sAppCache
-        if (!forceRefresh && cached != null && cached.isNotEmpty()) {
+        // 1. In-memory cache (0 ms)
+        val memCached = sAppCache
+        if (!forceRefresh && memCached != null && memCached.isNotEmpty()) {
             allApps.clear()
-            allApps.addAll(cached)
+            allApps.addAll(memCached)
             applySort()
             updateTabCounts()
             filterApps()
@@ -171,95 +168,176 @@ class InstalledAppsActivity : AppActivity() {
             return
         }
 
+        // 2. Persistent disk cache (5-10 ms)
+        if (!forceRefresh) {
+            val diskCached = AppDiskCache.load(this)
+            if (diskCached != null && diskCached.isNotEmpty()) {
+                allApps.clear()
+                allApps.addAll(diskCached)
+                sAppCache = diskCached
+                applySort()
+                updateTabCounts()
+                filterApps()
+                binding.progressBar.visibility = View.GONE
+                // Trigger background refresh silently to catch new installs/updates
+                syncAppsInBackground(diskCached)
+                return
+            }
+        }
+
         if (allApps.isEmpty()) {
             binding.progressBar.visibility = View.VISIBLE
         }
         binding.emptyText.visibility = View.GONE
 
+        // 3. Full scan with progressive emission
+        lifecycleScope.launch(Dispatchers.IO) {
+            scanAndEmitApps()
+        }
+    }
+
+    private suspend fun scanAndEmitApps() {
+        val pm = packageManager
+        val packages = try {
+            pm.getInstalledPackages(0)
+        } catch (e: Exception) {
+            emptyList<PackageInfo>()
+        }
+        if (packages.isEmpty()) {
+            withContext(Dispatchers.Main) {
+                binding.progressBar.visibility = View.GONE
+                binding.emptyText.visibility = View.VISIBLE
+            }
+            return
+        }
+
+        val parsedList = mutableListOf<AppModel>()
+        var emittedInitial = false
+
+        val chunks = packages.chunked(30)
+        for (chunk in chunks) {
+            val batch = chunk.mapNotNull { pkg -> parsePackage(pm, pkg) }
+            parsedList.addAll(batch)
+
+            // Stream first batch to UI immediately!
+            if (!emittedInitial && parsedList.size >= 25) {
+                emittedInitial = true
+                val snapshot = ArrayList(parsedList)
+                withContext(Dispatchers.Main) {
+                    allApps.clear()
+                    allApps.addAll(snapshot)
+                    applySort()
+                    updateTabCounts()
+                    filterApps()
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
+        }
+
+        sAppCache = parsedList
+        AppDiskCache.save(this@InstalledAppsActivity, parsedList)
+
+        withContext(Dispatchers.Main) {
+            allApps.clear()
+            allApps.addAll(parsedList)
+            applySort()
+            updateTabCounts()
+            filterApps()
+            binding.progressBar.visibility = View.GONE
+        }
+    }
+
+    private fun syncAppsInBackground(existing: List<AppModel>) {
         lifecycleScope.launch(Dispatchers.IO) {
             val pm = packageManager
             val packages = try {
                 pm.getInstalledPackages(0)
             } catch (e: Exception) {
-                emptyList<PackageInfo>()
+                return@launch
             }
+            if (packages.isEmpty()) return@launch
 
-            val list = packages.chunked(25).map { chunk ->
-                async(Dispatchers.Default) {
-                    chunk.mapNotNull { pkg ->
-                        val appInfo = pkg.applicationInfo ?: return@mapNotNull null
-                        val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                        val isEnabled = appInfo.enabled
-                        val label = appInfo.nonLocalizedLabel?.toString()
-                            ?: try {
-                                pm.getApplicationLabel(appInfo).toString()
-                            } catch (e: Exception) {
-                                pkg.packageName
-                            }
-
-                        val splits = appInfo.splitSourceDirs?.toList() ?: emptyList()
-                        var size = 0L
-                        val src = appInfo.sourceDir
-                        if (!src.isNullOrEmpty()) {
-                            val baseFile = File(src)
-                            size += baseFile.length()
-                        }
-                        for (splitPath in splits) {
-                            val splitFile = File(splitPath)
-                            size += splitFile.length()
-                        }
-
-                        val minSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            appInfo.minSdkVersion
-                        } else {
-                            0
-                        }
-
-                        AppModel(
-                            label = label,
-                            packageName = pkg.packageName,
-                            versionName = pkg.versionName ?: "1.0",
-                            versionCode = pkg.longVersionCodeCompat,
-                            sourceDir = src ?: "",
-                            splitSourceDirs = splits,
-                            dataDir = appInfo.dataDir ?: "",
-                            targetSdkVersion = appInfo.targetSdkVersion,
-                            minSdkVersion = minSdk,
-                            sizeBytes = size,
-                            isSystem = isSystem,
-                            isEnabled = isEnabled,
-                            firstInstallTime = pkg.firstInstallTime,
-                            lastUpdateTime = pkg.lastUpdateTime
-                        )
+            // Quick check: if count and latest update time match, no need to rescan
+            val existingMap = existing.associateBy({ it.packageName }, { it.lastUpdateTime })
+            var hasChanges = packages.size != existing.size
+            if (!hasChanges) {
+                for (pkg in packages) {
+                    val cachedTime = existingMap[pkg.packageName]
+                    if (cachedTime == null || cachedTime != pkg.lastUpdateTime) {
+                        hasChanges = true
+                        break
                     }
                 }
-            }.awaitAll().flatten()
-
-            sAppCache = list
-
-            withContext(Dispatchers.Main) {
-                allApps.clear()
-                allApps.addAll(list)
-                applySort()
-                updateTabCounts()
-                binding.progressBar.visibility = View.GONE
-                filterApps()
             }
+            if (!hasChanges) return@launch
+
+            // Rescan and update
+            scanAndEmitApps()
         }
     }
 
+    private fun parsePackage(pm: PackageManager, pkg: PackageInfo): AppModel? {
+        val appInfo = pkg.applicationInfo ?: return null
+        val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+        val isEnabled = appInfo.enabled
+        val label = appInfo.nonLocalizedLabel?.toString()
+            ?: try {
+                pm.getApplicationLabel(appInfo).toString()
+            } catch (e: Exception) {
+                pkg.packageName
+            }
+
+        val splits = appInfo.splitSourceDirs?.toList() ?: emptyList()
+        var size = 0L
+        val src = appInfo.sourceDir
+        if (!src.isNullOrEmpty()) {
+            val baseFile = File(src)
+            size += baseFile.length()
+        }
+        for (splitPath in splits) {
+            val splitFile = File(splitPath)
+            size += splitFile.length()
+        }
+
+        val minSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            appInfo.minSdkVersion
+        } else {
+            0
+        }
+
+        return AppModel(
+            label = label,
+            packageName = pkg.packageName,
+            versionName = pkg.versionName ?: "1.0",
+            versionCode = pkg.longVersionCodeCompat,
+            sourceDir = src ?: "",
+            splitSourceDirs = splits,
+            dataDir = appInfo.dataDir ?: "",
+            targetSdkVersion = appInfo.targetSdkVersion,
+            minSdkVersion = minSdk,
+            sizeBytes = size,
+            isSystem = isSystem,
+            isEnabled = isEnabled,
+            firstInstallTime = pkg.firstInstallTime,
+            lastUpdateTime = pkg.lastUpdateTime
+        )
+    }
+
     private fun updateTabCounts() {
-        val userCount = allApps.count { !it.isSystem }
-        val systemCount = allApps.count { it.isSystem }
+        var userCount = 0
+        var systemCount = 0
+        for (app in allApps) {
+            if (app.isSystem) systemCount++ else userCount++
+        }
         binding.tabLayout.getTabAt(0)?.text = "${getString(R.string.user_apps)} ($userCount)"
         binding.tabLayout.getTabAt(1)?.text = "${getString(R.string.system_apps)} ($systemCount)"
     }
 
     private fun applySort() {
         when (currentSortOrder) {
-            0 -> allApps.sortBy { it.label.lowercase() }
-            1 -> allApps.sortByDescending { it.label.lowercase() }
-            2 -> allApps.sortBy { it.packageName.lowercase() }
+            0 -> allApps.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
+            1 -> allApps.sortWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it.label })
+            2 -> allApps.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.packageName })
             3 -> allApps.sortByDescending { it.sizeBytes }
             4 -> allApps.sortBy { it.sizeBytes }
             5 -> allApps.sortByDescending { it.lastUpdateTime }
@@ -312,15 +390,24 @@ class InstalledAppsActivity : AppActivity() {
 
     private fun showAppDetails(app: AppModel) {
         val dialogBinding = DialogInstalledAppDetailsBinding.inflate(layoutInflater)
-        dialogBinding.dialogAppIcon.load(InstalledAppIcon(app.packageName, app.lastUpdateTime)) {
-            crossfade(150)
-            placeholder(R.drawable.file_apk_icon)
-            error(R.drawable.file_apk_icon)
+        val cachedIcon = NativeAppIconLoader.getCached(app.packageName)
+        if (cachedIcon != null) {
+            dialogBinding.dialogAppIcon.setImageDrawable(cachedIcon)
+        } else {
+            dialogBinding.dialogAppIcon.setImageResource(R.drawable.file_apk_icon)
+            lifecycleScope.launch(Dispatchers.IO) {
+                val icon = NativeAppIconLoader.loadIcon(this@InstalledAppsActivity, app.packageName)
+                if (icon != null) {
+                    withContext(Dispatchers.Main) {
+                        dialogBinding.dialogAppIcon.setImageDrawable(icon)
+                    }
+                }
+            }
         }
         dialogBinding.dialogAppName.text = app.label
-        dialogBinding.dialogAppVersionSize.text = "v${app.versionName} (${app.versionCode}) • ${formatSize(app.sizeBytes)}"
         dialogBinding.dialogAppPackage.text = app.packageName
-        val minSdkStr = if (app.minSdkVersion > 0) "${app.minSdkVersion}" else "1"
+        dialogBinding.dialogAppVersionSize.text = "v${app.versionName} (${app.versionCode}) • ${formatSize(app.sizeBytes)}"
+        val minSdkStr = if (app.minSdkVersion > 0) app.minSdkVersion.toString() else "N/A"
         dialogBinding.dialogAppSdk.text = "Min SDK: $minSdkStr • Target SDK: ${app.targetSdkVersion}"
 
         if (app.isSplit) {
@@ -328,6 +415,15 @@ class InstalledAppsActivity : AppActivity() {
             dialogBinding.dialogAppSplits.text = "APKS: ${app.splitCount} archivos divididos"
         } else {
             dialogBinding.dialogAppSplits.visibility = View.GONE
+        }
+
+        val isRoot = ApkInstallHelper.isRootAvailable()
+        if (isRoot) {
+            dialogBinding.layoutRootActions.visibility = View.VISIBLE
+            dialogBinding.tvToggleEnableTitle.text = if (app.isEnabled) "Inhabilitar / Congelar (Root)" else "Habilitar / Descongelar (Root)"
+            dialogBinding.tvToggleEnableSubtitle.text = if (app.isEnabled) "Desactivar paquete con pm disable" else "Activar paquete con pm enable"
+        } else {
+            dialogBinding.layoutRootActions.visibility = View.GONE
         }
 
         val dialog = MaterialAlertDialogBuilder(this)
@@ -344,25 +440,23 @@ class InstalledAppsActivity : AppActivity() {
         dialogBinding.btnActionLocateApk.setOnClickListener {
             dialog.dismiss()
             val apkFile = File(app.sourceDir)
-            val parentDir = apkFile.parentFile ?: File("/data/app")
-            val viewIntent = FileListActivity.createViewIntent(Paths.get(parentDir.absolutePath))
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(viewIntent)
-            finish()
+            if (apkFile.exists()) {
+                val intent = FileListActivity.createViewIntent(Paths.get(apkFile.parentFile!!.absolutePath))
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
+                finish()
+            } else {
+                Toast.makeText(this, "El directorio del APK no es accesible", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        // 3. Localizar Datos (Data)
+        // 3. Localizar Datos en el explorador
         dialogBinding.btnActionLocateData.setOnClickListener {
             dialog.dismiss()
-            val isRoot = ApkInstallHelper.isRootAvailable()
-            val targetDataDir = if (isRoot && app.dataDir.isNotEmpty() && File(app.dataDir).exists()) {
-                File(app.dataDir)
-            } else {
-                File("/storage/emulated/0/Android/data/${app.packageName}")
-            }
-            val viewIntent = FileListActivity.createViewIntent(Paths.get(targetDataDir.absolutePath))
+            val dataPath = if (app.dataDir.isNotEmpty()) app.dataDir else "/storage/emulated/0/Android/data/${app.packageName}"
+            val intent = FileListActivity.createViewIntent(Paths.get(dataPath))
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(viewIntent)
+            startActivity(intent)
             finish()
         }
 
@@ -395,201 +489,142 @@ class InstalledAppsActivity : AppActivity() {
         // 7. Compartir APK
         dialogBinding.btnActionShare.setOnClickListener {
             dialog.dismiss()
-            shareApp(app)
+            val apkFile = File(app.sourceDir)
+            if (apkFile.exists() && apkFile.canRead()) {
+                try {
+                    val uri = apkFile.fileProviderUri
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = MimeType.APK.value
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    startActivity(Intent.createChooser(shareIntent, "Compartir ${app.label}"))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error al compartir APK: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Se requiere extraer el APK previamente para compartir", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // 8. Google Play Store
         dialogBinding.btnActionPlayStore.setOnClickListener {
             dialog.dismiss()
             try {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${app.packageName}")))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${app.packageName}"))
+                startActivity(intent)
             } catch (e: Exception) {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${app.packageName}")))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${app.packageName}"))
+                startActivity(intent)
             }
         }
 
-        // 9. Desinstalar aplicación
+        // 9. Desinstalar
         dialogBinding.btnActionUninstall.setOnClickListener {
             dialog.dismiss()
-            uninstallApp(app)
+            val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${app.packageName}"))
+            startActivity(intent)
         }
 
-        // 10. Root Actions Container
-        val isRoot = ApkInstallHelper.isRootAvailable()
-        if (isRoot) {
-            dialogBinding.layoutRootActions.visibility = View.VISIBLE
-            if (app.isEnabled) {
-                dialogBinding.tvToggleEnableTitle.text = "Inhabilitar / Congelar (Root)"
-                dialogBinding.tvToggleEnableSubtitle.text = "Desactivar paquete con pm disable"
-            } else {
-                dialogBinding.tvToggleEnableTitle.text = "Habilitar / Descongelar (Root)"
-                dialogBinding.tvToggleEnableSubtitle.text = "Activar paquete con pm enable"
-            }
-
-            dialogBinding.btnActionForceStop.setOnClickListener {
-                dialog.dismiss()
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val res = Shell.cmd("am force-stop ${app.packageName}").exec()
-                    withContext(Dispatchers.Main) {
-                        if (res.isSuccess) {
-                            Toast.makeText(this@InstalledAppsActivity, "Proceso detenido: ${app.label}", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this@InstalledAppsActivity, "Error al forzar detención", Toast.LENGTH_SHORT).show()
-                        }
+        // 10. Root: Forzar detención
+        dialogBinding.btnActionForceStop.setOnClickListener {
+            dialog.dismiss()
+            lifecycleScope.launch(Dispatchers.IO) {
+                val result = Shell.cmd("am force-stop ${app.packageName}").exec()
+                withContext(Dispatchers.Main) {
+                    if (result.isSuccess) {
+                        Toast.makeText(this@InstalledAppsActivity, "Aplicación detenida (Root)", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@InstalledAppsActivity, "Error al forzar detención", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
+        }
 
-            dialogBinding.btnActionClearData.setOnClickListener {
-                dialog.dismiss()
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Limpiar datos")
-                    .setMessage("¿Seguro que deseas restablecer los datos de ${app.label}? Todos los ajustes y sesiones se eliminarán.")
-                    .setPositiveButton("Limpiar") { _, _ ->
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            val res = Shell.cmd("pm clear ${app.packageName}").exec()
-                            withContext(Dispatchers.Main) {
-                                if (res.isSuccess) {
-                                    Toast.makeText(this@InstalledAppsActivity, "Datos restablecidos: ${app.label}", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(this@InstalledAppsActivity, "Error al limpiar datos", Toast.LENGTH_SHORT).show()
-                                }
+        // 11. Root: Limpiar datos
+        dialogBinding.btnActionClearData.setOnClickListener {
+            dialog.dismiss()
+            MaterialAlertDialogBuilder(this)
+                .setTitle("¿Limpiar datos?")
+                .setMessage("Se eliminarán todos los datos y configuraciones de ${app.label}.")
+                .setPositiveButton("Limpiar") { _, _ ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val result = Shell.cmd("pm clear ${app.packageName}").exec()
+                        withContext(Dispatchers.Main) {
+                            if (result.isSuccess) {
+                                Toast.makeText(this@InstalledAppsActivity, "Datos restablecidos con éxito", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@InstalledAppsActivity, "Error al limpiar datos", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show()
-            }
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
 
-            dialogBinding.btnActionToggleEnable.setOnClickListener {
-                dialog.dismiss()
-                val newEnable = !app.isEnabled
-                val cmd = if (newEnable) "pm enable ${app.packageName}" else "pm disable ${app.packageName}"
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val res = Shell.cmd(cmd).exec()
-                    withContext(Dispatchers.Main) {
-                        if (res.isSuccess) {
-                            val msg = if (newEnable) "Habilitada: ${app.label}" else "Inhabilitada: ${app.label}"
-                            Toast.makeText(this@InstalledAppsActivity, msg, Toast.LENGTH_SHORT).show()
-                            loadApps()
-                        } else {
-                            Toast.makeText(this@InstalledAppsActivity, "Error al modificar estado", Toast.LENGTH_SHORT).show()
-                        }
+        // 12. Root: Alternar Habilitar/Inhabilitar
+        dialogBinding.btnActionToggleEnable.setOnClickListener {
+            dialog.dismiss()
+            val newEnable = !app.isEnabled
+            val cmdStr = if (newEnable) "pm enable ${app.packageName}" else "pm disable-user ${app.packageName}"
+            lifecycleScope.launch(Dispatchers.IO) {
+                val result = Shell.cmd(cmdStr).exec()
+                withContext(Dispatchers.Main) {
+                    if (result.isSuccess) {
+                        val msg = if (newEnable) "Aplicación habilitada" else "Aplicación inhabilitada"
+                        Toast.makeText(this@InstalledAppsActivity, msg, Toast.LENGTH_SHORT).show()
+                        loadApps(forceRefresh = true)
+                    } else {
+                        Toast.makeText(this@InstalledAppsActivity, "Error al cambiar estado", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-        } else {
-            dialogBinding.layoutRootActions.visibility = View.GONE
         }
 
         dialog.show()
     }
 
     private fun showCopyInfoDialog(app: AppModel) {
-        val sha256 = getCertificateSha256(this, app.packageName)
-        val options = arrayOf(
-            "Copiar nombre (${app.label})",
-            "Copiar paquete (${app.packageName})",
-            "Copiar versión (v${app.versionName})",
-            "Copiar ruta de APK (${app.sourceDir})",
-            "Copiar ruta de datos (${app.dataDir})",
-            "Copiar firma SHA-256",
-            "Copiar reporte completo"
+        val certSha256 = getCertificateSha256(this, app.packageName)
+        val infoItems = arrayOf(
+            "Nombre: ${app.label}",
+            "Paquete: ${app.packageName}",
+            "Versión: ${app.versionName} (${app.versionCode})",
+            "Ruta APK: ${app.sourceDir}",
+            "Ruta Datos: ${app.dataDir}",
+            "Firma SHA-256: $certSha256",
+            "Copiar todo el informe"
         )
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Copiar información")
-            .setItems(options) { _, which ->
+            .setItems(infoItems) { _, which ->
                 val textToCopy = when (which) {
                     0 -> app.label
                     1 -> app.packageName
-                    2 -> "v${app.versionName} (${app.versionCode})"
+                    2 -> "${app.versionName} (${app.versionCode})"
                     3 -> app.sourceDir
                     4 -> app.dataDir
-                    5 -> sha256
+                    5 -> certSha256
                     6 -> """
-                        Aplicación: ${app.label}
-                        Paquete: ${app.packageName}
-                        Versión: v${app.versionName} (${app.versionCode})
-                        Tamaño: ${formatSize(app.sizeBytes)}
+                        App: ${app.label}
+                        Package: ${app.packageName}
+                        Version: ${app.versionName} (${app.versionCode})
                         Target SDK: ${app.targetSdkVersion}
                         Min SDK: ${app.minSdkVersion}
-                        Ruta APK: ${app.sourceDir}
-                        Ruta Datos: ${app.dataDir}
-                        Firma SHA-256: $sha256
-                        Fecha de instalación: ${formatDate(app.firstInstallTime)}
-                        Fecha de actualización: ${formatDate(app.lastUpdateTime)}
+                        Size: ${formatSize(app.sizeBytes)}
+                        APK Path: ${app.sourceDir}
+                        Data Path: ${app.dataDir}
+                        SHA-256: $certSha256
                     """.trimIndent()
                     else -> ""
                 }
-                clipboardManager.copyText(textToCopy, this)
+                copyText(textToCopy)
+                Toast.makeText(this, "Copiado al portapapeles", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
-    }
-
-    private fun shareApp(app: AppModel) {
-        binding.progressBar.visibility = View.VISIBLE
-        lifecycleScope.launch(Dispatchers.IO) {
-            val shareDir = File(cacheDir, "shared_apks").apply { mkdirs() }
-            val shareFile = if (app.isSplit) {
-                val file = File(shareDir, "${app.packageName}_v${app.versionName}.apks")
-                extractSplitApk(app, file)
-                file
-            } else {
-                val file = File(shareDir, "${app.packageName}_v${app.versionName}.apk")
-                extractSingleApk(app.sourceDir, file)
-                file
-            }
-
-            withContext(Dispatchers.Main) {
-                binding.progressBar.visibility = View.GONE
-                if (shareFile.exists() && shareFile.length() > 0) {
-                    try {
-                        val path = Paths.get(shareFile.absolutePath)
-                        val uri = path.fileProviderUri
-                        val intent = uri.createSendStreamIntent(MimeType.APK)
-                            .withChooser()
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        Toast.makeText(this@InstalledAppsActivity, "Error al compartir: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(this@InstalledAppsActivity, "Error al preparar archivo para compartir", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    private fun uninstallApp(app: AppModel) {
-        val isRoot = ApkInstallHelper.isRootAvailable()
-        if (isRoot) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("Desinstalar ${app.label}")
-                .setMessage("¿Deseas realizar una desinstalación silenciosa con Root o a través del sistema?")
-                .setPositiveButton("Silenciosa (Root)") { _, _ ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val res = Shell.cmd("pm uninstall ${app.packageName}").exec()
-                        withContext(Dispatchers.Main) {
-                            if (res.isSuccess) {
-                                Toast.makeText(this@InstalledAppsActivity, "${app.label} desinstalada con éxito", Toast.LENGTH_SHORT).show()
-                                loadApps()
-                            } else {
-                                Toast.makeText(this@InstalledAppsActivity, "Error al desinstalar por Root", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                }
-                .setNeutralButton("Sistema") { _, _ ->
-                    val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${app.packageName}"))
-                    startActivity(intent)
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        } else {
-            val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${app.packageName}"))
-            startActivity(intent)
-        }
     }
 
     private fun extractApk(app: AppModel) {
@@ -608,6 +643,7 @@ class InstalledAppsActivity : AppActivity() {
         val extension = if (app.isSplit) "apks" else "apk"
         val destFile = File(targetDir, "${safeLabel}_v${app.versionName}.$extension")
 
+        Toast.makeText(this, "Extrayendo ${app.label}...", Toast.LENGTH_SHORT).show()
         binding.progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -805,15 +841,16 @@ class InstalledAppsActivity : AppActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun formatDate(timestamp: Long): String {
-        if (timestamp <= 0) return "-"
-        return dateFormat.format(Date(timestamp))
-    }
-
     private fun formatSize(bytes: Long): String {
         if (bytes <= 0) return "0 B"
-        val mb = bytes.toDouble() / (1024 * 1024)
-        return String.format(Locale.US, "%.2f MB", mb)
+        val units = arrayOf("B", "KB", "MB", "GB")
+        val digitGroups = (Math.log10(bytes.toDouble()) / Math.log10(1024.0)).toInt()
+        val index = digitGroups.coerceIn(0, units.size - 1)
+        return String.format(Locale.US, "%.1f %s", bytes / Math.pow(1024.0, index.toDouble()), units[index])
+    }
+
+    private fun formatDate(timestamp: Long): String {
+        return if (timestamp > 0) dateFormat.format(Date(timestamp)) else "Desconocida"
     }
 
     inner class AppsAdapter(
@@ -830,38 +867,44 @@ class InstalledAppsActivity : AppActivity() {
             return ViewHolder(b)
         }
 
+        override fun getItemCount(): Int = items.size
+
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val app = items[position]
             with(holder.binding) {
-                appName.text = if (app.isEnabled) app.label else "${app.label} [Inhabilitada]"
-                appSize.text = formatSize(app.sizeBytes)
-                if (app.isSplit) {
-                    appSplitBadge.visibility = View.VISIBLE
-                    appSplitBadge.text = "APKS"
-                } else {
-                    appSplitBadge.visibility = View.GONE
-                }
-                appVersion.text = "v${app.versionName} (${app.versionCode})"
+                appName.text = app.label
                 appPackage.text = app.packageName
-                val minSdkStr = if (app.minSdkVersion > 0) "${app.minSdkVersion}" else "1"
+                appVersion.text = "v${app.versionName} (${app.versionCode})"
+                appSize.text = formatSize(app.sizeBytes)
+                appSplitBadge.visibility = if (app.isSplit) View.VISIBLE else View.GONE
+
+                val minSdkStr = if (app.minSdkVersion > 0) app.minSdkVersion.toString() else "?"
                 val dateStr = formatDate(app.lastUpdateTime)
                 appMetaInfo.text = "SDK: $minSdkStr - ${app.targetSdkVersion}  •  $dateStr"
 
-                appIcon.load(InstalledAppIcon(app.packageName, app.lastUpdateTime)) {
-                    crossfade(150)
-                    placeholder(R.drawable.file_apk_icon)
-                    error(R.drawable.file_apk_icon)
+                val cached = NativeAppIconLoader.getCached(app.packageName)
+                if (cached != null) {
+                    appIcon.setImageDrawable(cached)
+                } else {
+                    appIcon.setImageResource(R.drawable.file_apk_icon)
+                    val tag = app.packageName
+                    appIcon.tag = tag
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val drawable = NativeAppIconLoader.loadIcon(this@InstalledAppsActivity, app.packageName)
+                        if (drawable != null) {
+                            withContext(Dispatchers.Main) {
+                                if (appIcon.tag == tag) {
+                                    appIcon.setImageDrawable(drawable)
+                                }
+                            }
+                        }
+                    }
                 }
-                root.alpha = if (app.isEnabled) 1.0f else 0.5f
-                root.setOnClickListener { onClick(app) }
+
+                root.setOnClickListener {
+                    onClick(app)
+                }
             }
         }
-
-        override fun onViewRecycled(holder: ViewHolder) {
-            super.onViewRecycled(holder)
-            holder.binding.appIcon.setImageDrawable(null)
-        }
-
-        override fun getItemCount(): Int = items.size
     }
 }

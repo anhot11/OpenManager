@@ -3,42 +3,51 @@
   ~ Copyright (c) 2026 OpenManager
   ~ All Rights Reserved.
   -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/coordinatorLayout"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical"
+    android:background="#151515">
 
-    <me.zhanghai.android.files.ui.CoordinatorAppBarLayout
+    <!-- Top AppBar Container with status bar inset padding -->
+    <LinearLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorAppBarSurface"
-        android:theme="?actionBarTheme"
-        app:liftOnScroll="true"
-        app:liftOnScrollTargetViewId="@id/recyclerView">
+        android:orientation="vertical"
+        android:background="#1F1F1F">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="56dp"
+            android:background="#1F1F1F"
             app:navigationIcon="@drawable/arrow_back_icon_white_24dp"
-            app:title="@string/navigation_installed_apps" />
+            app:navigationIconTint="@android:color/white"
+            app:title="@string/navigation_installed_apps"
+            app:titleTextColor="@android:color/white"
+            app:subtitleTextColor="#AAAAAA" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:background="#1F1F1F"
             app:tabMode="fixed"
-            app:tabGravity="fill" />
-    </me.zhanghai.android.files.ui.CoordinatorAppBarLayout>
+            app:tabGravity="fill"
+            app:tabTextColor="#8E8E93"
+            app:tabSelectedTextColor="#2196F3"
+            app:tabIndicatorColor="#2196F3"
+            app:tabIndicatorHeight="3dp" />
+    </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -62,6 +71,7 @@
             android:layout_gravity="center"
             android:text="@string/empty"
             android:textAppearance="?textAppearanceSubtitle1"
+            android:textColor="#888888"
             android:visibility="gone" />
     </FrameLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>
