@@ -17,7 +17,7 @@
         android:background="#2C2C2C"
         app:titleTextColor="#FFFFFF"
         app:subtitleTextColor="#AAAAAA"
-        app:navigationIcon="@drawable/back_icon_white_24dp"
+        app:navigationIcon="@drawable/arrow_back_icon_white_24dp"
         app:title="@string/arsc_editor_title" />
 
     <com.google.android.material.tabs.TabLayout

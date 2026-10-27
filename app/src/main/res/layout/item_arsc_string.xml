@@ -54,7 +54,7 @@
         android:layout_width="16dp"
         android:layout_height="16dp"
         android:layout_marginStart="8dp"
-        android:src="@drawable/edit_icon_white_24dp"
+        android:src="@drawable/edit_icon"
         android:tint="#FF9800"
         android:visibility="gone" />
 

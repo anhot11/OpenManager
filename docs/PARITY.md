@@ -33,7 +33,7 @@ Este documento contiene la matriz exhaustiva de paridad de funciones entre **MT 
 | Explorar archivos ZIP/APK sin descomprimir | ✅ | `provider/archive/`, `ArchiveFileSystem` | Navegación virtual dentro de archivos comprimidos como carpetas del sistema. |
 | Crear archivos ZIP, 7Z, TAR | ✅ | `CreateArchiveDialogFragment.kt`, `provider/archive/` | Soporte multiformato con selección de nivel de compresión. |
 | Descompresión de formatos TAR, GZ, BZ2, XZ | ✅ | `provider/archive/`, Apache Commons Compress | Soporte completo para empaquetados tarballs y variantes Unix. |
-| Modificación en caliente dentro de ZIP/APK | 🟡 | `provider/archive/ArchiveWriter.kt` | Añadir y reemplazar ficheros en ZIP existe en el sistema de archivos de archivo; requiere verificación en APK re-sign. |
+| Modificación en caliente dentro de ZIP/APK | ✅ | `provider/archive/ArchiveWriter.kt`, `ApkSignerHelper.kt` | Soporte para añadir y reemplazar ficheros dentro de archivos ZIP/APK y re-firmar el paquete con V1-V3 y zipalign. |
 
 ---
 
