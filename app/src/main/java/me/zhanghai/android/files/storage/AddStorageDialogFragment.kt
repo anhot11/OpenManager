@@ -111,7 +111,7 @@ class AddStorageDialogFragment : AppCompatDialogFragment() {
         items.add(
             AddStorageOption(
                 id = "ftp_server",
-                iconRes = R.drawable.network_server_icon_white_24dp,
+                iconRes = R.drawable.computer_icon_white_24dp,
                 iconTint = 0xFFFF9800.toInt(),
                 title = getString(R.string.storage_add_storage_ftp_server),
                 subtitle = getString(R.string.storage_add_storage_ftp_server_summary),
@@ -147,7 +147,7 @@ class AddStorageDialogFragment : AppCompatDialogFragment() {
         items.add(
             AddStorageOption(
                 id = "webdav_server",
-                iconRes = R.drawable.cloud_icon_white_24dp,
+                iconRes = R.drawable.shared_directory_icon_white_24dp,
                 iconTint = 0xFF3F51B5.toInt(),
                 title = getString(R.string.storage_add_storage_webdav_server),
                 subtitle = getString(R.string.storage_add_storage_webdav_server_summary),

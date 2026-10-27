@@ -111,8 +111,12 @@ data class SecondaryStorageVolume(
         get() = storageVolume?.pathCompat ?: "/storage/$uuid"
 
     private val storageVolume: StorageVolume?
-        get() = StorageVolumeListLiveData.valueCompat.find {
-            it.uuidCompat == uuid || it.pathCompat.endsWith(uuid)
+        get() = try {
+            StorageVolumeListLiveData.valueCompat.find {
+                it.uuidCompat == uuid || it.pathCompat.endsWith(uuid)
+            }
+        } catch (e: Throwable) {
+            null
         }
 }
 
